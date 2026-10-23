@@ -50,3 +50,11 @@ th button { background: none; border: 0; color: inherit; cursor: pointer; paddin
   main { padding: 14px; gap: 14px; }
   .card { padding: 12px; }
 }
+.round-matrix button[data-band="high"] { background: #dcfce7; }
+.round-matrix button[data-band="mid"] { background: #e0f2fe; }
+.round-matrix button[data-band="low"] { background: #fef9c3; }
+.round-matrix button[data-band="verylow"] { background: #fee2e2; }
+[data-theme="dark"] .round-matrix button[data-band="high"] { background: #14532d; }
+[data-theme="dark"] .round-matrix button[data-band="mid"] { background: #0c4a6e; }
+[data-theme="dark"] .round-matrix button[data-band="low"] { background: #422006; }
+[data-theme="dark"] .round-matrix button[data-band="verylow"] { background: #450a0a; }
