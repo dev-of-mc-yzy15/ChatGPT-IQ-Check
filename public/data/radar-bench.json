@@ -1,0 +1,4086 @@
+{
+  "schema_version": 1,
+  "fetch_id": "2316f72a-b2da-4f8a-9367-aa45e6e7b7f2",
+  "generated_at": "2026-10-23T17:54:33.065Z",
+  "checked_at": "2026-10-23T17:54:33.065Z",
+  "benchmark": "radar-bench-final64-20261004",
+  "score_version": "radar-bench-v2-150",
+  "score_max": 150,
+  "catalog_version": "dradar-four-library-deployment007-server024-20261004-config64",
+  "task_set_sha256": "f75ff09b6117cd83d3ab6ea744fe379ac117676c042538d5df5e38489af27bc4",
+  "candidates": [
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "low",
+      "score": 75.96974948023467,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 116,
+      "source_scores": {
+        "deepswe": {
+          "score": 96.66666666666667,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 45
+        },
+        "pompeii": {
+          "score": 121.06649792093872,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 21
+        },
+        "tb4": {
+          "score": 53.57142857142857,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 23
+        },
+        "science": {
+          "score": 38.15789473684211,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 27
+        }
+      },
+      "statistics": {
+        "sample_count": 152,
+        "elapsed_ms_mean": null,
+        "api_equivalent_usd_mean": null
+      },
+      "latest_graded_at": "2026-10-23T01:17:00.880816Z",
+      "history": [
+        {
+          "at": "2026-10-06T00:00:00.000Z",
+          "score": 112.5,
+          "coverage": 12,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-07T00:00:00.000Z",
+          "score": 110,
+          "coverage": 15,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-08T00:00:00.000Z",
+          "score": 84.24288987258913,
+          "coverage": 63,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-09T00:00:00.000Z",
+          "score": 82.92659471832992,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-10T00:00:00.000Z",
+          "score": 81.75471971832992,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-11T00:00:00.000Z",
+          "score": 81.75471971832992,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-15T00:00:00.000Z",
+          "score": 81.75471971832992,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 79.02034471832992,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 77.45784471832991,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-19T00:00:00.000Z",
+          "score": 78.62971971832991,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-20T00:00:00.000Z",
+          "score": 75.96974948023467,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-23T00:00:00.000Z",
+          "score": 75.96974948023467,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium",
+      "score": 78.44632627580997,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 99,
+      "source_scores": {
+        "deepswe": {
+          "score": 98.33333333333333,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 37
+        },
+        "pompeii": {
+          "score": 118.47280510323988,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 19
+        },
+        "tb4": {
+          "score": 69.64285714285714,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 20
+        },
+        "science": {
+          "score": 35.526315789473685,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 23
+        }
+      },
+      "statistics": {
+        "sample_count": 99,
+        "elapsed_ms_mean": 556977.9074031461,
+        "api_equivalent_usd_mean": null
+      },
+      "latest_graded_at": "2026-10-22T11:50:33.076860Z",
+      "history": [
+        {
+          "at": "2026-10-06T00:00:00.000Z",
+          "score": 0,
+          "coverage": 1,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-09T00:00:00.000Z",
+          "score": 76.91535461505127,
+          "coverage": 43,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-10T00:00:00.000Z",
+          "score": 76.83022774327122,
+          "coverage": 45,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-11T00:00:00.000Z",
+          "score": 78.34809039249373,
+          "coverage": 47,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "score": 75.14431859700402,
+          "coverage": 51,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-14T00:00:00.000Z",
+          "score": 76.58385093167702,
+          "coverage": 52,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-15T00:00:00.000Z",
+          "score": 75.13630089717046,
+          "coverage": 54,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-16T00:00:00.000Z",
+          "score": 78.94935884592265,
+          "coverage": 62,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 79.3839770962733,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 78.2121020962733,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-19T00:00:00.000Z",
+          "score": 78.99335209627328,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-20T00:00:00.000Z",
+          "score": 78.34603066770187,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-22T00:00:00.000Z",
+          "score": 78.44632627580997,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "high",
+      "score": 98.2927307067932,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 124,
+      "source_scores": {
+        "deepswe": {
+          "score": 106.66666666666666,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 45
+        },
+        "pompeii": {
+          "score": 127.54592282717283,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 19
+        },
+        "tb4": {
+          "score": 91.07142857142857,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 28
+        },
+        "science": {
+          "score": 72.36842105263158,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 32
+        }
+      },
+      "statistics": {
+        "sample_count": 137,
+        "elapsed_ms_mean": 761930.4478858111,
+        "api_equivalent_usd_mean": 0.5249578832116788
+      },
+      "latest_graded_at": "2026-10-23T04:20:58.799582Z",
+      "history": [
+        {
+          "at": "2026-10-08T00:00:00.000Z",
+          "score": 0,
+          "coverage": 1,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-09T00:00:00.000Z",
+          "score": 104.5646953046953,
+          "coverage": 50,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-12T00:00:00.000Z",
+          "score": 106.0646953046953,
+          "coverage": 50,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "score": 102.37471787471789,
+          "coverage": 54,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-14T00:00:00.000Z",
+          "score": 100.51335936790483,
+          "coverage": 55,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-15T00:00:00.000Z",
+          "score": 99.6372460872461,
+          "coverage": 60,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-16T00:00:00.000Z",
+          "score": 99.84811090548797,
+          "coverage": 61,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 100.6364807067932,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 99.4646057067932,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-19T00:00:00.000Z",
+          "score": 99.07398070679321,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-20T00:00:00.000Z",
+          "score": 99.07398070679321,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-22T00:00:00.000Z",
+          "score": 97.90210570679321,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-23T00:00:00.000Z",
+          "score": 98.2927307067932,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "xhigh",
+      "score": 103.25851336303705,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 165,
+      "source_scores": {
+        "deepswe": {
+          "score": 120,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 45
+        },
+        "pompeii": {
+          "score": 133.3465534521482,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 33
+        },
+        "tb4": {
+          "score": 96.42857142857143,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 42
+        },
+        "science": {
+          "score": 69.73684210526315,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 45
+        }
+      },
+      "statistics": {
+        "sample_count": 170,
+        "elapsed_ms_mean": null,
+        "api_equivalent_usd_mean": null
+      },
+      "latest_graded_at": "2026-10-23T01:20:02.995152Z",
+      "history": [
+        {
+          "at": "2026-10-06T00:00:00.000Z",
+          "score": 0,
+          "coverage": 1,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-09T00:00:00.000Z",
+          "score": 91.1047619047619,
+          "coverage": 45,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-10T00:00:00.000Z",
+          "score": 87.9942857142857,
+          "coverage": 50,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "score": 90.37912087912088,
+          "coverage": 52,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-15T00:00:00.000Z",
+          "score": 89.54025974025974,
+          "coverage": 55,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-16T00:00:00.000Z",
+          "score": 93.73067915690868,
+          "coverage": 61,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 95.57284902597402,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 95.57284902597402,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-19T00:00:00.000Z",
+          "score": 97.65198209049015,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-20T00:00:00.000Z",
+          "score": 97.65198209049015,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-21T00:00:00.000Z",
+          "score": 101.94885709049015,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-22T00:00:00.000Z",
+          "score": 103.25851336303705,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-23T00:00:00.000Z",
+          "score": 103.25851336303705,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "max",
+      "score": 105.59428453690307,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 157,
+      "source_scores": {
+        "deepswe": {
+          "score": 123.33333333333333,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 45
+        },
+        "pompeii": {
+          "score": 141.1271381476123,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 37
+        },
+        "tb4": {
+          "score": 96.42857142857143,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 30
+        },
+        "science": {
+          "score": 68.42105263157896,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 45
+        }
+      },
+      "statistics": {
+        "sample_count": 167,
+        "elapsed_ms_mean": 1264374.0975501635,
+        "api_equivalent_usd_mean": 0.8917767724550897
+      },
+      "latest_graded_at": "2026-10-23T03:28:00.197849Z",
+      "history": [
+        {
+          "at": "2026-10-09T00:00:00.000Z",
+          "score": 114.09858874975156,
+          "coverage": 43,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-12T00:00:00.000Z",
+          "score": 114.91452991452994,
+          "coverage": 44,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "score": 106.7214965328173,
+          "coverage": 53,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-15T00:00:00.000Z",
+          "score": 102.69378131447098,
+          "coverage": 58,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-16T00:00:00.000Z",
+          "score": 98.27921999487856,
+          "coverage": 61,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 100.17478540377246,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 99.97947290377247,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-19T00:00:00.000Z",
+          "score": 104.66697290377247,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-20T00:00:00.000Z",
+          "score": 105.25574287023642,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-23T00:00:00.000Z",
+          "score": 105.59428453690307,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "ultra",
+      "score": 102.63728753664665,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 80,
+      "source_scores": {
+        "deepswe": {
+          "score": 130,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 23
+        },
+        "pompeii": {
+          "score": 129.29915014658664,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 16
+        },
+        "tb4": {
+          "score": 91.07142857142857,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 17
+        },
+        "science": {
+          "score": 67.10526315789474,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 24
+        }
+      },
+      "statistics": {
+        "sample_count": 80,
+        "elapsed_ms_mean": 1211150.5080987702,
+        "api_equivalent_usd_mean": null
+      },
+      "latest_graded_at": "2026-10-21T02:39:21.882159Z",
+      "history": [
+        {
+          "at": "2026-10-09T00:00:00.000Z",
+          "score": 118.71570172114636,
+          "coverage": 35,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-10T00:00:00.000Z",
+          "score": 115.41804334000341,
+          "coverage": 36,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-12T00:00:00.000Z",
+          "score": 113.29077790105586,
+          "coverage": 38,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "score": 111.52281652695919,
+          "coverage": 46,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-15T00:00:00.000Z",
+          "score": 107.10099120480245,
+          "coverage": 50,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-16T00:00:00.000Z",
+          "score": 104.64490780068004,
+          "coverage": 59,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 104.98103753664665,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 104.98103753664665,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-19T00:00:00.000Z",
+          "score": 103.80916253664665,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-20T00:00:00.000Z",
+          "score": 103.80916253664665,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-21T00:00:00.000Z",
+          "score": 102.63728753664665,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-6-astra",
+      "effort": "low",
+      "score": 95.99572452212539,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 85,
+      "source_scores": {
+        "deepswe": {
+          "score": 90,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 20
+        },
+        "pompeii": {
+          "score": 121.48289808850154,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 19
+        },
+        "tb4": {
+          "score": 96.42857142857143,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 16
+        },
+        "science": {
+          "score": 78.94736842105263,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 30
+        }
+      },
+      "statistics": {
+        "sample_count": 85,
+        "elapsed_ms_mean": 610242.8992893343,
+        "api_equivalent_usd_mean": 2.4421712470588233
+      },
+      "latest_graded_at": "2026-10-23T04:21:14.166735Z",
+      "history": [
+        {
+          "at": "2026-10-09T00:00:00.000Z",
+          "score": 99.89654669002495,
+          "coverage": 46,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-10T00:00:00.000Z",
+          "score": 98.85919057794058,
+          "coverage": 48,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-12T00:00:00.000Z",
+          "score": 99.90288056614585,
+          "coverage": 49,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "score": 95.19322920266316,
+          "coverage": 53,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-14T00:00:00.000Z",
+          "score": 96.20816940261383,
+          "coverage": 54,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-15T00:00:00.000Z",
+          "score": 97.18620268620268,
+          "coverage": 55,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-16T00:00:00.000Z",
+          "score": 98.29617864774116,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 98.33947452212537,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 97.16759952212537,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-19T00:00:00.000Z",
+          "score": 95.99572452212539,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-20T00:00:00.000Z",
+          "score": 97.16759952212537,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-21T00:00:00.000Z",
+          "score": 97.16759952212537,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-23T00:00:00.000Z",
+          "score": 95.99572452212539,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-6-astra",
+      "effort": "medium",
+      "score": 89.67836037660257,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 114,
+      "source_scores": {
+        "deepswe": {
+          "score": 90,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 28
+        },
+        "pompeii": {
+          "score": 127.46344150641025,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 18
+        },
+        "tb4": {
+          "score": 91.07142857142857,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 19
+        },
+        "science": {
+          "score": 56.578947368421055,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 49
+        }
+      },
+      "statistics": {
+        "sample_count": 114,
+        "elapsed_ms_mean": 553200.854830421,
+        "api_equivalent_usd_mean": null
+      },
+      "latest_graded_at": "2026-10-21T08:14:44.681213Z",
+      "history": [
+        {
+          "at": "2026-10-08T00:00:00.000Z",
+          "score": 66.66666666666666,
+          "coverage": 9,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-09T00:00:00.000Z",
+          "score": 90.08207841541176,
+          "coverage": 54,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "score": 90.60407428828482,
+          "coverage": 57,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 91.63148537660257,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 89.28773537660257,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-20T00:00:00.000Z",
+          "score": 89.67836037660257,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-21T00:00:00.000Z",
+          "score": 89.67836037660257,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-6-astra",
+      "effort": "high",
+      "score": 104.56151352837776,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 101,
+      "source_scores": {
+        "deepswe": {
+          "score": 105,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 21
+        },
+        "pompeii": {
+          "score": 129.183554113511,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 22
+        },
+        "tb4": {
+          "score": 101.78571428571429,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 16
+        },
+        "science": {
+          "score": 85.52631578947368,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 42
+        }
+      },
+      "statistics": {
+        "sample_count": 101,
+        "elapsed_ms_mean": 835906.3177022804,
+        "api_equivalent_usd_mean": 3.5784834059405943
+      },
+      "latest_graded_at": "2026-10-23T01:19:00.816645Z",
+      "history": [
+        {
+          "at": "2026-10-09T00:00:00.000Z",
+          "score": 111.97304941062372,
+          "coverage": 58,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "score": 112.61757399688433,
+          "coverage": 59,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-14T00:00:00.000Z",
+          "score": 113.2406144302696,
+          "coverage": 60,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-15T00:00:00.000Z",
+          "score": 113.2406144302696,
+          "coverage": 60,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-16T00:00:00.000Z",
+          "score": 113.21672364219638,
+          "coverage": 62,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 107.33495102837776,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 104.99120102837776,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-19T00:00:00.000Z",
+          "score": 104.99120102837776,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-20T00:00:00.000Z",
+          "score": 104.56151352837776,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-23T00:00:00.000Z",
+          "score": 104.56151352837776,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-6-astra",
+      "effort": "xhigh",
+      "score": 114.25410098973607,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 101,
+      "source_scores": {
+        "deepswe": {
+          "score": 125,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 19
+        },
+        "pompeii": {
+          "score": 141.3914039589443,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 21
+        },
+        "tb4": {
+          "score": 96.42857142857143,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 18
+        },
+        "science": {
+          "score": 96.05263157894737,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 43
+        }
+      },
+      "statistics": {
+        "sample_count": 101,
+        "elapsed_ms_mean": 902754.1999653447,
+        "api_equivalent_usd_mean": null
+      },
+      "latest_graded_at": "2026-10-23T03:27:05.676652Z",
+      "history": [
+        {
+          "at": "2026-10-09T00:00:00.000Z",
+          "score": 121.12650175007094,
+          "coverage": 62,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "score": 121.12650175007094,
+          "coverage": 62,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 116.20722598973606,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 115.03535098973606,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-19T00:00:00.000Z",
+          "score": 115.03535098973606,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-20T00:00:00.000Z",
+          "score": 114.25410098973607,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-21T00:00:00.000Z",
+          "score": 114.25410098973607,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-23T00:00:00.000Z",
+          "score": 114.25410098973607,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-6-astra",
+      "effort": "max",
+      "score": 106.81881009615384,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 117,
+      "source_scores": {
+        "deepswe": {
+          "score": 120,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 42
+        },
+        "pompeii": {
+          "score": 147.5877403846154,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 18
+        },
+        "tb4": {
+          "score": 96.42857142857143,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 17
+        },
+        "science": {
+          "score": 69.73684210526315,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 40
+        }
+      },
+      "statistics": {
+        "sample_count": 117,
+        "elapsed_ms_mean": 1144866.3014104902,
+        "api_equivalent_usd_mean": null
+      },
+      "latest_graded_at": "2026-10-23T01:17:24.625532Z",
+      "history": [
+        {
+          "at": "2026-10-09T00:00:00.000Z",
+          "score": 113.67307692307693,
+          "coverage": 63,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "score": 113.67307692307693,
+          "coverage": 63,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-15T00:00:00.000Z",
+          "score": 111.29212454212453,
+          "coverage": 63,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 109.55318509615384,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 108.38131009615384,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-19T00:00:00.000Z",
+          "score": 108.38131009615384,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-20T00:00:00.000Z",
+          "score": 106.81881009615384,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-21T00:00:00.000Z",
+          "score": 106.81881009615384,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-23T00:00:00.000Z",
+          "score": 106.81881009615384,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-6-astra",
+      "effort": "ultra",
+      "score": 106.98690754017838,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 100,
+      "source_scores": {
+        "deepswe": {
+          "score": 125,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 23
+        },
+        "pompeii": {
+          "score": 138.88513016071357,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 21
+        },
+        "tb4": {
+          "score": 96.42857142857143,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 15
+        },
+        "science": {
+          "score": 73.6842105263158,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 41
+        }
+      },
+      "statistics": {
+        "sample_count": 100,
+        "elapsed_ms_mean": 729040.7283642569,
+        "api_equivalent_usd_mean": null
+      },
+      "latest_graded_at": "2026-10-23T01:17:55.540692Z",
+      "history": [
+        {
+          "at": "2026-10-09T00:00:00.000Z",
+          "score": 111.64641630671774,
+          "coverage": 63,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "score": 111.64641630671774,
+          "coverage": 63,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 107.34748446325533,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 108.51935946325533,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-19T00:00:00.000Z",
+          "score": 108.51935946325533,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-20T00:00:00.000Z",
+          "score": 106.95685946325531,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-21T00:00:00.000Z",
+          "score": 106.98690754017838,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-22T00:00:00.000Z",
+          "score": 106.98690754017838,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-23T00:00:00.000Z",
+          "score": 106.98690754017838,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-6-sol",
+      "effort": "low",
+      "score": 34.86501533006467,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 85,
+      "source_scores": {
+        "deepswe": {
+          "score": 35,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 21
+        },
+        "pompeii": {
+          "score": 83.21006132025869,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 19
+        },
+        "tb4": {
+          "score": 21.428571428571427,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 18
+        },
+        "science": {
+          "score": 3.9473684210526314,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 27
+        }
+      },
+      "statistics": {
+        "sample_count": 85,
+        "elapsed_ms_mean": 340358.2262538225,
+        "api_equivalent_usd_mean": null
+      },
+      "latest_graded_at": "2026-10-22T03:50:20.514206Z",
+      "history": [
+        {
+          "at": "2026-10-08T00:00:00.000Z",
+          "score": 150,
+          "coverage": 1,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-10T00:00:00.000Z",
+          "score": 29.954060212757803,
+          "coverage": 59,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-11T00:00:00.000Z",
+          "score": 29.454825875878505,
+          "coverage": 60,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "score": 30.201468074634594,
+          "coverage": 61,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-14T00:00:00.000Z",
+          "score": 29.714347621817907,
+          "coverage": 62,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-15T00:00:00.000Z",
+          "score": 32.814119881789054,
+          "coverage": 63,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 35.395149258636096,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 35.395149258636096,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-20T00:00:00.000Z",
+          "score": 34.86501533006467,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-22T00:00:00.000Z",
+          "score": 34.86501533006467,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-6-sol",
+      "effort": "medium",
+      "score": 38.46167543017067,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 82,
+      "source_scores": {
+        "deepswe": {
+          "score": 54.99999999999999,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 20
+        },
+        "pompeii": {
+          "score": 92.90920172068269,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 18
+        },
+        "tb4": {
+          "score": 10.714285714285714,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 15
+        },
+        "science": {
+          "score": 0,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 29
+        }
+      },
+      "statistics": {
+        "sample_count": 82,
+        "elapsed_ms_mean": 784974.6349925529,
+        "api_equivalent_usd_mean": 0.5445705243902439
+      },
+      "latest_graded_at": "2026-10-23T01:16:24.628698Z",
+      "history": [
+        {
+          "at": "2026-10-10T00:00:00.000Z",
+          "score": 38.90103162704362,
+          "coverage": 58,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-11T00:00:00.000Z",
+          "score": 36.987866137189016,
+          "coverage": 61,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "score": 36.39128765110532,
+          "coverage": 62,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-15T00:00:00.000Z",
+          "score": 35.813648164579845,
+          "coverage": 63,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 36.92847230517067,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 38.10034730517067,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-19T00:00:00.000Z",
+          "score": 38.10034730517067,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-20T00:00:00.000Z",
+          "score": 38.10034730517067,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-21T00:00:00.000Z",
+          "score": 38.10034730517067,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-22T00:00:00.000Z",
+          "score": 38.10034730517067,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-23T00:00:00.000Z",
+          "score": 38.46167543017067,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-6-sol",
+      "effort": "high",
+      "score": 56.56071142399267,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 82,
+      "source_scores": {
+        "deepswe": {
+          "score": 105,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 23
+        },
+        "pompeii": {
+          "score": 104.36784569597067,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 18
+        },
+        "tb4": {
+          "score": 21.428571428571427,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 15
+        },
+        "science": {
+          "score": 3.9473684210526314,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 26
+        }
+      },
+      "statistics": {
+        "sample_count": 82,
+        "elapsed_ms_mean": 1634404.8468300728,
+        "api_equivalent_usd_mean": 1.8994273902439025
+      },
+      "latest_graded_at": "2026-10-23T02:00:24.723087Z",
+      "history": [
+        {
+          "at": "2026-10-10T00:00:00.000Z",
+          "score": 61.47271062271062,
+          "coverage": 50,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-11T00:00:00.000Z",
+          "score": 52.99371605406088,
+          "coverage": 58,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "score": 52.09551747687341,
+          "coverage": 59,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-14T00:00:00.000Z",
+          "score": 52.477258852258856,
+          "coverage": 60,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-15T00:00:00.000Z",
+          "score": 56.227258852258856,
+          "coverage": 60,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-16T00:00:00.000Z",
+          "score": 56.94484477271362,
+          "coverage": 61,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 56.56071142399267,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 55.38883642399267,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-20T00:00:00.000Z",
+          "score": 55.38883642399267,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-21T00:00:00.000Z",
+          "score": 55.38883642399267,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-22T00:00:00.000Z",
+          "score": 56.56071142399267,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-23T00:00:00.000Z",
+          "score": 56.56071142399267,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-6-sol",
+      "effort": "xhigh",
+      "score": 55.54466793962378,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 86,
+      "source_scores": {
+        "deepswe": {
+          "score": 90,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 21
+        },
+        "pompeii": {
+          "score": 109.67867175849511,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 22
+        },
+        "tb4": {
+          "score": 21.428571428571427,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 16
+        },
+        "science": {
+          "score": 7.894736842105263,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 27
+        }
+      },
+      "statistics": {
+        "sample_count": 86,
+        "elapsed_ms_mean": 2277273.177520276,
+        "api_equivalent_usd_mean": 2.934672953488372
+      },
+      "latest_graded_at": "2026-10-23T03:31:31.061530Z",
+      "history": [
+        {
+          "at": "2026-10-10T00:00:00.000Z",
+          "score": 56.37556321229791,
+          "coverage": 49,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-11T00:00:00.000Z",
+          "score": 50.22550177095631,
+          "coverage": 55,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "score": 51.09478241057188,
+          "coverage": 57,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-15T00:00:00.000Z",
+          "score": 49.778992936887676,
+          "coverage": 57,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-16T00:00:00.000Z",
+          "score": 51.697069687558816,
+          "coverage": 60,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 52.33055132706967,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 53.50242632706967,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-19T00:00:00.000Z",
+          "score": 54.67430132706967,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-20T00:00:00.000Z",
+          "score": 54.67430132706967,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-21T00:00:00.000Z",
+          "score": 54.75039710629045,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-22T00:00:00.000Z",
+          "score": 54.75039710629045,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-23T00:00:00.000Z",
+          "score": 55.54466793962378,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-6-sol",
+      "effort": "max",
+      "score": 66.79649256993008,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 75,
+      "source_scores": {
+        "deepswe": {
+          "score": 100,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 19
+        },
+        "pompeii": {
+          "score": 126.56097027972027,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 18
+        },
+        "tb4": {
+          "score": 42.857142857142854,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 16
+        },
+        "science": {
+          "score": 7.894736842105263,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 22
+        }
+      },
+      "statistics": {
+        "sample_count": 75,
+        "elapsed_ms_mean": 2863623.0582693177,
+        "api_equivalent_usd_mean": null
+      },
+      "latest_graded_at": "2026-10-21T10:34:22.165364Z",
+      "history": [
+        {
+          "at": "2026-10-10T00:00:00.000Z",
+          "score": 67.83181818181818,
+          "coverage": 50,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-11T00:00:00.000Z",
+          "score": 65.2229020979021,
+          "coverage": 52,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "score": 68.36279461279462,
+          "coverage": 54,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-15T00:00:00.000Z",
+          "score": 66.97390572390573,
+          "coverage": 54,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-16T00:00:00.000Z",
+          "score": 67.90832049306626,
+          "coverage": 59,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 68.47059971278722,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 68.47059971278722,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-19T00:00:00.000Z",
+          "score": 67.29872471278722,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-20T00:00:00.000Z",
+          "score": 66.79649256993008,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-21T00:00:00.000Z",
+          "score": 66.79649256993008,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-6-sol",
+      "effort": "ultra",
+      "score": 70.01853391491548,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 82,
+      "source_scores": {
+        "deepswe": {
+          "score": 90,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 22
+        },
+        "pompeii": {
+          "score": 120.69913565966198,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 17
+        },
+        "tb4": {
+          "score": 53.57142857142857,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 16
+        },
+        "science": {
+          "score": 23.684210526315788,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 27
+        }
+      },
+      "statistics": {
+        "sample_count": 82,
+        "elapsed_ms_mean": 2635890.4835089794,
+        "api_equivalent_usd_mean": null
+      },
+      "latest_graded_at": "2026-10-22T02:10:52.085626Z",
+      "history": [
+        {
+          "at": "2026-10-10T00:00:00.000Z",
+          "score": 71.58214361815469,
+          "coverage": 38,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-11T00:00:00.000Z",
+          "score": 68.63912403386087,
+          "coverage": 44,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "score": 72.17655342369301,
+          "coverage": 46,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-14T00:00:00.000Z",
+          "score": 73.83237143595485,
+          "coverage": 47,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-15T00:00:00.000Z",
+          "score": 68.0415972056839,
+          "coverage": 51,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-16T00:00:00.000Z",
+          "score": 73.52699830921246,
+          "coverage": 58,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 71.12993921515225,
+          "coverage": 63,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 71.12993921515225,
+          "coverage": 63,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-19T00:00:00.000Z",
+          "score": 70.01853391491548,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-20T00:00:00.000Z",
+          "score": 70.01853391491548,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-22T00:00:00.000Z",
+          "score": 70.01853391491548,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-6-luna",
+      "effort": "low",
+      "score": 14.644531249999998,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 96,
+      "source_scores": {
+        "deepswe": {
+          "score": 10,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 24
+        },
+        "pompeii": {
+          "score": 49.203125,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 22
+        },
+        "tb4": {
+          "score": 0,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 21
+        },
+        "science": {
+          "score": 0,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 29
+        }
+      },
+      "statistics": {
+        "sample_count": 96,
+        "elapsed_ms_mean": 326308.2891864252,
+        "api_equivalent_usd_mean": 0.022360416666666664
+      },
+      "latest_graded_at": "2026-10-22T02:17:23.907493Z",
+      "history": [
+        {
+          "at": "2026-10-10T00:00:00.000Z",
+          "score": 0,
+          "coverage": 3,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-11T00:00:00.000Z",
+          "score": 12.107142857142854,
+          "coverage": 42,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-12T00:00:00.000Z",
+          "score": 11.058548009367682,
+          "coverage": 61,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "score": 10.70748299319728,
+          "coverage": 63,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-15T00:00:00.000Z",
+          "score": 11.89795918367347,
+          "coverage": 63,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-16T00:00:00.000Z",
+          "score": 14.055803571428573,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 14.23158482142857,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 14.23158482142857,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-19T00:00:00.000Z",
+          "score": 13.561941964285714,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-20T00:00:00.000Z",
+          "score": 14.510602678571427,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-21T00:00:00.000Z",
+          "score": 14.510602678571427,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-22T00:00:00.000Z",
+          "score": 14.644531249999998,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-6-luna",
+      "effort": "medium",
+      "score": 26.515574497104335,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 82,
+      "source_scores": {
+        "deepswe": {
+          "score": 40,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 22
+        },
+        "pompeii": {
+          "score": 63.87479798841734,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 18
+        },
+        "tb4": {
+          "score": 5.357142857142857,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 16
+        },
+        "science": {
+          "score": 0,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 26
+        }
+      },
+      "statistics": {
+        "sample_count": 82,
+        "elapsed_ms_mean": 339036.03728665214,
+        "api_equivalent_usd_mean": 0.01731087804878049
+      },
+      "latest_graded_at": "2026-10-21T16:15:58.999617Z",
+      "history": [
+        {
+          "at": "2026-10-10T00:00:00.000Z",
+          "score": 0,
+          "coverage": 2,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-11T00:00:00.000Z",
+          "score": 32.87898801056696,
+          "coverage": 37,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-12T00:00:00.000Z",
+          "score": 26.95990676347067,
+          "coverage": 61,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "score": 26.52506955760824,
+          "coverage": 62,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-15T00:00:00.000Z",
+          "score": 25.696161133932982,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 25.288552438280803,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 26.460427438280803,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-20T00:00:00.000Z",
+          "score": 26.515574497104335,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-21T00:00:00.000Z",
+          "score": 26.515574497104335,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-6-luna",
+      "effort": "high",
+      "score": 35.94497128688306,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 87,
+      "source_scores": {
+        "deepswe": {
+          "score": 50,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 22
+        },
+        "pompeii": {
+          "score": 82.84238514753221,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 21
+        },
+        "tb4": {
+          "score": 16.07142857142857,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 20
+        },
+        "science": {
+          "score": 0,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 24
+        }
+      },
+      "statistics": {
+        "sample_count": 87,
+        "elapsed_ms_mean": 588481.4185620596,
+        "api_equivalent_usd_mean": 0.03988512643678161
+      },
+      "latest_graded_at": "2026-10-23T01:17:32.977944Z",
+      "history": [
+        {
+          "at": "2026-10-10T00:00:00.000Z",
+          "score": 0,
+          "coverage": 2,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-11T00:00:00.000Z",
+          "score": 44.208022502140146,
+          "coverage": 37,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-12T00:00:00.000Z",
+          "score": 36.15643812228252,
+          "coverage": 62,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-14T00:00:00.000Z",
+          "score": 35.58252640605582,
+          "coverage": 63,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-15T00:00:00.000Z",
+          "score": 35.58252640605582,
+          "coverage": 63,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-16T00:00:00.000Z",
+          "score": 36.73109488550665,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 36.54564665318342,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 35.37377165318342,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-20T00:00:00.000Z",
+          "score": 35.725334153183425,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-21T00:00:00.000Z",
+          "score": 35.53932224842151,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-22T00:00:00.000Z",
+          "score": 35.76468282534459,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-23T00:00:00.000Z",
+          "score": 35.94497128688306,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-6-luna",
+      "effort": "xhigh",
+      "score": 47.549969561688314,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 86,
+      "source_scores": {
+        "deepswe": {
+          "score": 105,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 20
+        },
+        "pompeii": {
+          "score": 91.76237824675323,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 19
+        },
+        "tb4": {
+          "score": 0,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 20
+        },
+        "science": {
+          "score": 0,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 27
+        }
+      },
+      "statistics": {
+        "sample_count": 86,
+        "elapsed_ms_mean": 1275707.9711241524,
+        "api_equivalent_usd_mean": 0.10936039534883721
+      },
+      "latest_graded_at": "2026-10-21T16:11:16.143347Z",
+      "history": [
+        {
+          "at": "2026-10-10T00:00:00.000Z",
+          "score": 0,
+          "coverage": 1,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-11T00:00:00.000Z",
+          "score": 58.404761904761905,
+          "coverage": 30,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-12T00:00:00.000Z",
+          "score": 50.403325123152705,
+          "coverage": 58,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-14T00:00:00.000Z",
+          "score": 48.471145789694184,
+          "coverage": 62,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-15T00:00:00.000Z",
+          "score": 47.261468370339344,
+          "coverage": 62,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-16T00:00:00.000Z",
+          "score": 48.19932021103895,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 48.1638088474026,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 48.1638088474026,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-19T00:00:00.000Z",
+          "score": 48.1638088474026,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-20T00:00:00.000Z",
+          "score": 47.549969561688314,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-21T00:00:00.000Z",
+          "score": 47.549969561688314,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "score": 50.359315357482906,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 90,
+      "source_scores": {
+        "deepswe": {
+          "score": 70,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 24
+        },
+        "pompeii": {
+          "score": 104.56226142993162,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 19
+        },
+        "tb4": {
+          "score": 21.428571428571427,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 16
+        },
+        "science": {
+          "score": 10.526315789473683,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 31
+        }
+      },
+      "statistics": {
+        "sample_count": 90,
+        "elapsed_ms_mean": 1162856.0311972522,
+        "api_equivalent_usd_mean": 0.09616787777777777
+      },
+      "latest_graded_at": "2026-10-23T03:15:59.183759Z",
+      "history": [
+        {
+          "at": "2026-10-10T00:00:00.000Z",
+          "score": 69.23076923076923,
+          "coverage": 13,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-11T00:00:00.000Z",
+          "score": 55.83217038809144,
+          "coverage": 36,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-12T00:00:00.000Z",
+          "score": 53.13472653846614,
+          "coverage": 57,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "score": 53.51171401194087,
+          "coverage": 58,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-14T00:00:00.000Z",
+          "score": 52.59755542893416,
+          "coverage": 60,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-15T00:00:00.000Z",
+          "score": 52.11053751187176,
+          "coverage": 62,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-16T00:00:00.000Z",
+          "score": 52.235767075175374,
+          "coverage": 63,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 51.41958321462576,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 51.41958321462576,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-19T00:00:00.000Z",
+          "score": 50.24770821462576,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-20T00:00:00.000Z",
+          "score": 50.1640028574829,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-21T00:00:00.000Z",
+          "score": 50.1640028574829,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-23T00:00:00.000Z",
+          "score": 50.359315357482906,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-5.6-sol",
+      "effort": "low",
+      "score": 32.07839101783243,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 82,
+      "source_scores": {
+        "deepswe": {
+          "score": 35,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 23
+        },
+        "pompeii": {
+          "score": 86.12606407132974,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 18
+        },
+        "tb4": {
+          "score": 10.714285714285714,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 18
+        },
+        "science": {
+          "score": 0,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 23
+        }
+      },
+      "statistics": {
+        "sample_count": 82,
+        "elapsed_ms_mean": 440348.1931854911,
+        "api_equivalent_usd_mean": null
+      },
+      "latest_graded_at": "2026-10-23T02:35:44.365408Z",
+      "history": [
+        {
+          "at": "2026-10-11T00:00:00.000Z",
+          "score": 17.706521739130437,
+          "coverage": 20,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-12T00:00:00.000Z",
+          "score": 16.86335403726708,
+          "coverage": 21,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "score": 21.73325499412456,
+          "coverage": 37,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-15T00:00:00.000Z",
+          "score": 21.97826086956522,
+          "coverage": 40,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-16T00:00:00.000Z",
+          "score": 30.125484418962674,
+          "coverage": 63,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 30.076437892832434,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 31.248312892832434,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-20T00:00:00.000Z",
+          "score": 31.248312892832434,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-21T00:00:00.000Z",
+          "score": 32.42018789283243,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-22T00:00:00.000Z",
+          "score": 32.07839101783243,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-23T00:00:00.000Z",
+          "score": 32.07839101783243,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "score": 48.4673091982375,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 82,
+      "source_scores": {
+        "deepswe": {
+          "score": 65,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 18
+        },
+        "pompeii": {
+          "score": 100.11923679295003,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 20
+        },
+        "tb4": {
+          "score": 26.785714285714285,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 20
+        },
+        "science": {
+          "score": 7.894736842105263,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 24
+        }
+      },
+      "statistics": {
+        "sample_count": 82,
+        "elapsed_ms_mean": null,
+        "api_equivalent_usd_mean": 1.5592158414634147
+      },
+      "latest_graded_at": "2026-10-23T03:02:25.828823Z",
+      "history": [
+        {
+          "at": "2026-10-11T00:00:00.000Z",
+          "score": 34.812538102011786,
+          "coverage": 19,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "score": 42.20103307941146,
+          "coverage": 37,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-14T00:00:00.000Z",
+          "score": 41.09047957732168,
+          "coverage": 38,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-15T00:00:00.000Z",
+          "score": 38.05670288228428,
+          "coverage": 43,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-16T00:00:00.000Z",
+          "score": 50.4936958799061,
+          "coverage": 61,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 50.2088351355355,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 49.0369601355355,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-20T00:00:00.000Z",
+          "score": 48.624872223447596,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-21T00:00:00.000Z",
+          "score": 48.624872223447596,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-22T00:00:00.000Z",
+          "score": 48.4673091982375,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-23T00:00:00.000Z",
+          "score": 48.4673091982375,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-5.6-sol",
+      "effort": "high",
+      "score": 67.99098452645796,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 86,
+      "source_scores": {
+        "deepswe": {
+          "score": 100,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 26
+        },
+        "pompeii": {
+          "score": 121.96393810583186,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 21
+        },
+        "tb4": {
+          "score": 53.57142857142857,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 16
+        },
+        "science": {
+          "score": 7.894736842105263,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 23
+        }
+      },
+      "statistics": {
+        "sample_count": 86,
+        "elapsed_ms_mean": 1176631.256356835,
+        "api_equivalent_usd_mean": null
+      },
+      "latest_graded_at": "2026-10-23T02:57:50.145760Z",
+      "history": [
+        {
+          "at": "2026-10-10T00:00:00.000Z",
+          "score": 150,
+          "coverage": 4,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-11T00:00:00.000Z",
+          "score": 71.94444444444444,
+          "coverage": 18,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "score": 65.96774193548387,
+          "coverage": 31,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-14T00:00:00.000Z",
+          "score": 68.59375,
+          "coverage": 32,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-15T00:00:00.000Z",
+          "score": 62.051282051282044,
+          "coverage": 39,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-16T00:00:00.000Z",
+          "score": 70.35259351147971,
+          "coverage": 62,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 69.71657496424598,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 70.88844996424598,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-19T00:00:00.000Z",
+          "score": 72.06032496424598,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-20T00:00:00.000Z",
+          "score": 67.92402024074369,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-21T00:00:00.000Z",
+          "score": 67.99098452645796,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-23T00:00:00.000Z",
+          "score": 67.99098452645796,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-5.6-sol",
+      "effort": "xhigh",
+      "score": 59.90845163102296,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 87,
+      "source_scores": {
+        "deepswe": {
+          "score": 105,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 23
+        },
+        "pompeii": {
+          "score": 113.07130652409184,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 23
+        },
+        "tb4": {
+          "score": 10.714285714285714,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 16
+        },
+        "science": {
+          "score": 15.789473684210526,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 25
+        }
+      },
+      "statistics": {
+        "sample_count": 87,
+        "elapsed_ms_mean": 1352235.7405471774,
+        "api_equivalent_usd_mean": null
+      },
+      "latest_graded_at": "2026-10-23T03:22:24.403322Z",
+      "history": [
+        {
+          "at": "2026-10-10T00:00:00.000Z",
+          "score": 75,
+          "coverage": 2,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-11T00:00:00.000Z",
+          "score": 97.69230769230768,
+          "coverage": 13,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "score": 72.03703703703704,
+          "coverage": 27,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-14T00:00:00.000Z",
+          "score": 74.82142857142858,
+          "coverage": 28,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-15T00:00:00.000Z",
+          "score": 72.57575757575758,
+          "coverage": 33,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-16T00:00:00.000Z",
+          "score": 66.16642774392025,
+          "coverage": 58,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 61.068235857213445,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 61.068235857213445,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-19T00:00:00.000Z",
+          "score": 61.068235857213445,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-20T00:00:00.000Z",
+          "score": 61.58906919054678,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-21T00:00:00.000Z",
+          "score": 60.41719419054678,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-22T00:00:00.000Z",
+          "score": 60.56228347626106,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-23T00:00:00.000Z",
+          "score": 59.90845163102296,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-5.6-sol",
+      "effort": "max",
+      "score": 69.55492797784117,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 78,
+      "source_scores": {
+        "deepswe": {
+          "score": 90,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 23
+        },
+        "pompeii": {
+          "score": 132.9072119113647,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 19
+        },
+        "tb4": {
+          "score": 37.5,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 15
+        },
+        "science": {
+          "score": 23.684210526315788,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 21
+        }
+      },
+      "statistics": {
+        "sample_count": 78,
+        "elapsed_ms_mean": 1655807.4240493278,
+        "api_equivalent_usd_mean": null
+      },
+      "latest_graded_at": "2026-10-22T02:37:29.245801Z",
+      "history": [
+        {
+          "at": "2026-10-09T00:00:00.000Z",
+          "score": 84.21043144117093,
+          "coverage": 29,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-11T00:00:00.000Z",
+          "score": 89.47360328805755,
+          "coverage": 34,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "score": 75.85923493457054,
+          "coverage": 49,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-15T00:00:00.000Z",
+          "score": 78.84205023587914,
+          "coverage": 50,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-16T00:00:00.000Z",
+          "score": 73.0732591391778,
+          "coverage": 56,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 70.37665341603156,
+          "coverage": 62,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 69.34925799678057,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-20T00:00:00.000Z",
+          "score": 69.2353257051139,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-21T00:00:00.000Z",
+          "score": 69.55492797784117,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-22T00:00:00.000Z",
+          "score": 69.55492797784117,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-5.6-sol",
+      "effort": "ultra",
+      "score": 89.3677611451049,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 81,
+      "source_scores": {
+        "deepswe": {
+          "score": 109.99999999999999,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 23
+        },
+        "pompeii": {
+          "score": 146.53354458041957,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 17
+        },
+        "tb4": {
+          "score": 96.42857142857143,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 14
+        },
+        "science": {
+          "score": 19.736842105263158,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 27
+        }
+      },
+      "statistics": {
+        "sample_count": 81,
+        "elapsed_ms_mean": 2528800.7850690205,
+        "api_equivalent_usd_mean": null
+      },
+      "latest_graded_at": "2026-10-22T04:00:16.309837Z",
+      "history": [
+        {
+          "at": "2026-10-10T00:00:00.000Z",
+          "score": 100,
+          "coverage": 3,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-11T00:00:00.000Z",
+          "score": 100,
+          "coverage": 12,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "score": 91.07142857142857,
+          "coverage": 28,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-15T00:00:00.000Z",
+          "score": 94.85294117647058,
+          "coverage": 34,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-16T00:00:00.000Z",
+          "score": 97.58401320901321,
+          "coverage": 54,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 90.78629703629703,
+          "coverage": 63,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 91.97677322677322,
+          "coverage": 63,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-19T00:00:00.000Z",
+          "score": 89.3677611451049,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-21T00:00:00.000Z",
+          "score": 89.3677611451049,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-22T00:00:00.000Z",
+          "score": 89.3677611451049,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-5.6-luna",
+      "effort": "low",
+      "score": 21.19636233328667,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 88,
+      "source_scores": {
+        "deepswe": {
+          "score": 5,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 25
+        },
+        "pompeii": {
+          "score": 80.0979493331467,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 19
+        },
+        "tb4": {
+          "score": 0,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 18
+        },
+        "science": {
+          "score": 0,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 26
+        }
+      },
+      "statistics": {
+        "sample_count": 88,
+        "elapsed_ms_mean": 170965.62665064007,
+        "api_equivalent_usd_mean": null
+      },
+      "latest_graded_at": "2026-10-23T01:50:41.968001Z",
+      "history": [
+        {
+          "at": "2026-10-10T00:00:00.000Z",
+          "score": 0,
+          "coverage": 1,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-11T00:00:00.000Z",
+          "score": 0,
+          "coverage": 5,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-12T00:00:00.000Z",
+          "score": 0,
+          "coverage": 6,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "score": 3,
+          "coverage": 25,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-14T00:00:00.000Z",
+          "score": 2.7777777777777777,
+          "coverage": 27,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-15T00:00:00.000Z",
+          "score": 3.947368421052632,
+          "coverage": 35,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-16T00:00:00.000Z",
+          "score": 22.127943772680613,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 22.127943772680613,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 21.190443772680613,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-20T00:00:00.000Z",
+          "score": 21.385756272680617,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-22T00:00:00.000Z",
+          "score": 21.19636233328667,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-23T00:00:00.000Z",
+          "score": 21.19636233328667,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-5.6-luna",
+      "effort": "medium",
+      "score": 32.77170629883922,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 89,
+      "source_scores": {
+        "deepswe": {
+          "score": 45,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 27
+        },
+        "pompeii": {
+          "score": 84.21182519535687,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 23
+        },
+        "tb4": {
+          "score": 0,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 14
+        },
+        "science": {
+          "score": 3.9473684210526314,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 25
+        }
+      },
+      "statistics": {
+        "sample_count": 89,
+        "elapsed_ms_mean": 313156.6357750621,
+        "api_equivalent_usd_mean": null
+      },
+      "latest_graded_at": "2026-10-23T03:10:32.238793Z",
+      "history": [
+        {
+          "at": "2026-10-10T00:00:00.000Z",
+          "score": 75,
+          "coverage": 2,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-12T00:00:00.000Z",
+          "score": 37.5,
+          "coverage": 4,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "score": 27.77777777777778,
+          "coverage": 27,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-15T00:00:00.000Z",
+          "score": 25.540865384615387,
+          "coverage": 32,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-16T00:00:00.000Z",
+          "score": 31.19294221676624,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 31.239568543026188,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 31.239568543026188,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-19T00:00:00.000Z",
+          "score": 32.41144354302619,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-20T00:00:00.000Z",
+          "score": 32.5788542573119,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-21T00:00:00.000Z",
+          "score": 32.71311254883921,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-22T00:00:00.000Z",
+          "score": 32.77170629883922,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-23T00:00:00.000Z",
+          "score": 32.77170629883922,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-5.6-luna",
+      "effort": "high",
+      "score": 48.0996324975312,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 87,
+      "source_scores": {
+        "deepswe": {
+          "score": 80,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 30
+        },
+        "pompeii": {
+          "score": 98.64852999012483,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 16
+        },
+        "tb4": {
+          "score": 16.07142857142857,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 17
+        },
+        "science": {
+          "score": 3.9473684210526314,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 24
+        }
+      },
+      "statistics": {
+        "sample_count": 87,
+        "elapsed_ms_mean": 669901.296303013,
+        "api_equivalent_usd_mean": 0.14972448275862069
+      },
+      "latest_graded_at": "2026-10-21T03:56:07.568749Z",
+      "history": [
+        {
+          "at": "2026-10-12T00:00:00.000Z",
+          "score": 150,
+          "coverage": 3,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "score": 42.5,
+          "coverage": 30,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-14T00:00:00.000Z",
+          "score": 41.12903225806451,
+          "coverage": 31,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-15T00:00:00.000Z",
+          "score": 39.98834498834499,
+          "coverage": 39,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-16T00:00:00.000Z",
+          "score": 50.52978539431742,
+          "coverage": 63,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 51.6152574975312,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 51.6152574975312,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-19T00:00:00.000Z",
+          "score": 50.4433824975312,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-20T00:00:00.000Z",
+          "score": 49.2715074975312,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-21T00:00:00.000Z",
+          "score": 48.0996324975312,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-5.6-luna",
+      "effort": "xhigh",
+      "score": 52.449354031385276,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 83,
+      "source_scores": {
+        "deepswe": {
+          "score": 90,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 26
+        },
+        "pompeii": {
+          "score": 111.35991612554113,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 18
+        },
+        "tb4": {
+          "score": 16.07142857142857,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 16
+        },
+        "science": {
+          "score": 0,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 23
+        }
+      },
+      "statistics": {
+        "sample_count": 83,
+        "elapsed_ms_mean": 1167796.0127361242,
+        "api_equivalent_usd_mean": null
+      },
+      "latest_graded_at": "2026-10-21T11:09:30.966432Z",
+      "history": [
+        {
+          "at": "2026-10-10T00:00:00.000Z",
+          "score": 75,
+          "coverage": 2,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "score": 48,
+          "coverage": 25,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-15T00:00:00.000Z",
+          "score": 42.916666666666664,
+          "coverage": 36,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-16T00:00:00.000Z",
+          "score": 52.534125820416136,
+          "coverage": 62,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 51.97235965093109,
+          "coverage": 63,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 52.33216653138528,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-19T00:00:00.000Z",
+          "score": 52.33216653138528,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-21T00:00:00.000Z",
+          "score": 52.449354031385276,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    },
+    {
+      "model": "gpt-5.6-luna",
+      "effort": "max",
+      "score": 51.738350709406916,
+      "coverage": 64,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 124,
+      "source_scores": {
+        "deepswe": {
+          "score": 83.33333333333331,
+          "coverage": 15,
+          "required_tasks": 15,
+          "graded_runs_count": 31
+        },
+        "pompeii": {
+          "score": 103.82840283762768,
+          "coverage": 16,
+          "required_tasks": 16,
+          "graded_runs_count": 18
+        },
+        "tb4": {
+          "score": 21.428571428571427,
+          "coverage": 14,
+          "required_tasks": 14,
+          "graded_runs_count": 18
+        },
+        "science": {
+          "score": 5.263157894736842,
+          "coverage": 19,
+          "required_tasks": 19,
+          "graded_runs_count": 57
+        }
+      },
+      "statistics": {
+        "sample_count": 134,
+        "elapsed_ms_mean": 1530942.6754382676,
+        "api_equivalent_usd_mean": null
+      },
+      "latest_graded_at": "2026-10-23T16:44:26.560461Z",
+      "history": [
+        {
+          "at": "2026-10-10T00:00:00.000Z",
+          "score": 0,
+          "coverage": 1,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-12T00:00:00.000Z",
+          "score": 100,
+          "coverage": 3,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "score": 60,
+          "coverage": 25,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-14T00:00:00.000Z",
+          "score": 54.62962962962963,
+          "coverage": 27,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-15T00:00:00.000Z",
+          "score": 47.916666666666664,
+          "coverage": 36,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-16T00:00:00.000Z",
+          "score": 51.18259009592947,
+          "coverage": 58,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-17T00:00:00.000Z",
+          "score": 52.65407660880038,
+          "coverage": 63,
+          "required_tasks": 64,
+          "score_status": "provisional"
+        },
+        {
+          "at": "2026-10-18T00:00:00.000Z",
+          "score": 52.612606661787865,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-19T00:00:00.000Z",
+          "score": 51.440731661787865,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-20T00:00:00.000Z",
+          "score": 51.440731661787865,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-21T00:00:00.000Z",
+          "score": 51.440731661787865,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-22T00:00:00.000Z",
+          "score": 52.221981661787865,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-23T00:00:00.000Z",
+          "score": 51.738350709406916,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        }
+      ]
+    }
+  ]
+}

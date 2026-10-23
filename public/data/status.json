@@ -1,0 +1,12 @@
+{
+  "checked_at": "2026-10-23T17:55:24.335Z",
+  "ok": true,
+  "benchmark": "radar-bench-final64-20261004",
+  "candidates_ok": 34,
+  "candidates_total": 34,
+  "round_ok": true,
+  "latest_graded_at": "2026-10-23T16:44:26.560461Z",
+  "round_updated_at": "2026-10-23T10:43:22.484295+00:00",
+  "stale_days": 0,
+  "errors": []
+}

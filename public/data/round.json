@@ -1,0 +1,2803 @@
+{
+  "schema_version": 1,
+  "fetch_id": "2316f72a-b2da-4f8a-9367-aa45e6e7b7f2",
+  "generated_at": "2026-10-23T17:54:33.065Z",
+  "checked_at": "2026-10-23T17:54:33.065Z",
+  "source_schema": "degradation-codex-plan/2",
+  "round": {
+    "id": "codex34x8-20261023T082434Z",
+    "status": "completed",
+    "started_at": "2026-10-23T08:29:34.263178+00:00",
+    "completed_at": "2026-10-23T10:43:22.273210+00:00",
+    "updated_at": "2026-10-23T10:43:22.484295+00:00",
+    "taskset_version": "codex-set-01c3e200e66b",
+    "task_count": 7,
+    "timings": {
+      "wall_seconds": 8028.010032,
+      "verification_wall_seconds": 68.981628,
+      "solve_wall_seconds": 7275.245156,
+      "animation_wall_seconds": 1394.605173,
+      "review_wall_seconds": 3610.120807
+    }
+  },
+  "tasks": [
+    {
+      "id": "deepswe:anko-typed-variable-bindings",
+      "category": "deepswe",
+      "title_zh": "Anko 类型化变量绑定",
+      "title_en": "Anko typed variable bindings",
+      "weight": 0.14285714285714285,
+      "required": true
+    },
+    {
+      "id": "deepswe:httpx-streaming-json-iteration",
+      "category": "deepswe",
+      "title_zh": "HTTPX 流式 JSON 解析",
+      "title_en": "HTTPX streaming JSON parsing",
+      "weight": 0.14285714285714285,
+      "required": true
+    },
+    {
+      "id": "deepswe:ts-pattern-match-each",
+      "category": "deepswe",
+      "title_zh": "TS Pattern 模式匹配",
+      "title_en": "TS Pattern matching",
+      "weight": 0.14285714285714285,
+      "required": true
+    },
+    {
+      "id": "pompeii:pompeii-adjacency-rp-042",
+      "category": "pompeii",
+      "title_zh": "庞贝碎片邻接推理 RP042",
+      "title_en": "Pompeii fragment adjacency RP042",
+      "weight": 0.14285714285714285,
+      "required": true
+    },
+    {
+      "id": "tb4:embedding-drift-monitor",
+      "category": "tb4",
+      "title_zh": "向量漂移检测",
+      "title_en": "Embedding drift detection",
+      "weight": 0.14285714285714285,
+      "required": true
+    },
+    {
+      "id": "tb4:sound-change-cascade",
+      "category": "tb4",
+      "title_zh": "音变规则级联推断",
+      "title_en": "Sound change cascade",
+      "weight": 0.14285714285714285,
+      "required": true
+    },
+    {
+      "id": "local-reasoning:candy-cross-shape",
+      "category": "local-reasoning",
+      "title_zh": "糖果异形异味配对保证题",
+      "title_en": "Candy shape and flavor pairing",
+      "weight": 0.14285714285714285,
+      "required": true
+    }
+  ],
+  "candidates": [
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "low",
+      "score": 78.6,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 209.538023,
+          "cost_usd": 0.177004
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 374.556726,
+          "cost_usd": 0.2126492
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 226.464445,
+          "cost_usd": 0.1923856
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.6666666666666666,
+          "seconds": 992.982697,
+          "cost_usd": 0.4658736
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 206.540403,
+          "cost_usd": 0.1282916
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 537.84241,
+          "cost_usd": 0.2165948
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 57.721657,
+          "cost_usd": 0.026632
+        }
+      ],
+      "totals": {
+        "seconds": 2605.646361,
+        "cost_usd": 1.4194308,
+        "cost_known_tasks": 7,
+        "cost_unknown_tasks": 0
+      },
+      "animation": {
+        "status": "available",
+        "score": 91,
+        "scores": {
+          "pelican": 23,
+          "cycling": 23,
+          "motion": 26,
+          "finish": 19
+        },
+        "reason": "长喙、喉囊和体态使鹈鹕易于辨认，自行车结构清晰。四帧可见腿部、踏板及轮辐变化，云和前景左移，骑行感明确；脚掌与踏板的贴合、腿部屈伸略显生硬。整体配色柔和，构图协调，完成度高。",
+        "seconds": 375.285807,
+        "cost_usd": 0.0720348,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-6.1-sol-low-0a72e7dfd04f.html.txt"
+      }
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium",
+      "score": 102.6,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 296.847469,
+          "cost_usd": 0.3049288
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 393.668293,
+          "cost_usd": 0.343666
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 303.070669,
+          "cost_usd": 0.2232224
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.7857142857142857,
+          "seconds": 1527.005264,
+          "cost_usd": null
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 274.99808,
+          "cost_usd": 0.2012408
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 444.419618,
+          "cost_usd": 0.2144912
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 68.723809,
+          "cost_usd": 0.0195672
+        }
+      ],
+      "totals": {
+        "seconds": 3308.733202,
+        "cost_usd": 1.3071164,
+        "cost_known_tasks": 6,
+        "cost_unknown_tasks": 1
+      },
+      "animation": {
+        "status": "available",
+        "score": 93,
+        "scores": {
+          "pelican": 24,
+          "cycling": 24,
+          "motion": 26,
+          "finish": 19
+        },
+        "reason": "长喙、喉囊与体态使鹈鹕辨识度高，自行车结构完整。四帧可见腿部踩踏、曲柄与轮辐变化，云朵及地景持续左移，骑行感明确；身体起伏较小，肢体动作略显机械。配色柔和统一，构图与细节完成度高。",
+        "seconds": 143.8305,
+        "cost_usd": 0.099342,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-6.1-sol-medium-1d0ecd398450.html.txt"
+      }
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "high",
+      "score": 126.9,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 3272.100886,
+          "cost_usd": null
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 753.45324,
+          "cost_usd": 0.42772
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 336.842197,
+          "cost_usd": 0.2727612
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.9230769230769231,
+          "seconds": 1300.818092,
+          "cost_usd": null
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 494.981349,
+          "cost_usd": 0.296788
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 542.518298,
+          "cost_usd": 0.2321276
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 99.011154,
+          "cost_usd": 0.0381492
+        }
+      ],
+      "totals": {
+        "seconds": 6799.725216,
+        "cost_usd": 1.267546,
+        "cost_known_tasks": 5,
+        "cost_unknown_tasks": 2
+      },
+      "animation": {
+        "status": "available",
+        "score": 94,
+        "scores": {
+          "pelican": 24,
+          "cycling": 24,
+          "motion": 27,
+          "finish": 19
+        },
+        "reason": "长喙、喉囊和长颈清晰，鹈鹕辨识度高，自行车结构完整。四帧可见踩踏姿态、车轮反光片角度、围巾及前景位置变化，骑行感明确；腿脚与曲柄衔接略显生硬，躯干动态较少。配色柔和统一，构图与细节完成度高。",
+        "seconds": 756.397068,
+        "cost_usd": 0.3918636,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-6.1-sol-high-cf2ec89a5db3.html.txt"
+      }
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "xhigh",
+      "score": 84.9,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 719.848869,
+          "cost_usd": 0.4826412
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 726.746224,
+          "cost_usd": 0.64888
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 803.41582,
+          "cost_usd": null
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.96,
+          "seconds": 859.862137,
+          "cost_usd": 0.414138
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 571.350154,
+          "cost_usd": 0.453522
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 551.851062,
+          "cost_usd": 0.325662
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 92.174542,
+          "cost_usd": 0.040758
+        }
+      ],
+      "totals": {
+        "seconds": 4325.248807999999,
+        "cost_usd": 2.3656011999999995,
+        "cost_known_tasks": 6,
+        "cost_unknown_tasks": 1
+      },
+      "animation": {
+        "status": "available",
+        "score": 94,
+        "scores": {
+          "pelican": 25,
+          "cycling": 24,
+          "motion": 25,
+          "finish": 20
+        },
+        "reason": "长喙、喉囊与体态使鹈鹕辨识度很高，自行车结构完整。四帧可见腿部踩踏、曲柄转动、围巾摆动及地面景物位移，有明确骑行运动；腿部屈伸稍显机械，脚掌与踏板的贴合感略弱。配色、构图与细节协调，完成度高。",
+        "seconds": 917.223539,
+        "cost_usd": 0.6539324,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-6.1-sol-xhigh-d8e198bb16a3.html.txt"
+      }
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "max",
+      "score": 127.8,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 885.555906,
+          "cost_usd": 0.666932
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 881.784251,
+          "cost_usd": 0.8863028
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 578.686454,
+          "cost_usd": 0.5388372
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.9629629629629629,
+          "seconds": 1742.504536,
+          "cost_usd": 0.748322
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 786.742814,
+          "cost_usd": 0.334992
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 663.139037,
+          "cost_usd": 0.2780544
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 76.121723,
+          "cost_usd": 0.088992
+        }
+      ],
+      "totals": {
+        "seconds": 5614.534721,
+        "cost_usd": 3.5424324,
+        "cost_known_tasks": 7,
+        "cost_unknown_tasks": 0
+      },
+      "animation": {
+        "status": "available",
+        "score": 93,
+        "scores": {
+          "pelican": 25,
+          "cycling": 23,
+          "motion": 26,
+          "finish": 19
+        },
+        "reason": "长喙与喉囊鲜明，鹈鹕辨识度高，自行车结构完整。四帧可见踩踏姿态、轮辐及道路景物变化，骑行动势明确；腿部与脚踏衔接略生硬，身体动态较少。配色、构图和细节完成度高。",
+        "seconds": 1079.845875,
+        "cost_usd": 0.7019268,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-6.1-sol-max-064372b72e49.html.txt"
+      }
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "ultra",
+      "score": 127.7,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 640.981481,
+          "cost_usd": 1.7194756
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 1196.659987,
+          "cost_usd": 1.6092508
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 389.341213,
+          "cost_usd": 0.6705608
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.96,
+          "seconds": 1348.738812,
+          "cost_usd": 1.8527524
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 582.436648,
+          "cost_usd": 1.0510604
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 525.240046,
+          "cost_usd": 0.9947584
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 86.874856,
+          "cost_usd": 0.0922576
+        }
+      ],
+      "totals": {
+        "seconds": 4770.273043,
+        "cost_usd": 7.9901159999999996,
+        "cost_known_tasks": 7,
+        "cost_unknown_tasks": 0
+      },
+      "animation": {
+        "status": "available",
+        "score": 93,
+        "scores": {
+          "pelican": 24,
+          "cycling": 24,
+          "motion": 26,
+          "finish": 19
+        },
+        "reason": "长喙、喉囊及体态让鹈鹕辨识清晰，自行车结构完整。四帧可见腿部踩踏、车轮标记旋转、地景位移及身体轻微起伏，骑行感明确；上身与扶把姿态稍显僵硬。配色柔和统一，场景与页面完成度高。",
+        "seconds": 1123.245022,
+        "cost_usd": 0.5273504,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-6.1-sol-ultra-959ca14a00d9.html.txt"
+      }
+    },
+    {
+      "model": "gpt-6-astra",
+      "effort": "low",
+      "score": 106.3,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 285.344438,
+          "cost_usd": 1.222488
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 322.752481,
+          "cost_usd": 1.23913
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 361.013335,
+          "cost_usd": 1.203306
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.9629629629629629,
+          "seconds": 1065.338117,
+          "cost_usd": 1.792094
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 227.800082,
+          "cost_usd": 0.845306
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 666.353726,
+          "cost_usd": 1.99429
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 77.723294,
+          "cost_usd": 0.13719
+        }
+      ],
+      "totals": {
+        "seconds": 3006.3254730000003,
+        "cost_usd": 8.433804,
+        "cost_known_tasks": 7,
+        "cost_unknown_tasks": 0
+      },
+      "animation": {
+        "status": "available",
+        "score": 92,
+        "scores": {
+          "pelican": 24,
+          "cycling": 23,
+          "motion": 26,
+          "finish": 19
+        },
+        "reason": "长喙、喉囊与白色体态使鹈鹕辨识度高，自行车结构清晰。四帧可见踩踏姿态变化、身体轻微起伏及景物左移，形成骑行感；轮辐旋转表现不明显，脚踏动作略显简化。配色、构图与场景细节统一，完成度高。",
+        "seconds": 232.789922,
+        "cost_usd": 0.483442,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-6-astra-low-0b4d02c47a2b.html.txt"
+      }
+    },
+    {
+      "model": "gpt-6-astra",
+      "effort": "medium",
+      "score": 104.1,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 241.395455,
+          "cost_usd": 1.336744
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 530.323066,
+          "cost_usd": 2.230576
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 2060.445248,
+          "cost_usd": 1.325832
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.8571428571428571,
+          "seconds": 613.40575,
+          "cost_usd": 1.295428
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 247.494014,
+          "cost_usd": 0.887312
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 879.741095,
+          "cost_usd": 1.66765
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 78.273237,
+          "cost_usd": 0.168606
+        }
+      ],
+      "totals": {
+        "seconds": 4651.077865,
+        "cost_usd": 8.912148,
+        "cost_known_tasks": 7,
+        "cost_unknown_tasks": 0
+      },
+      "animation": {
+        "status": "available",
+        "score": 92,
+        "scores": {
+          "pelican": 24,
+          "cycling": 24,
+          "motion": 24,
+          "finish": 20
+        },
+        "reason": "鹈鹕长喙与喉囊鲜明，自行车结构完整，配色与构图精致。四帧可见轮辐转动、腿部姿态变化及路景位移；但踏蹬姿态变化偏小，躯干基本静止，骑行动态略显机械。",
+        "seconds": 230.488119,
+        "cost_usd": 0.484304,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-6-astra-medium-97fb93967a17.html.txt"
+      }
+    },
+    {
+      "model": "gpt-6-astra",
+      "effort": "high",
+      "score": 126.8,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 481.619794,
+          "cost_usd": 2.155026
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 837.107355,
+          "cost_usd": 4.297338
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 566.039652,
+          "cost_usd": null
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.9166666666666666,
+          "seconds": 1171.03283,
+          "cost_usd": 2.545178
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 530.850551,
+          "cost_usd": null
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 632.868796,
+          "cost_usd": 1.324404
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 67.823285,
+          "cost_usd": 0.093634
+        }
+      ],
+      "totals": {
+        "seconds": 4287.3422630000005,
+        "cost_usd": 10.415579999999999,
+        "cost_known_tasks": 5,
+        "cost_unknown_tasks": 2
+      },
+      "animation": {
+        "status": "available",
+        "score": 91,
+        "scores": {
+          "pelican": 24,
+          "cycling": 23,
+          "motion": 25,
+          "finish": 19
+        },
+        "reason": "长喙、喉囊与体态使鹈鹕辨识清楚，自行车结构完整。四帧可见蹬踏姿态、轮辐角度及背景位移变化，骑行感明确；腿脚与踏板衔接略生硬，躯干较静态。配色柔和，构图协调，完成度高。",
+        "seconds": 400.361373,
+        "cost_usd": 0.840332,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-6-astra-high-7b979b4febfe.html.txt"
+      }
+    },
+    {
+      "model": "gpt-6-astra",
+      "effort": "xhigh",
+      "score": 125.8,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 3211.285407,
+          "cost_usd": null
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 1116.995129,
+          "cost_usd": 3.975302
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 647.523463,
+          "cost_usd": 2.242446
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.8695652173913043,
+          "seconds": 1493.647507,
+          "cost_usd": 3.183804
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 1038.950609,
+          "cost_usd": 2.5713
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 363.57081,
+          "cost_usd": 1.307842
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 367.999367,
+          "cost_usd": 0.559774
+        }
+      ],
+      "totals": {
+        "seconds": 8239.972291999999,
+        "cost_usd": 13.840468000000001,
+        "cost_known_tasks": 6,
+        "cost_unknown_tasks": 1
+      },
+      "animation": {
+        "status": "available",
+        "score": 95,
+        "scores": {
+          "pelican": 25,
+          "cycling": 24,
+          "motion": 27,
+          "finish": 19
+        },
+        "reason": "长喙、喉囊与体态使鹈鹕辨识度很高，自行车结构完整。四帧可见踩踏姿态变化、车轮转动、围巾摆动及路面位移，骑行效果明确；脚掌与踏板衔接略显生硬，身体动态较弱。配色柔和，构图与细节完成度高。",
+        "seconds": 913.827972,
+        "cost_usd": 1.862774,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-6-astra-xhigh-db250df96567.html.txt"
+      }
+    },
+    {
+      "model": "gpt-6-astra",
+      "effort": "max",
+      "score": 106.3,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 883.539739,
+          "cost_usd": 3.462924
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 3467.01325,
+          "cost_usd": null
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 880.065974,
+          "cost_usd": 3.13765
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.96,
+          "seconds": 1372.148957,
+          "cost_usd": 3.128788
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 2303.344646,
+          "cost_usd": null
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 712.813746,
+          "cost_usd": 1.367556
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 151.431552,
+          "cost_usd": 0.248586
+        }
+      ],
+      "totals": {
+        "seconds": 9770.357864,
+        "cost_usd": 11.345504,
+        "cost_known_tasks": 5,
+        "cost_unknown_tasks": 2
+      },
+      "animation": {
+        "status": "available",
+        "score": 95,
+        "scores": {
+          "pelican": 25,
+          "cycling": 24,
+          "motion": 26,
+          "finish": 20
+        },
+        "reason": "长喙、喉囊与体态使鹈鹕辨识鲜明，自行车结构完整。四帧可见踩踏、轮辐变化和背景横移，围巾亦有摆动，骑行感明确；腿部动作稍显机械，身体重心反馈较弱。配色、构图与场景细节协调，完成度高。",
+        "seconds": 1393.762084,
+        "cost_usd": 3.57789,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-6-astra-max-4985c679eb85.html.txt"
+      }
+    },
+    {
+      "model": "gpt-6-astra",
+      "effort": "ultra",
+      "score": 105.4,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 773.650889,
+          "cost_usd": 9.667718
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 1117.463644,
+          "cost_usd": 8.572958
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 623.991968,
+          "cost_usd": 6.105526
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.9166666666666666,
+          "seconds": 1152.425452,
+          "cost_usd": 6.659826
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 952.009775,
+          "cost_usd": 4.950012
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 568.413862,
+          "cost_usd": null
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 123.126304,
+          "cost_usd": 0.415346
+        }
+      ],
+      "totals": {
+        "seconds": 5311.081894000001,
+        "cost_usd": 36.371386,
+        "cost_known_tasks": 6,
+        "cost_unknown_tasks": 1
+      },
+      "animation": {
+        "status": "available",
+        "score": 94,
+        "scores": {
+          "pelican": 25,
+          "cycling": 24,
+          "motion": 25,
+          "finish": 20
+        },
+        "reason": "长喙与喉囊鲜明，鹈鹕辨识度高，自行车结构完整。四帧可见腿部蹬踏、轮辐变化及前景持续横移，形成明确骑行感；上身变化较少，脚掌与踏板联动略显生硬。配色、线条和场景细节统一，完成度高。",
+        "seconds": 1277.365839,
+        "cost_usd": 3.387602,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-6-astra-ultra-7c283b2f38bf.html.txt"
+      }
+    },
+    {
+      "model": "gpt-6-sol",
+      "effort": "low",
+      "score": 32.1,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 382.104034,
+          "cost_usd": 0.55685
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 565.079636,
+          "cost_usd": 0.3124448
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 256.302267,
+          "cost_usd": 0.3329972
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.5,
+          "seconds": 857.012826,
+          "cost_usd": null
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 236.85121,
+          "cost_usd": 0.1922036
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 2280.564839,
+          "cost_usd": 3.6528304
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 75.672081,
+          "cost_usd": 0.0616912
+        }
+      ],
+      "totals": {
+        "seconds": 4653.586893,
+        "cost_usd": 5.1090172,
+        "cost_known_tasks": 6,
+        "cost_unknown_tasks": 1
+      },
+      "animation": {
+        "status": "available",
+        "score": 86,
+        "scores": {
+          "pelican": 24,
+          "cycling": 21,
+          "motion": 22,
+          "finish": 19
+        },
+        "reason": "长喙和喉囊突出，鹈鹕辨识清晰，自行车结构完整，画面配色协调。多帧可见车轮、曲柄转动、背景移动及身体起伏，但双脚基本悬停，未随踏板循环，削弱了骑行动作的合理性。",
+        "seconds": 107.226887,
+        "cost_usd": 0.0741116,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-6-sol-low-8cbe3fe6af60.html.txt"
+      }
+    },
+    {
+      "model": "gpt-6-sol",
+      "effort": "medium",
+      "score": 55.1,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 728.599761,
+          "cost_usd": 0.86627
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 553.727625,
+          "cost_usd": 0.5314736
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 290.867328,
+          "cost_usd": 0.3297988
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.5714285714285714,
+          "seconds": 1216.31784,
+          "cost_usd": 1.0012176
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 304.046359,
+          "cost_usd": 0.3070724
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 1480.085377,
+          "cost_usd": 1.7462304
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 351.602982,
+          "cost_usd": null
+        }
+      ],
+      "totals": {
+        "seconds": 4925.2472720000005,
+        "cost_usd": 4.7820628,
+        "cost_known_tasks": 6,
+        "cost_unknown_tasks": 1
+      },
+      "animation": {
+        "status": "available",
+        "score": 90,
+        "scores": {
+          "pelican": 25,
+          "cycling": 22,
+          "motion": 24,
+          "finish": 19
+        },
+        "reason": "长喙、喉囊和长颈使鹈鹕辨识度很高，自行车结构清晰。四帧可见腿部蹬踏、曲柄与轮辐转动、背景移动，骑行感明确；但脚与踏板衔接不够准确，腿部运动略显机械。配色协调，构图完整。",
+        "seconds": 227.023901,
+        "cost_usd": 0.1751752,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-6-sol-medium-1a98d1d4c70a.html.txt"
+      }
+    },
+    {
+      "model": "gpt-6-sol",
+      "effort": "high",
+      "score": 74.5,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 516.981309,
+          "cost_usd": 0.7305164
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 816.563045,
+          "cost_usd": 1.074976
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 381.217898,
+          "cost_usd": 0.4383284
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.47619047619047616,
+          "seconds": 1030.909997,
+          "cost_usd": null
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 634.343149,
+          "cost_usd": 0.4314016
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 1632.280939,
+          "cost_usd": 1.9938604
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 90.624958,
+          "cost_usd": 0.0438256
+        }
+      ],
+      "totals": {
+        "seconds": 5102.921295000001,
+        "cost_usd": 4.7129084,
+        "cost_known_tasks": 6,
+        "cost_unknown_tasks": 1
+      },
+      "animation": {
+        "status": "available",
+        "score": 88,
+        "scores": {
+          "pelican": 25,
+          "cycling": 23,
+          "motion": 21,
+          "finish": 19
+        },
+        "reason": "长喙、喉囊与体态使鹈鹕辨识度很高，自行车结构清晰，配色与构图完整协调。四帧可见双腿交替、轮辐转动、路面位移及身体轻微起伏，确有动画；但脚掌多处脱离踏板，腿部动作与曲柄旋转缺乏同步，影响骑行合理性。",
+        "seconds": 955.68343,
+        "cost_usd": 0.6975564,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-6-sol-high-c87ba630f57e.html.txt"
+      }
+    },
+    {
+      "model": "gpt-6-sol",
+      "effort": "xhigh",
+      "score": 35.7,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 508.988384,
+          "cost_usd": 0.6780044
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 824.915095,
+          "cost_usd": 0.9212244
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 466.098102,
+          "cost_usd": 0.6059468
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.6666666666666666,
+          "seconds": 1423.795832,
+          "cost_usd": 1.0686716
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 734.573613,
+          "cost_usd": 0.5298632
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 1338.657787,
+          "cost_usd": 1.1491364
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 47.719739,
+          "cost_usd": 0.0189412
+        }
+      ],
+      "totals": {
+        "seconds": 5344.748552000001,
+        "cost_usd": 4.971788,
+        "cost_known_tasks": 7,
+        "cost_unknown_tasks": 0
+      },
+      "animation": {
+        "status": "available",
+        "score": 93,
+        "scores": {
+          "pelican": 24,
+          "cycling": 23,
+          "motion": 27,
+          "finish": 19
+        },
+        "reason": "长喙、喉囊与体态使鹈鹕辨识度很高，自行车结构清晰。四帧可见交替蹬踏、轮辐转动、身体轻微起伏及背景位移，骑行感明确；脚掌与踏板衔接略松，腿部交叉稍显生硬。配色柔和统一，构图完整。",
+        "seconds": 548.576156,
+        "cost_usd": 0.4062088,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-6-sol-xhigh-f6b3cb68c8fc.html.txt"
+      }
+    },
+    {
+      "model": "gpt-6-sol",
+      "effort": "max",
+      "score": 81.1,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 678.947338,
+          "cost_usd": 1.5128692
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 1783.291488,
+          "cost_usd": 1.7748732
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 615.859397,
+          "cost_usd": 0.7278036
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.782608695652174,
+          "seconds": 2095.752298,
+          "cost_usd": 1.7206544
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 1034.314599,
+          "cost_usd": 0.7757276
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 1637.114874,
+          "cost_usd": null
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 122.727658,
+          "cost_usd": 0.067848
+        }
+      ],
+      "totals": {
+        "seconds": 7968.007652,
+        "cost_usd": 6.579775999999999,
+        "cost_known_tasks": 6,
+        "cost_unknown_tasks": 1
+      },
+      "animation": {
+        "status": "available",
+        "score": 92,
+        "scores": {
+          "pelican": 25,
+          "cycling": 23,
+          "motion": 25,
+          "finish": 19
+        },
+        "reason": "长喙与喉囊特征鲜明，鹈鹕辨识度高，自行车结构完整。四帧可见双腿交替踩踏、轮辐转动及路面位移，骑行动画明确；但脚掌与踏板的连接不够清晰，腿部动作略显机械。配色统一，海岸背景与装饰细节完成度高。",
+        "seconds": 1145.449954,
+        "cost_usd": 0.837806,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-6-sol-max-39b6570f9184.html.txt"
+      }
+    },
+    {
+      "model": "gpt-6-sol",
+      "effort": "ultra",
+      "score": 58.4,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 630.339109,
+          "cost_usd": 2.7850048
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 1205.721033,
+          "cost_usd": 2.0761844
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 2604.461351,
+          "cost_usd": 1.2300252
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.7272727272727273,
+          "seconds": 2465.974927,
+          "cost_usd": 6.2678616
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 693.848139,
+          "cost_usd": 1.3165308
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 3092.348475,
+          "cost_usd": null
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 100.525688,
+          "cost_usd": 0.1363472
+        }
+      ],
+      "totals": {
+        "seconds": 10793.218722,
+        "cost_usd": 13.811954,
+        "cost_known_tasks": 6,
+        "cost_unknown_tasks": 1
+      },
+      "animation": {
+        "status": "available",
+        "score": 94,
+        "scores": {
+          "pelican": 25,
+          "cycling": 24,
+          "motion": 26,
+          "finish": 19
+        },
+        "reason": "长喙、喉囊和体态使鹈鹕辨识鲜明，自行车结构完整。四帧可见双腿交替蹬踏、轮辐与反光点转动、路面位移及身体轻微起伏，骑行动作成立；躯干与握把姿态较固定，动态略显机械。配色统一、构图舒适，完成度高。",
+        "seconds": 991.734713,
+        "cost_usd": 0.8965632,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-6-sol-ultra-f53f9cbc4cc4.html.txt"
+      }
+    },
+    {
+      "model": "gpt-6-luna",
+      "effort": "low",
+      "score": 8.6,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 81.511231,
+          "cost_usd": 0.0117656
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 319.52608,
+          "cost_usd": null
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 190.592248,
+          "cost_usd": 0.01352182
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.4,
+          "seconds": 272.550022,
+          "cost_usd": null
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 69.226628,
+          "cost_usd": 0.0070734
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 89.477739,
+          "cost_usd": 0.0082783
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 252.463753,
+          "cost_usd": 0.0005582
+        }
+      ],
+      "totals": {
+        "seconds": 1275.3477010000001,
+        "cost_usd": 0.04119732,
+        "cost_known_tasks": 5,
+        "cost_unknown_tasks": 2
+      },
+      "animation": {
+        "status": "available",
+        "score": 53,
+        "scores": {
+          "pelican": 16,
+          "cycling": 14,
+          "motion": 7,
+          "finish": 16
+        },
+        "reason": "配色柔和、场景协调，但鸟的长喙与喉囊特征不足，鹈鹕辨识度一般。自行车初始可辨，后续车轮明显脱离车架、悬空漂移，腿部异常伸长摆动；虽有运动变化，却未形成连贯合理的踩踏骑行动作。",
+        "seconds": 43.669628,
+        "cost_usd": 0.00304702,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-6-luna-low-22bb790f08df.html.txt"
+      }
+    },
+    {
+      "model": "gpt-6-luna",
+      "effort": "medium",
+      "score": 24.1,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 450.781619,
+          "cost_usd": null
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 132.523733,
+          "cost_usd": null
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 111.327341,
+          "cost_usd": 0.0095914
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.125,
+          "seconds": 115.774342,
+          "cost_usd": 0.00643888
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 120.130522,
+          "cost_usd": 0.01111522
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 85.011799,
+          "cost_usd": 0.0085529
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 235.416864,
+          "cost_usd": 0.0012462
+        }
+      ],
+      "totals": {
+        "seconds": 1250.96622,
+        "cost_usd": 0.03694460000000001,
+        "cost_known_tasks": 5,
+        "cost_unknown_tasks": 2
+      },
+      "animation": {
+        "status": "available",
+        "score": 79,
+        "scores": {
+          "pelican": 21,
+          "cycling": 20,
+          "motion": 20,
+          "finish": 18
+        },
+        "reason": "长颈和橙色喉囊使鹈鹕可辨，但眼部细节不足。自行车结构清楚，轮辐、腿部、云朵和道路标线均有时序变化；腿脚与脚踏连接不合理，部分踏板线段游离，影响骑行可信度。配色柔和，构图完整。",
+        "seconds": 44.720355,
+        "cost_usd": 0.00309818,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-6-luna-medium-e9851d329743.html.txt"
+      }
+    },
+    {
+      "model": "gpt-6-luna",
+      "effort": "high",
+      "score": 30,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 206.024175,
+          "cost_usd": 0.02615088
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 2323.679312,
+          "cost_usd": null
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 154.09343,
+          "cost_usd": 0.0154157
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.4,
+          "seconds": 327.581098,
+          "cost_usd": null
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 180.602364,
+          "cost_usd": 0.01176628
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 1352.937717,
+          "cost_usd": 0.09348056
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 55.822272,
+          "cost_usd": 0.0018742
+        }
+      ],
+      "totals": {
+        "seconds": 4600.740368000001,
+        "cost_usd": 0.14868762,
+        "cost_known_tasks": 5,
+        "cost_unknown_tasks": 2
+      },
+      "animation": {
+        "status": "available",
+        "score": 82,
+        "scores": {
+          "pelican": 24,
+          "cycling": 21,
+          "motion": 18,
+          "finish": 19
+        },
+        "reason": "长喙与喉囊鲜明，鹈鹕辨识度高，自行车结构清楚，配色与构图协调。时序中可见云朵移动、轮辐和曲柄转动、身体轻微起伏，但双脚基本停留原位，未随踏板交替踩踏，骑行动作联动不足。",
+        "seconds": 57.771171,
+        "cost_usd": 0.00401936,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-6-luna-high-233ffa8ef4f5.html.txt"
+      }
+    },
+    {
+      "model": "gpt-6-luna",
+      "effort": "xhigh",
+      "score": 50,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 608.384527,
+          "cost_usd": 0.0908458
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 332.550958,
+          "cost_usd": 0.03117518
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 179.135227,
+          "cost_usd": 0.01770052
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.3333333333333333,
+          "seconds": 730.834609,
+          "cost_usd": null
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 184.643516,
+          "cost_usd": 0.01412584
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 2050.337895,
+          "cost_usd": 0.24346471
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 52.720966,
+          "cost_usd": 0.0025892
+        }
+      ],
+      "totals": {
+        "seconds": 4138.607698,
+        "cost_usd": 0.39990125000000004,
+        "cost_known_tasks": 6,
+        "cost_unknown_tasks": 1
+      },
+      "animation": {
+        "status": "available",
+        "score": 83,
+        "scores": {
+          "pelican": 24,
+          "cycling": 18,
+          "motion": 22,
+          "finish": 19
+        },
+        "reason": "长喙、喉囊与体态使鹈鹕辨识度高，配色协调、画面完整。四帧可见车轮转动、腿部摆动、身体轻微起伏及背景位移；但前轮缺少清晰的前叉连接，双脚与旋转脚踏的位置不吻合，骑行动作的机械合理性不足。",
+        "seconds": 89.624277,
+        "cost_usd": 0.00590832,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-6-luna-xhigh-b2e46745f439.html.txt"
+      }
+    },
+    {
+      "model": "gpt-6-luna",
+      "effort": "max",
+      "score": 32.1,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 460.867154,
+          "cost_usd": 0.04604142
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 436.049361,
+          "cost_usd": 0.0428566
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 205.994685,
+          "cost_usd": 0.01917492
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.5,
+          "seconds": 1061.635273,
+          "cost_usd": 0.09026382
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 299.325239,
+          "cost_usd": 0.02559718
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 2440.976214,
+          "cost_usd": 0.29106497
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 65.82396,
+          "cost_usd": 0.0033137
+        }
+      ],
+      "totals": {
+        "seconds": 4970.671886,
+        "cost_usd": 0.51831261,
+        "cost_known_tasks": 7,
+        "cost_unknown_tasks": 0
+      },
+      "animation": {
+        "status": "available",
+        "score": 90,
+        "scores": {
+          "pelican": 24,
+          "cycling": 22,
+          "motion": 25,
+          "finish": 19
+        },
+        "reason": "长喙、喉囊与水鸟体态使鹈鹕辨识鲜明，自行车结构清楚。四帧可见腿部交替踏蹬、辐条角度变化及路面标线移动，骑行感明确；腿部弯折与脚踏衔接略显生硬，伸向车把的翅膀偏机械。配色协调，构图完整。",
+        "seconds": 133.281439,
+        "cost_usd": 0.00938346,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-6-luna-max-ceb708d87908.html.txt"
+      }
+    },
+    {
+      "model": "gpt-5.6-sol",
+      "effort": "low",
+      "score": 56.5,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 310.801913,
+          "cost_usd": 1.2293424
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 471.919696,
+          "cost_usd": 1.049344
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 227.530064,
+          "cost_usd": 0.6562048
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.6363636363636364,
+          "seconds": 386.261239,
+          "cost_usd": 0.7682344
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 229.408129,
+          "cost_usd": 0.4192928
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 4823.974156,
+          "cost_usd": 3.3413408
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 51.120177,
+          "cost_usd": 0.074804
+        }
+      ],
+      "totals": {
+        "seconds": 6501.015374,
+        "cost_usd": 7.5385632000000005,
+        "cost_known_tasks": 7,
+        "cost_unknown_tasks": 0
+      },
+      "animation": {
+        "status": "available",
+        "score": 63,
+        "scores": {
+          "pelican": 23,
+          "cycling": 14,
+          "motion": 9,
+          "finish": 17
+        },
+        "reason": "鹈鹕的大嘴、喉囊和体态辨识清晰，配色与海滨场景协调。腿部姿态、云和路面有变化，但车轮从0.8秒起脱离车架，飞至左上方，后续持续悬空错位；双脚与踏板配合不足，严重破坏骑行运动的合理性与整体完成度。",
+        "seconds": 77.072799,
+        "cost_usd": 0.1344976,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-5.6-sol-low-294f3da08267.html.txt"
+      }
+    },
+    {
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "score": 93.5,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 432.482776,
+          "cost_usd": 2.3230096
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 1046.130039,
+          "cost_usd": null
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 231.042537,
+          "cost_usd": 0.6901336
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.36363636363636365,
+          "seconds": 2343.87291,
+          "cost_usd": null
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 324.556406,
+          "cost_usd": null
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 1496.253689,
+          "cost_usd": 5.2527592
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 83.623561,
+          "cost_usd": 0.10008
+        }
+      ],
+      "totals": {
+        "seconds": 5957.961918,
+        "cost_usd": 8.3659824,
+        "cost_known_tasks": 4,
+        "cost_unknown_tasks": 3
+      },
+      "animation": {
+        "status": "available",
+        "score": 88,
+        "scores": {
+          "pelican": 22,
+          "cycling": 23,
+          "motion": 24,
+          "finish": 19
+        },
+        "reason": "长喙、白色身体与喉部轮廓使鹈鹕较易辨认，自行车结构清晰。四帧可见腿部姿态、轮辐角度及背景位置变化，骑行动感明确；但脚部与踏板、曲柄的配合略显松散，踩踏的机械合理性稍弱。配色协调，构图完整。",
+        "seconds": 81.427463,
+        "cost_usd": 0.2017568,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-5.6-sol-medium-db88080c9a88.html.txt"
+      }
+    },
+    {
+      "model": "gpt-5.6-sol",
+      "effort": "high",
+      "score": 96.4,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 766.067747,
+          "cost_usd": 4.0183824
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 744.547908,
+          "cost_usd": 2.7082016
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 377.106346,
+          "cost_usd": 1.1767016
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.5,
+          "seconds": 791.431593,
+          "cost_usd": 1.3290984
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 463.714388,
+          "cost_usd": 0.7244008
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 1218.382963,
+          "cost_usd": 2.8822992
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 64.624916,
+          "cost_usd": 0.091144
+        }
+      ],
+      "totals": {
+        "seconds": 4425.8758609999995,
+        "cost_usd": 12.930228,
+        "cost_known_tasks": 7,
+        "cost_unknown_tasks": 0
+      },
+      "animation": {
+        "status": "available",
+        "score": 89,
+        "scores": {
+          "pelican": 24,
+          "cycling": 23,
+          "motion": 23,
+          "finish": 19
+        },
+        "reason": "长喙、喉囊与体态使鹈鹕辨识清晰，自行车结构完整，配色与场景协调。四帧可见腿部蹬动、辐条转动、围巾摆动及背景位移，但双脚与踏板位置未始终对应，蹬踏动作的连贯性与受力合理性稍弱。",
+        "seconds": 285.064902,
+        "cost_usd": 0.4649176,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-5.6-sol-high-f389f7085e26.html.txt"
+      }
+    },
+    {
+      "model": "gpt-5.6-sol",
+      "effort": "xhigh",
+      "score": 80.6,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 740.757325,
+          "cost_usd": 3.9934448
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 733.51218,
+          "cost_usd": 2.9997288
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 327.623633,
+          "cost_usd": 1.0564968
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.7619047619047619,
+          "seconds": 1978.545159,
+          "cost_usd": 2.7307024
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 561.780639,
+          "cost_usd": 1.0614008
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 1014.203368,
+          "cost_usd": 2.5371256
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 85.674332,
+          "cost_usd": 0.1248944
+        }
+      ],
+      "totals": {
+        "seconds": 5442.096635999999,
+        "cost_usd": 14.5037936,
+        "cost_known_tasks": 7,
+        "cost_unknown_tasks": 0
+      },
+      "animation": {
+        "status": "available",
+        "score": 89,
+        "scores": {
+          "pelican": 24,
+          "cycling": 22,
+          "motion": 24,
+          "finish": 19
+        },
+        "reason": "长喙、喉囊和长颈使鹈鹕辨识度很高，自行车结构完整。四帧可见腿部踩踏、车轮转动、身体起伏及背景平移，但脚与踏板的贴合和运动同步欠准确。画面配色协调、构图完整；仅凭离散截图无法充分确认帧间流畅度。",
+        "seconds": 389.407207,
+        "cost_usd": 0.6451848,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-5.6-sol-xhigh-1b7c2768f1b1.html.txt"
+      }
+    },
+    {
+      "model": "gpt-5.6-sol",
+      "effort": "max",
+      "score": 123.9,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 753.936959,
+          "cost_usd": 3.4344112
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 1391.378531,
+          "cost_usd": null
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 605.20651,
+          "cost_usd": 1.8894008
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.782608695652174,
+          "seconds": 1464.563375,
+          "cost_usd": 4.2492912
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 1243.24192,
+          "cost_usd": 2.44496
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 1103.01676,
+          "cost_usd": 2.2495776
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 563.02743,
+          "cost_usd": 0.3639864
+        }
+      ],
+      "totals": {
+        "seconds": 7124.371485,
+        "cost_usd": 14.6316272,
+        "cost_known_tasks": 6,
+        "cost_unknown_tasks": 1
+      },
+      "animation": {
+        "status": "available",
+        "score": 92,
+        "scores": {
+          "pelican": 24,
+          "cycling": 23,
+          "motion": 26,
+          "finish": 19
+        },
+        "reason": "长喙、明显喉囊及体态使鹈鹕辨识度高，自行车结构完整。四帧可见轮辐与曲柄转动、腿部姿态变化、围巾摆动和背景位移，骑行感明确；腿部关节及脚踏衔接略显僵硬。配色协调、线条统一、场景完成度高。",
+        "seconds": 303.325806,
+        "cost_usd": 0.667004,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-5.6-sol-max-619f3049efee.html.txt"
+      }
+    },
+    {
+      "model": "gpt-5.6-sol",
+      "effort": "ultra",
+      "score": 81.1,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 1027.142583,
+          "cost_usd": 8.3856888
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 3270.850979,
+          "cost_usd": null
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 669.592468,
+          "cost_usd": 4.0278816
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.782608695652174,
+          "seconds": 3634.627945,
+          "cost_usd": 14.6463264
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 1349.010076,
+          "cost_usd": 6.8689712
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 927.865418,
+          "cost_usd": 6.3427608
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 317.833641,
+          "cost_usd": null
+        }
+      ],
+      "totals": {
+        "seconds": 11196.923109999998,
+        "cost_usd": 40.2716288,
+        "cost_known_tasks": 5,
+        "cost_unknown_tasks": 2
+      },
+      "animation": {
+        "status": "available",
+        "score": 95,
+        "scores": {
+          "pelican": 25,
+          "cycling": 24,
+          "motion": 27,
+          "finish": 19
+        },
+        "reason": "长喙、喉囊与长颈使鹈鹕辨识度很高，自行车结构清晰。四帧可见腿脚踩踏、曲柄及轮辐转动、背景滚动和身体轻微起伏，骑行感充分；脚掌与踏板贴合略显松散。配色协调，线条统一，完成度高。",
+        "seconds": 805.565356,
+        "cost_usd": 2.0571496,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-5.6-sol-ultra-2f53b3e4127f.html.txt"
+      }
+    },
+    {
+      "model": "gpt-5.6-luna",
+      "effort": "low",
+      "score": 56.5,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 226.390396,
+          "cost_usd": 0.052711
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 286.648222,
+          "cost_usd": 0.03123412
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 2200.178819,
+          "cost_usd": null
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.6363636363636364,
+          "seconds": 73.124298,
+          "cost_usd": 0.0129806
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 124.56456,
+          "cost_usd": null
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 1748.560332,
+          "cost_usd": null
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 202.712949,
+          "cost_usd": 0.00418028
+        }
+      ],
+      "totals": {
+        "seconds": 4862.1795759999995,
+        "cost_usd": 0.10110599999999999,
+        "cost_known_tasks": 4,
+        "cost_unknown_tasks": 3
+      },
+      "animation": {
+        "status": "available",
+        "score": 58,
+        "scores": {
+          "pelican": 22,
+          "cycling": 11,
+          "motion": 8,
+          "finish": 17
+        },
+        "reason": "鹈鹕大喙与体态较易辨识，场景配色协调。时序截图可见云层、路面和角色运动，但车架与车轮大幅翻转错位，轮子离地且被画面裁切，脚与踏板联动不足，无法形成合理连贯的骑行。",
+        "seconds": 39.91944,
+        "cost_usd": 0.00783412,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-5.6-luna-low-f00213583784.html.txt"
+      }
+    },
+    {
+      "model": "gpt-5.6-luna",
+      "effort": "medium",
+      "score": 57.1,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 254.94893,
+          "cost_usd": 0.08047736
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 437.626449,
+          "cost_usd": 0.06752928
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 497.143712,
+          "cost_usd": null
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.6666666666666666,
+          "seconds": 138.545056,
+          "cost_usd": null
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 124.546513,
+          "cost_usd": null
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 251.40166,
+          "cost_usd": 0.08046092
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 34.518374,
+          "cost_usd": 0.0038498
+        }
+      ],
+      "totals": {
+        "seconds": 1738.7306939999999,
+        "cost_usd": 0.23231736,
+        "cost_known_tasks": 4,
+        "cost_unknown_tasks": 3
+      },
+      "animation": {
+        "status": "available",
+        "score": 67,
+        "scores": {
+          "pelican": 23,
+          "cycling": 16,
+          "motion": 11,
+          "finish": 17
+        },
+        "reason": "鹈鹕长喙和喉囊鲜明，自行车轮架可辨，海边配色协调。时序中可见云朵移动与腿部摆动，但踏板组件向左上方漂离车架，辐条脱离轮毂，脚与踏板缺乏联动，明显破坏骑行动作的合理性。",
+        "seconds": 40.41854,
+        "cost_usd": 0.0072276,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-5.6-luna-medium-8c6c728cba52.html.txt"
+      }
+    },
+    {
+      "model": "gpt-5.6-luna",
+      "effort": "high",
+      "score": 55.7,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 722.076388,
+          "cost_usd": null
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 633.193692,
+          "cost_usd": 0.11964944
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 243.981029,
+          "cost_usd": 0.0681276
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.6,
+          "seconds": 457.421025,
+          "cost_usd": 0.09418436
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 249.906951,
+          "cost_usd": 0.0631848
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 818.531629,
+          "cost_usd": 0.18632116
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 222.442942,
+          "cost_usd": 0.00535268
+        }
+      ],
+      "totals": {
+        "seconds": 3347.553656,
+        "cost_usd": 0.53682004,
+        "cost_known_tasks": 6,
+        "cost_unknown_tasks": 1
+      },
+      "animation": {
+        "status": "available",
+        "score": 85,
+        "scores": {
+          "pelican": 24,
+          "cycling": 20,
+          "motion": 22,
+          "finish": 19
+        },
+        "reason": "长喙、喉囊与体态使鹈鹕辨识度高，自行车结构清楚，配色与场景完成度高。四帧可见轮辐和曲柄转动、道路与云层位移、身体轻微起伏；但双腿缺乏明确交替踩踏，脚与踏板运动衔接不足，握把动作不清晰。",
+        "seconds": 66.421796,
+        "cost_usd": 0.0141114,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-5.6-luna-high-91670ba4acdb.html.txt"
+      }
+    },
+    {
+      "model": "gpt-5.6-luna",
+      "effort": "xhigh",
+      "score": 56.6,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 2820.538645,
+          "cost_usd": null
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 726.482959,
+          "cost_usd": null
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 327.610691,
+          "cost_usd": 0.08398944
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.64,
+          "seconds": 2941.23766,
+          "cost_usd": 0.5685944
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 1844.552169,
+          "cost_usd": null
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 1333.750304,
+          "cost_usd": 0.39998172
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 41.169047,
+          "cost_usd": 0.00661148
+        }
+      ],
+      "totals": {
+        "seconds": 10035.341475,
+        "cost_usd": 1.05917704,
+        "cost_known_tasks": 4,
+        "cost_unknown_tasks": 3
+      },
+      "animation": {
+        "status": "available",
+        "score": 65,
+        "scores": {
+          "pelican": 24,
+          "cycling": 14,
+          "motion": 9,
+          "finish": 18
+        },
+        "reason": "鹈鹕长喙、喉囊和体态鲜明，配色与场景完成度较高。时序截图可见运动，但车轮持续偏离车架轮轴，后期前轮升至身体旁、后轮落出画面；腿部与踏板联动不清晰，严重破坏骑行合理性。",
+        "seconds": 85.479165,
+        "cost_usd": 0.0192372,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-5.6-luna-xhigh-d6b25c8116e6.html.txt"
+      }
+    },
+    {
+      "model": "gpt-5.6-luna",
+      "effort": "max",
+      "score": 57.1,
+      "score_max": 150,
+      "score_status": "complete",
+      "scored_tasks": 7,
+      "total_tasks": 7,
+      "tasks": [
+        {
+          "task_id": "deepswe:anko-typed-variable-bindings",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 663.075988,
+          "cost_usd": 0.23716488
+        },
+        {
+          "task_id": "deepswe:httpx-streaming-json-iteration",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 802.760223,
+          "cost_usd": 0.23134568
+        },
+        {
+          "task_id": "deepswe:ts-pattern-match-each",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 368.207963,
+          "cost_usd": 0.11241628
+        },
+        {
+          "task_id": "pompeii:pompeii-adjacency-rp-042",
+          "status": "scored",
+          "reward": 0.6666666666666666,
+          "seconds": 1415.468436,
+          "cost_usd": 0.32509824
+        },
+        {
+          "task_id": "tb4:embedding-drift-monitor",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 2171.474775,
+          "cost_usd": null
+        },
+        {
+          "task_id": "tb4:sound-change-cascade",
+          "status": "scored",
+          "reward": 0,
+          "seconds": 1749.968805,
+          "cost_usd": 0.42603704
+        },
+        {
+          "task_id": "local-reasoning:candy-cross-shape",
+          "status": "scored",
+          "reward": 1,
+          "seconds": 70.072048,
+          "cost_usd": 0.01176988
+        }
+      ],
+      "totals": {
+        "seconds": 7241.028238000001,
+        "cost_usd": 1.343832,
+        "cost_known_tasks": 6,
+        "cost_unknown_tasks": 1
+      },
+      "animation": {
+        "status": "available",
+        "score": 76,
+        "scores": {
+          "pelican": 24,
+          "cycling": 19,
+          "motion": 14,
+          "finish": 19
+        },
+        "reason": "长喙与喉囊鲜明，自行车结构清楚，画面配色协调、完成度高。时序中可见车轮转动、路面和云移动，但腿脚与踏板脱节，出现大幅甩动、穿插及伸出画面的异常，削弱骑行动作的连贯性与合理性。",
+        "seconds": 141.631782,
+        "cost_usd": 0.03282936,
+        "asset_url": "/assets/degradation-codex-01c3e200e66b-c8b7fe1fc60b-gpt-5.6-luna-max-3406247b1f9c.html.txt"
+      }
+    }
+  ]
+}

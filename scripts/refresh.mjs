@@ -1,0 +1,274 @@
+import { readFile, writeFile, rename, mkdir, unlink } from "node:fs/promises";
+import { dirname, join } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { randomUUID } from "node:crypto";
+import {
+  transformBinding,
+  transformSummary,
+  transformRound,
+  mergeRadarBench,
+  validateRadarBench,
+  validateRound,
+} from "./lib.mjs";
+
+export const BINDING_URL = "https://codexradar.com/data/radar-bench-binding.json";
+export const SUMMARY_URL = "https://codexradar.com/api/radar-bench-score";
+export const ROUND_URL = "https://codexradar.com/degradation-codex-latest.json";
+function defaultDataDir() {
+  try {
+    return fileURLToPath(new URL("../public/data/", import.meta.url));
+  } catch {
+    // Vitest serves modules over http://, so import.meta.url is not a file URL.
+    return join(process.cwd(), "public", "data");
+  }
+}
+const DATA_DIR = defaultDataDir();
+
+class HttpError extends Error {
+  constructor(status, url) {
+    super(`HTTP ${status} for ${url}`);
+    this.status = status;
+  }
+}
+
+export async function fetchJson(url, { tries = 3, timeoutMs = 20000, headers = {} } = {}, fetchImpl = fetch) {
+  for (let i = 0; i < tries; i++) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+    try {
+      const res = await fetchImpl(url, {
+        signal: ctrl.signal,
+        headers: { "user-agent": "iq-radar/2.0", accept: "application/json", ...headers },
+      });
+      if (!res.ok) throw new HttpError(res.status, url);
+      return await res.json();
+    } catch (error) {
+      const retryable =
+        !(error instanceof HttpError) || error.status === 429 || error.status >= 500;
+      if (!retryable || i === tries - 1) throw error;
+      await new Promise((r) => setTimeout(r, 2 ** i * 1000));
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+  throw new Error("unreachable");
+}
+
+export async function mapLimit(items, limit, fn) {
+  const out = new Array(items.length);
+  let next = 0;
+  async function worker() {
+    while (true) {
+      const i = next++;
+      if (i >= items.length) return;
+      out[i] = await fn(items[i], i);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+  return out;
+}
+
+export function summaryUrl(model, effort) {
+  const query = new URLSearchParams({
+    model,
+    effort,
+    view: "summary",
+    selection: "user-selected-v1",
+  });
+  return `${SUMMARY_URL}?${query.toString()}`;
+}
+
+async function readJsonIfExists(file) {
+  try {
+    return JSON.parse(await readFile(file, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+function stripVolatile(data) {
+  if (!data || typeof data !== "object") return data;
+  const copy = { ...data };
+  delete copy.checked_at;
+  delete copy.generated_at;
+  delete copy.fetch_id;
+  return copy;
+}
+
+function contentEqual(a, b) {
+  return JSON.stringify(stripVolatile(a)) === JSON.stringify(stripVolatile(b));
+}
+
+async function writeJson(file, data) {
+  await mkdir(dirname(file), { recursive: true });
+  const tmp = `${file}.${process.pid}.${randomUUID()}.tmp`;
+  try {
+    await writeFile(tmp, JSON.stringify(data, null, 2) + "\n");
+    await rename(tmp, file);
+  } catch (error) {
+    await unlink(tmp).catch(() => {});
+    throw error;
+  }
+}
+
+function maxLatest(summaries) {
+  let latest = null;
+  let latestMs = -Infinity;
+  for (const summary of summaries) {
+    if (!summary?.latest_graded_at) continue;
+    const ms = Date.parse(summary.latest_graded_at);
+    if (Number.isFinite(ms) && ms > latestMs) {
+      latestMs = ms;
+      latest = summary.latest_graded_at;
+    }
+  }
+  return latest;
+}
+
+function staleDays(iso, now) {
+  if (!iso) return null;
+  const days = Math.floor((now.getTime() - new Date(iso).getTime()) / 86400000);
+  return Number.isFinite(days) ? Math.max(0, days) : null;
+}
+
+/**
+ * @param {{
+ *   fetchImpl?: typeof fetch,
+ *   outDir?: string,
+ *   now?: () => Date,
+ *   force?: boolean,
+ *   minRadarCandidates?: number,
+ *   minRoundCandidates?: number,
+ * }} [opts]
+ */
+export async function refreshAll({
+  fetchImpl = fetch,
+  outDir = DATA_DIR,
+  now = () => new Date(),
+  force = false,
+  minRadarCandidates,
+  minRoundCandidates,
+} = {}) {
+  const bindingRaw = await fetchJson(BINDING_URL, {}, fetchImpl);
+  const binding = transformBinding(bindingRaw);
+  const oldRadar = await readJsonIfExists(join(outDir, "radar-bench.json"));
+  const oldByKey = new Map((oldRadar?.candidates ?? []).map((c) => [c.model + "|" + c.effort, c]));
+
+  const results = await mapLimit(binding.candidates, 4, async (candidate) => {
+    const key = candidate.model + "|" + candidate.effort;
+    try {
+      const raw = await fetchJson(
+        summaryUrl(candidate.model, candidate.effort),
+        { headers: { "x-radar-bench-selection": "user-selected-v1" } },
+        fetchImpl,
+      );
+      return { key, candidate, summary: transformSummary(raw), fresh: true, error: null };
+    } catch (error) {
+      const old = oldByKey.get(key);
+      return {
+        key,
+        candidate,
+        summary: old ?? null,
+        fresh: false,
+        error: old
+          ? `${key}: reused previous data (${error.message})`
+          : `${key}: ${error.message}`,
+      };
+    }
+  });
+
+  const errors = results.map((r) => r.error).filter(Boolean);
+  const freshCount = results.filter((r) => r.fresh).length;
+  const minimum = minRadarCandidates ?? Math.max(30, Math.ceil(binding.candidates.length * 0.8));
+  if (freshCount < minimum) {
+    throw new Error(
+      `only ${freshCount}/${binding.candidates.length} summaries succeeded (minimum ${minimum})`,
+    );
+  }
+
+  const available = results.filter((r) => r.summary);
+  if (available.length < minimum) {
+    throw new Error(
+      `only ${available.length}/${binding.candidates.length} candidates available (minimum ${minimum})`,
+    );
+  }
+  const availableBinding = { ...bindingRaw, model_efforts: available.map((r) => r.candidate) };
+
+  const roundRaw = await fetchJson(ROUND_URL, {}, fetchImpl);
+  const round = transformRound(roundRaw);
+  const stamp = now().toISOString();
+  const fetchId = randomUUID();
+
+  const radarBench = mergeRadarBench({
+    binding: availableBinding,
+    summaries: available.map((r) => r.summary),
+    generatedAt: stamp,
+    checkedAt: stamp,
+    fetchId,
+  });
+  validateRadarBench(radarBench, { minCandidates: minimum });
+
+  const roundData = {
+    schema_version: 1,
+    fetch_id: fetchId,
+    generated_at: stamp,
+    checked_at: stamp,
+    ...round,
+  };
+  validateRound(roundData, { minCandidates: minRoundCandidates ?? 30 });
+
+  const latest = maxLatest(available.map((r) => r.summary));
+  const status = {
+    checked_at: stamp,
+    ok: true,
+    benchmark: radarBench.benchmark,
+    candidates_ok: freshCount,
+    candidates_total: binding.candidates.length,
+    round_ok: true,
+    latest_graded_at: latest,
+    round_updated_at: roundData.round.updated_at,
+    stale_days: staleDays(latest, now()) ?? 0,
+    errors,
+  };
+
+  let radarChanged = true;
+  let roundChanged = true;
+  if (!force) {
+    const oldRound = await readJsonIfExists(join(outDir, "round.json"));
+    if (oldRadar && contentEqual(oldRadar, radarBench)) {
+      radarBench.generated_at = oldRadar.generated_at;
+      radarBench.checked_at = oldRadar.checked_at;
+      radarBench.fetch_id = oldRadar.fetch_id;
+      radarChanged = false;
+    }
+    if (oldRound && contentEqual(oldRound, roundData)) {
+      roundData.generated_at = oldRound.generated_at;
+      roundData.checked_at = oldRound.checked_at;
+      roundData.fetch_id = oldRound.fetch_id;
+      roundChanged = false;
+    }
+  }
+
+  if (radarChanged) await writeJson(join(outDir, "radar-bench.json"), radarBench);
+  if (roundChanged) await writeJson(join(outDir, "round.json"), roundData);
+  await writeJson(join(outDir, "status.json"), status);
+  return { radarBench, round: roundData, status };
+}
+
+async function main() {
+  const args = new Set(process.argv.slice(2));
+  const result = await refreshAll({ force: args.has("--force") });
+  console.log(
+    `wrote ${result.radarBench.candidates.length} candidates, ${result.round.candidates.length} round candidates`,
+  );
+  if (result.status.errors.length) {
+    console.warn(`${result.status.errors.length} candidate(s) reused previous data or failed`);
+  }
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+}
