@@ -125,3 +125,127 @@ export function validateRadarBench(data, { minCandidates = 30 } = {}) {
   }
   return data;
 }
+
+function finiteOrNull(value) {
+  if (value == null) return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+export function computeRoundScore(results, tasks) {
+  const rewards = [];
+  let scored = 0;
+  for (const task of tasks) {
+    const r = results?.[task.id];
+    const reward = finiteOrNull(r?.reward);
+    if (r && r.status === "scored" && reward != null) {
+      rewards.push(reward);
+      scored++;
+    }
+  }
+  if (!rewards.length) {
+    return { score: null, scored_tasks: 0, total_tasks: tasks.length, status: "partial" };
+  }
+  const mean = rewards.reduce((a, b) => a + b, 0) / rewards.length;
+  return {
+    score: Math.round(100 * mean * ROUND_MULTIPLIER * 10) / 10,
+    scored_tasks: scored,
+    total_tasks: tasks.length,
+    status: scored === tasks.length ? "complete" : "partial",
+  };
+}
+
+export function transformRound(raw) {
+  const tasks = Array.isArray(raw?.tasks)
+    ? raw.tasks
+        .map((t) => ({
+          id: String(t?.id ?? ""),
+          category: String(t?.category ?? ""),
+          title_zh: String(t?.title_zh ?? ""),
+          title_en: String(t?.title_en ?? ""),
+          weight: Number(t?.weight ?? 0),
+          required: Boolean(t?.required),
+        }))
+        .filter((t) => t.id)
+    : [];
+  if (tasks.length !== 7) throw new Error("round: expected 7 tasks, got " + tasks.length);
+  const results = raw?.round?.results ?? {};
+  const animations = raw?.round?.animations ?? {};
+  const candidates = Object.entries(results).map(([key, taskResults]) => {
+    const [model, effort] = key.split("|");
+    const score = computeRoundScore(taskResults, tasks);
+    const taskRows = tasks.map((t) => {
+      const r = taskResults?.[t.id] ?? {};
+      return {
+        task_id: t.id,
+        status: String(r.status ?? "missing"),
+        reward: finiteOrNull(r.reward),
+        seconds: finiteOrNull(r.seconds),
+        cost_usd: finiteOrNull(r.cost?.usd),
+      };
+    });
+    const totals = taskRows.reduce(
+      (acc, t) => {
+        if (t.seconds != null) acc.seconds += t.seconds;
+        if (t.cost_usd != null) {
+          acc.cost_usd += t.cost_usd;
+          acc.cost_known_tasks++;
+        } else {
+          acc.cost_unknown_tasks++;
+        }
+        return acc;
+      },
+      { seconds: 0, cost_usd: 0, cost_known_tasks: 0, cost_unknown_tasks: 0 },
+    );
+    const a = animations[key];
+    const animation = a
+      ? {
+          status: String(a.status ?? "missing"),
+          score: finiteOrNull(a.judge?.total),
+          scores: a.judge?.scores ?? {},
+          reason: a.judge?.reason ?? null,
+          seconds: finiteOrNull(a.seconds),
+          cost_usd: finiteOrNull(a.cost?.usd),
+          asset_url: a.asset?.url ?? null,
+        }
+      : null;
+    return {
+      model,
+      effort,
+      score: score.score,
+      score_max: SCORE_MAX,
+      score_status: score.status,
+      scored_tasks: score.scored_tasks,
+      total_tasks: score.total_tasks,
+      tasks: taskRows,
+      totals,
+      animation,
+    };
+  });
+  if (!candidates.length) throw new Error("round: no candidates");
+  return {
+    source_schema: String(raw?.schema ?? ""),
+    round: {
+      id: String(raw?.round?.id ?? ""),
+      status: String(raw?.round?.status ?? ""),
+      started_at: String(raw?.round?.started_at ?? ""),
+      completed_at: String(raw?.round?.completed_at ?? ""),
+      updated_at: String(raw?.round?.updated_at ?? ""),
+      taskset_version: String(raw?.round?.taskset_version ?? ""),
+      task_count: Number(raw?.round?.task_count ?? tasks.length),
+      timings: raw?.round?.timings ?? {},
+    },
+    tasks,
+    candidates,
+  };
+}
+
+export function validateRound(data, { minCandidates = 30 } = {}) {
+  if (!data || data.schema_version !== 1) throw new Error("round: bad schema_version");
+  if (!data.round || !data.round.updated_at) throw new Error("round: missing updated_at");
+  if (!Array.isArray(data.tasks) || data.tasks.length !== 7) throw new Error("round: expected 7 tasks");
+  if (!Array.isArray(data.candidates) || data.candidates.length < minCandidates) {
+    throw new Error("round: too few candidates");
+  }
+  return data;
+}

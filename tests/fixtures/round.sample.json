@@ -1,0 +1,56 @@
+{
+  "schema": "degradation-codex-plan/2",
+  "taskset": { "version": "codex-set-01c3e200e66b", "status": "selected", "harness": "codex", "task_count": 7 },
+  "settings": [
+    { "model": "gpt-6-astra", "effort": "high", "availability": { "status": "available", "checked_at": "2026-10-23T08:25:00.590027+00:00", "reason": null, "seconds": 11.41, "cost": { "usd": 0.105898, "kind": "estimated", "source": "usage_pricing", "includes_subagents": true } } }
+  ],
+  "tasks": [
+    { "id": "local-reasoning:candy-cross-shape", "category": "local-reasoning", "title_zh": "糖果十字", "title_en": "Candy cross", "weight": 0.142857, "required": true },
+    { "id": "deepswe:anko-typed-variable-bindings", "category": "deepswe", "title_zh": "Anko 类型化变量绑定", "title_en": "Anko typed variable bindings", "weight": 0.142857, "required": true },
+    { "id": "deepswe:httpx-streaming-json-iteration", "category": "deepswe", "title_zh": "httpx 流式 JSON 迭代", "title_en": "httpx streaming JSON iteration", "weight": 0.142857, "required": true },
+    { "id": "deepswe:ts-pattern-match-each", "category": "deepswe", "title_zh": "ts-pattern 匹配", "title_en": "ts-pattern match each", "weight": 0.142857, "required": true },
+    { "id": "pompeii:pompeii-adjacency-rp-042", "category": "pompeii", "title_zh": "庞贝邻接", "title_en": "Pompeii adjacency", "weight": 0.142857, "required": true },
+    { "id": "tb4:embedding-drift-monitor", "category": "tb4", "title_zh": "嵌入漂移监控", "title_en": "Embedding drift monitor", "weight": 0.142857, "required": true },
+    { "id": "tb4:sound-change-cascade", "category": "tb4", "title_zh": "声音变化级联", "title_en": "Sound change cascade", "weight": 0.142857, "required": true }
+  ],
+  "judge": { "version": "pelican-fc7412ae540c", "status": "configured_not_run", "model": "gpt-6-astra", "effort": "xhigh", "blind": true, "criteria": [] },
+  "round": {
+    "id": "codex34x8-20261023T082434Z",
+    "status": "completed",
+    "started_at": "2026-10-23T08:29:34.263178+00:00",
+    "completed_at": "2026-10-23T10:43:22.273210+00:00",
+    "updated_at": "2026-10-23T10:43:22.484295+00:00",
+    "taskset_version": "codex-set-01c3e200e66b",
+    "timings": { "wall_seconds": 8028.01, "verification_wall_seconds": 68.98, "solve_wall_seconds": 7275.25, "animation_wall_seconds": 1394.61, "review_wall_seconds": 3610.12 },
+    "results": {
+      "gpt-6-astra|high": {
+        "local-reasoning:candy-cross-shape": { "status": "scored", "reward": 1, "seconds": 67.823285, "cost": { "usd": 0.093634, "kind": "estimated", "source": "usage_pricing", "includes_subagents": true } },
+        "deepswe:anko-typed-variable-bindings": { "status": "scored", "reward": 1, "seconds": 481.619794, "cost": { "usd": 2.155026, "kind": "estimated", "source": "usage_pricing", "includes_subagents": true } },
+        "deepswe:httpx-streaming-json-iteration": { "status": "scored", "reward": 1, "seconds": 837.107355, "cost": { "usd": 4.297338, "kind": "estimated", "source": "usage_pricing", "includes_subagents": true } },
+        "deepswe:ts-pattern-match-each": { "status": "scored", "reward": 0, "seconds": 566.039652, "cost": { "usd": null, "kind": "unknown", "source": null, "includes_subagents": null } },
+        "pompeii:pompeii-adjacency-rp-042": { "status": "scored", "reward": 0.9166666666666666, "seconds": 1171.03283, "cost": { "usd": 2.545178, "kind": "estimated", "source": "usage_pricing", "includes_subagents": true } },
+        "tb4:embedding-drift-monitor": { "status": "scored", "reward": 1, "seconds": 530.850551, "cost": { "usd": null, "kind": "unknown", "source": null, "includes_subagents": null } },
+        "tb4:sound-change-cascade": { "status": "scored", "reward": 1, "seconds": 632.868796, "cost": { "usd": 1.324404, "kind": "estimated", "source": "usage_pricing", "includes_subagents": true } }
+      },
+      "gpt-6-astra|low": {
+        "local-reasoning:candy-cross-shape": { "status": "scored", "reward": 1, "seconds": 77.72, "cost": { "usd": 0.13719 } },
+        "deepswe:anko-typed-variable-bindings": { "status": "scored", "reward": 0, "seconds": 285.34, "cost": { "usd": 1.222488 } },
+        "deepswe:httpx-streaming-json-iteration": { "status": "scored", "reward": 1, "seconds": 322.75, "cost": { "usd": 1.23913 } },
+        "deepswe:ts-pattern-match-each": { "status": "scored", "reward": 0, "seconds": 361.01, "cost": { "usd": 1.203306 } },
+        "pompeii:pompeii-adjacency-rp-042": { "status": "scored", "reward": 0.9629629629629629, "seconds": 1065.34, "cost": { "usd": 1.792094 } },
+        "tb4:embedding-drift-monitor": { "status": "scored", "reward": 1, "seconds": 227.8, "cost": { "usd": 0.845306 } },
+        "tb4:sound-change-cascade": { "status": "scored", "reward": 1, "seconds": 666.35, "cost": { "usd": 1.99429 } }
+      }
+    },
+    "animations": {
+      "gpt-6-astra|high": {
+        "status": "available",
+        "seconds": 400.36,
+        "cost": { "usd": 0.840332, "kind": "estimated", "source": "usage_pricing", "includes_subagents": true },
+        "judge": { "status": "scored", "version": "pelican-fc7412ae540c", "total": 91, "scores": { "pelican": 24, "cycling": 23, "motion": 25, "finish": 19 }, "reason": "长喙、喉囊与体态使鹈鹕辨识清楚。", "defects": [], "seconds": 38.37, "cost": { "usd": 0.114864 } },
+        "asset": { "url": "/assets/example.html.txt", "bytes": 19605, "sha256": "7b979b4febfe", "download": "gpt-6-astra-high-pelican.html" }
+      }
+    }
+  },
+  "animation_task": { "id": "pelican-bicycle-html-svg", "title_zh": "鹈鹕骑车动画", "title_en": "Cycling pelican animation", "content_sha256": "d1d1d34e" }
+}

@@ -139,3 +139,47 @@ describe("mergeRadarBench + validateRadarBench", () => {
     })).toThrow(/missing summary/);
   });
 });
+
+import roundRaw from "./fixtures/round.sample.json";
+import { computeRoundScore, transformRound, validateRound } from "../scripts/lib.mjs";
+
+describe("computeRoundScore", () => {
+  const tasks = roundRaw.tasks;
+  it("computes 100 * mean(reward) * 1.5", () => {
+    const r = computeRoundScore(roundRaw.round.results["gpt-6-astra|high"], tasks);
+    expect(r.score).toBeCloseTo(126.8, 1);
+    expect(r.scored_tasks).toBe(7);
+    expect(r.status).toBe("complete");
+  });
+  it("returns partial when a task is missing", () => {
+    const partial = { ...roundRaw.round.results["gpt-6-astra|high"] };
+    delete (partial as Record<string, unknown>)["tb4:sound-change-cascade"];
+    const r = computeRoundScore(partial, tasks);
+    expect(r.status).toBe("partial");
+    expect(r.scored_tasks).toBe(6);
+  });
+  it("returns null score when nothing is scored", () => {
+    const r = computeRoundScore({}, tasks);
+    expect(r.score).toBeNull();
+    expect(r.status).toBe("partial");
+  });
+});
+
+describe("transformRound", () => {
+  it("normalizes tasks, candidates, totals and animation", () => {
+    const r = transformRound(roundRaw);
+    expect(r.tasks).toHaveLength(7);
+    expect(r.candidates).toHaveLength(2);
+    const high = r.candidates.find((c) => c.effort === "high")!;
+    expect(high.score).toBeCloseTo(126.8, 1);
+    expect(high.tasks).toHaveLength(7);
+    expect(high.totals.cost_unknown_tasks).toBe(2);
+    expect(high.animation?.score).toBe(91);
+    expect(high.animation?.scores.pelican).toBe(24);
+  });
+  it("validates schema and task count", () => {
+    const r = { schema_version: 1, ...transformRound(roundRaw) };
+    expect(() => validateRound(r, { minCandidates: 2 })).not.toThrow();
+    expect(() => validateRound({ ...r, tasks: [] }, { minCandidates: 2 })).toThrow(/7 tasks/);
+  });
+});
