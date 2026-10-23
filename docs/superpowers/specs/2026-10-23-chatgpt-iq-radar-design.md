@@ -52,14 +52,14 @@ flowchart LR
 单一 main 分支。两个 workflow：
 
 ### 4.1 `refresh-data.yml`
-- 触发：`schedule`（默认每 1 小时，cron `0 * * * *`）+ `workflow_dispatch`。
+- 触发：`schedule`（**每天一次**，上游基本每日更新；cron `30 0 * * *` UTC，约东八区 08:30，跟在上游日更之后）+ `workflow_dispatch`。
 - 步骤：checkout → setup-node → 运行 `scripts/refresh.mjs`：
   1. 拉 CodexRadar + OpenAI Status 两个 URL（带重试/超时）。
   2. 生成 `public/data/latest.json`：当前 `points`（保留展示所需字段 + 计算 `recommend_score = iq − 1.5 × average_minutes`）+ `status` 摘要 + 从 `history` 派生的**轻量 Δ 徽标**（仅"当前 iq vs N 天前 iq"的差值，纯展示）。
   3. 生成 `public/data/history.json`：**全保真**（不做时间降采样）。实测 history 仅 ~416 快照 / ~16277 点，体积虚胖源于每点 ~16 冗余字段 + 美化格式；因此只做三件事即可把体积压到 ~240KB：①字段裁剪（保留 `at`，每条 series 保留 `iq`，可选 `pass_rate/avg_minutes/avg_price_usd`）；②透视成 `series[]`（model×effort 字符串不再逐点重复）；③压缩 JSON（不格式化）。趋势曲线保留完整分辨率。
   4. 失败容错见 §7。
   5. 若有变化，commit `public/data/` 回 main，commit message 带 `[skip ci]` 避免与 deploy 触发循环。
-- 权限：`contents: write`（提交数据）。使用专用 SSH 密钥（项目 SCM 约定 `dev-of-mc-yzy15`）或默认 `GITHUB_TOKEN`——**具体用哪个由用户在实现/启用前确认**。
+- 权限：`contents: write`（提交数据）。**零配置，直接用默认 `GITHUB_TOKEN`** 回写 main（无需专用 SSH 密钥）。
 
 ### 4.2 `deploy.yml`
 - 触发：`push`（main，路径含源码或 `public/data/`）+ `workflow_dispatch`。
