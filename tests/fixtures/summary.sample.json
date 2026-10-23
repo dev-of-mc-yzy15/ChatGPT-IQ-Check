@@ -1,0 +1,52 @@
+{
+  "schema": "radar-bench-public-summary-v6-150-details",
+  "benchmark": "radar-bench-final64-20261004",
+  "score_version": "radar-bench-v2-150",
+  "score_max": 150,
+  "catalog_version": "dradar-four-library-deployment007-server024-20261004-config64",
+  "task_set_sha256": "f75ff09b6117cd83d3ab6ea744fe379ac117676c042538d5df5e38489af27bc4",
+  "model": "gpt-6-astra",
+  "effort": "high",
+  "score": 104.56151352837776,
+  "coverage": 64,
+  "required_tasks": 64,
+  "score_status": "complete",
+  "graded_runs_count": 101,
+  "source_counts": { "deepswe": 15, "pompeii": 16, "tb4": 14, "science": 19 },
+  "source_scores": {
+    "deepswe": { "score": 105, "coverage": 15, "required_tasks": 15, "graded_runs_count": 21 },
+    "pompeii": { "score": 129.183554113511, "coverage": 16, "required_tasks": 16, "graded_runs_count": 22 },
+    "tb4": { "score": 101.78571428571429, "coverage": 14, "required_tasks": 14, "graded_runs_count": 16 },
+    "science": { "score": 85.52631578947368, "coverage": 19, "required_tasks": 19, "graded_runs_count": 42 }
+  },
+  "statistics": {
+    "sample_count": 101,
+    "metrics": {
+      "elapsed_ms": { "mean": 835906.3177022804, "total": 84426538.08793032 },
+      "api_equivalent_usd": { "mean": 3.5784834059405943, "total": 361.426824 }
+    }
+  },
+  "detail_metrics": {
+    "valid_grade_events": 101,
+    "latest_graded_at": "2026-10-23T01:19:00.816645Z",
+    "as_of": "2026-10-23T17:01:10.589Z",
+    "graded_24h": 2,
+    "graded_48h": 2
+  },
+  "history": {
+    "schema": "radar-bench-public-history-v1-150-daily",
+    "score_version": "radar-bench-v2-150",
+    "score_max": 150,
+    "model": "gpt-6-astra",
+    "effort": "high",
+    "time_zone": "UTC",
+    "bucket": "day",
+    "basis": "last canonical score per UTC grading day; days without grades omitted",
+    "updated_bucket": "2026-10-23T00:00:00.000Z",
+    "points": [
+      { "at": "2026-10-09T00:00:00.000Z", "score": 111.97304941062372, "coverage": 58, "required_tasks": 64, "score_status": "provisional" },
+      { "at": "2026-10-17T00:00:00.000Z", "score": 107.33495102837776, "coverage": 64, "required_tasks": 64, "score_status": "complete" },
+      { "at": "2026-10-23T00:00:00.000Z", "score": 104.56151352837776, "coverage": 64, "required_tasks": 64, "score_status": "complete" }
+    ]
+  }
+}
