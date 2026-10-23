@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import type { RadarCandidate } from "../types";
+import { Fragment, useMemo, useState } from "react";
+import type { RadarCandidate, ScoreStatus } from "../types";
 import { computeDelta, sortCandidates, type SortKey } from "../lib/derive";
 import { fmtDateTime, fmtDelta, fmtEffort, fmtPercent, fmtScore } from "../lib/format";
 
@@ -12,6 +12,10 @@ const COLUMNS: { key: SortKey; label: string; defaultDir: "asc" | "desc" }[] = [
   { key: "latest_graded_at", label: "最近评分", defaultDir: "desc" },
 ];
 
+const STATUS_AFTER: SortKey = "coverage";
+const STATUS_LABELS: Record<ScoreStatus, string> = { complete: "完整", provisional: "临时" };
+const COLUMN_COUNT = COLUMNS.length + 3;
+
 export function CandidateTable({
   rows,
   selectedKeys,
@@ -21,7 +25,7 @@ export function CandidateTable({
   selectedKeys: string[];
   onToggle: (key: string) => void;
 }) {
-  const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" } | null>(null);
+  const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "score", dir: "desc" });
   const [query, setQuery] = useState("");
 
   const visible = useMemo(() => {
@@ -29,12 +33,12 @@ export function CandidateTable({
     const filtered = q
       ? rows.filter((r) => `${r.model} ${r.effort} ${fmtEffort(r.effort)}`.toLowerCase().includes(q))
       : rows;
-    return sort ? sortCandidates(filtered, sort.key, sort.dir) : filtered;
+    return sortCandidates(filtered, sort.key, sort.dir);
   }, [rows, query, sort]);
 
   const click = (key: SortKey) => {
     setSort((prev) =>
-      prev && prev.key === key
+      prev.key === key
         ? { key, dir: prev.dir === "asc" ? "desc" : "asc" }
         : { key, dir: COLUMNS.find((c) => c.key === key)?.defaultDir ?? "asc" },
     );
@@ -54,17 +58,19 @@ export function CandidateTable({
             <tr>
               <th scope="col">选择</th>
               {COLUMNS.map((c) => (
-                <th
-                  key={c.key}
-                  scope="col"
-                  aria-sort={
-                    sort?.key === c.key ? (sort.dir === "asc" ? "ascending" : "descending") : "none"
-                  }
-                >
-                  <button type="button" onClick={() => click(c.key)}>
-                    {c.label}
-                  </button>
-                </th>
+                <Fragment key={c.key}>
+                  <th
+                    scope="col"
+                    aria-sort={
+                      sort.key === c.key ? (sort.dir === "asc" ? "ascending" : "descending") : "none"
+                    }
+                  >
+                    <button type="button" onClick={() => click(c.key)}>
+                      {c.label}
+                    </button>
+                  </th>
+                  {c.key === STATUS_AFTER && <th scope="col">状态</th>}
+                </Fragment>
               ))}
               <th scope="col">Δ</th>
             </tr>
@@ -72,8 +78,8 @@ export function CandidateTable({
           <tbody>
             {visible.length === 0 && (
               <tr>
-                <td colSpan={8} className="muted">
-                  没有匹配的候选
+                <td colSpan={COLUMN_COUNT} className="muted">
+                  {rows.length === 0 ? "暂无候选" : "没有匹配的候选"}
                 </td>
               </tr>
             )}
@@ -94,6 +100,9 @@ export function CandidateTable({
                   <td>{fmtEffort(r.effort)}</td>
                   <td>{fmtScore(r.score)}</td>
                   <td>{fmtPercent(r.coverage / Math.max(1, r.required_tasks))}</td>
+                  <td className={r.score_status === "provisional" ? "muted" : undefined}>
+                    {STATUS_LABELS[r.score_status]}
+                  </td>
                   <td>{r.graded_runs_count}</td>
                   <td>{fmtDateTime(r.latest_graded_at)}</td>
                   <td className={delta != null && delta < 0 ? "down" : ""}>
