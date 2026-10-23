@@ -187,11 +187,6 @@ export async function refreshAll({
   }
 
   const available = results.filter((r) => r.summary);
-  if (available.length < minimum) {
-    throw new Error(
-      `only ${available.length}/${binding.candidates.length} candidates available (minimum ${minimum})`,
-    );
-  }
   const availableBinding = { ...bindingRaw, model_efforts: available.map((r) => r.candidate) };
 
   const roundRaw = await fetchJson(ROUND_URL, {}, fetchImpl);
@@ -218,6 +213,8 @@ export async function refreshAll({
   validateRound(roundData, { minCandidates: minRoundCandidates ?? 30 });
 
   const latest = maxLatest(available.map((r) => r.summary));
+  const latestStale = staleDays(latest, now()) ?? 0;
+  const roundStale = staleDays(roundData.round.updated_at, now()) ?? 0;
   const status = {
     checked_at: stamp,
     ok: true,
@@ -227,7 +224,7 @@ export async function refreshAll({
     round_ok: true,
     latest_graded_at: latest,
     round_updated_at: roundData.round.updated_at,
-    stale_days: staleDays(latest, now()) ?? 0,
+    stale_days: Math.max(latestStale, roundStale),
     errors,
   };
 

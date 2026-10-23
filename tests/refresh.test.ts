@@ -41,6 +41,25 @@ describe("refreshAll", () => {
     expect(status.candidates_ok).toBe(3);
   });
 
+  it("marks data stale when only round.updated_at is old", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "iq-refresh-"));
+    const staleRound = JSON.parse(JSON.stringify(roundRaw));
+    staleRound.round.updated_at = "2026-09-01T00:00:00Z";
+    const fetchImpl = vi.fn(async (url: string) => {
+      if (url.includes("radar-bench-binding")) return jsonResponse(bindingRaw);
+      if (url.includes("radar-bench-score")) {
+        const u = new URL(url);
+        return jsonResponse({ ...summaryRaw, model: u.searchParams.get("model"), effort: u.searchParams.get("effort") });
+      }
+      if (url.includes("degradation-codex-latest")) return jsonResponse(staleRound);
+      throw new Error("unexpected url " + url);
+    });
+    const result = await refreshAll({ fetchImpl: fetchImpl as unknown as typeof fetch, outDir: dir, now: () => new Date("2026-10-24T00:00:00Z"), minRadarCandidates: 3, minRoundCandidates: 2 });
+    expect(result.status.stale_days).toBeGreaterThanOrEqual(7);
+    const status = JSON.parse(await readFile(join(dir, "status.json"), "utf8"));
+    expect(status.stale_days).toBe(result.status.stale_days);
+  });
+
   it("throws when too few summaries succeed", async () => {
     const dir = await mkdtemp(join(tmpdir(), "iq-refresh-"));
     const fetchImpl = vi.fn(async (url: string) => {
