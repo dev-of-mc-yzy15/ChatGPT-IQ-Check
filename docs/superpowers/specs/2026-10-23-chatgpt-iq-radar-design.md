@@ -31,7 +31,7 @@ CodexRadar 关键字段（顶层）：`schema, mode, source_updated_at, points[]
 flowchart LR
   CR[codexradar.com JSON<br/>含 points + history] --> A
   ST[status.openai.com summary] --> A
-  A[GitHub Action refresh-data<br/>定时 + 手动] --> T[裁剪/降采样<br/>Node 脚本]
+  A[GitHub Action refresh-data<br/>定时 + 手动] --> T[裁剪字段/透视压缩<br/>Node 脚本]
   T --> D[public/data/latest.json<br/>public/data/history.json]
   D --> B[Vite build base=/ChatGPT-IQ-Check/]
   B --> P[GitHub Actions deploy-pages]
@@ -56,7 +56,7 @@ flowchart LR
 - 步骤：checkout → setup-node → 运行 `scripts/refresh.mjs`：
   1. 拉 CodexRadar + OpenAI Status 两个 URL（带重试/超时）。
   2. 生成 `public/data/latest.json`：当前 `points`（保留展示所需字段 + 计算 `recommend_score = iq − 1.5 × average_minutes`）+ `status` 摘要 + 从 `history` 派生的**轻量 Δ 徽标**（仅"当前 iq vs N 天前 iq"的差值，纯展示）。
-  3. 生成 `public/data/history.json`：对 `history[]` 做**降采样**（按天或每 K 点取一，保留近 90 天窗口），控制体积（目标 < 500KB）。
+  3. 生成 `public/data/history.json`：**全保真**（不做时间降采样）。实测 history 仅 ~416 快照 / ~16277 点，体积虚胖源于每点 ~16 冗余字段 + 美化格式；因此只做三件事即可把体积压到 ~240KB：①字段裁剪（保留 `at`，每条 series 保留 `iq`，可选 `pass_rate/avg_minutes/avg_price_usd`）；②透视成 `series[]`（model×effort 字符串不再逐点重复）；③压缩 JSON（不格式化）。趋势曲线保留完整分辨率。
   4. 失败容错见 §7。
   5. 若有变化，commit `public/data/` 回 main，commit message 带 `[skip ci]` 避免与 deploy 触发循环。
 - 权限：`contents: write`（提交数据）。使用专用 SSH 密钥（项目 SCM 约定 `dev-of-mc-yzy15`）或默认 `GITHUB_TOKEN`——**具体用哪个由用户在实现/启用前确认**。
@@ -110,7 +110,6 @@ flowchart LR
 ### `public/data/history.json`
 ```jsonc
 {
-  "window_days": 90,
   "series": [
     { "model": "gpt-6-astra", "effort": "high",
       "points": [ { "at": "ISO8601", "iq": 108.2, "pass_rate": 0.72,
@@ -145,7 +144,7 @@ flowchart LR
 
 - `package.json` / `tsconfig.json` / `vite.config.ts`（`base=/ChatGPT-IQ-Check/`）
 - `index.html` + `src/`（React 组件、`lib/`、`data/`、`types.ts`、主题样式）
-- `scripts/refresh.mjs`（抓取 + 裁剪 + 降采样 + 容错）
+- `scripts/refresh.mjs`（抓取 + 字段裁剪 + 透视压缩 + 容错）
 - `.github/workflows/refresh-data.yml`、`.github/workflows/deploy.yml`
 - `public/data/latest.json`、`public/data/history.json`（首次可由 refresh 本地生成一份种子数据）
 - `README.md`（本地开发、数据刷新、Pages 部署、需用户确认的启用步骤）
