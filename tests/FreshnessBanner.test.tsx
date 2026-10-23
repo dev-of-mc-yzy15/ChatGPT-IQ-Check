@@ -3,6 +3,8 @@ import { render, screen } from "@testing-library/react";
 import { FreshnessBanner } from "../src/components/FreshnessBanner";
 import type { StatusData } from "../src/types";
 
+const NOW = new Date("2026-10-24T02:00:00Z").getTime();
+
 const status: StatusData = {
   checked_at: "2026-10-24T00:00:00Z",
   ok: true,
@@ -16,15 +18,55 @@ const status: StatusData = {
   errors: [],
 };
 
+function renderBanner(overrides: Partial<StatusData> = {}, now = NOW) {
+  const merged = { ...status, ...overrides };
+  return render(
+    <FreshnessBanner status={merged} roundUpdatedAt={merged.round_updated_at} now={now} />
+  );
+}
+
+const hoursAgo = (hours: number) => new Date(NOW - hours * 3_600_000).toISOString();
+
 describe("FreshnessBanner", () => {
-  it("shows fresh state", () => {
-    render(<FreshnessBanner status={status} roundUpdatedAt={status.round_updated_at!} now={new Date("2026-10-24T02:00:00Z").getTime()} />);
-    expect(screen.getByRole("status")).toHaveTextContent("数据检查于");
-    expect(screen.queryByText(/数据可能已过期/)).not.toBeInTheDocument();
+  it("shows fresh state with timestamps and candidate counts", () => {
+    renderBanner();
+    const banner = screen.getByRole("status");
+    expect(banner).toHaveTextContent("数据检查于");
+    expect(banner).toHaveTextContent("2026-10-24 08:00");
+    expect(banner).toHaveTextContent("2 小时前");
+    expect(banner).toHaveTextContent("2026-10-23 09:19");
+    expect(banner).toHaveTextContent("2026-10-23 18:43");
+    expect(banner).toHaveTextContent("34/34 候选");
+    expect(banner).not.toHaveTextContent("数据可能已过期");
+    expect(banner).not.toHaveTextContent("数据检查已超过 48 小时");
   });
 
-  it("warns when data is stale", () => {
-    render(<FreshnessBanner status={{ ...status, stale_days: 9 }} roundUpdatedAt={status.round_updated_at!} now={new Date("2026-10-24T02:00:00Z").getTime()} />);
-    expect(screen.getByRole("status")).toHaveTextContent(/数据可能已过期/);
+  it("does not warn when checked_at is 47 hours old", () => {
+    renderBanner({ checked_at: hoursAgo(47) });
+    const banner = screen.getByRole("status");
+    expect(banner).not.toHaveTextContent("数据检查已超过 48 小时");
+    expect(banner).not.toHaveTextContent("数据可能已过期");
+  });
+
+  it("warns when checked_at is 49 hours old", () => {
+    renderBanner({ checked_at: hoursAgo(49) });
+    const banner = screen.getByRole("status");
+    expect(banner).toHaveTextContent("数据检查已超过 48 小时");
+    expect(banner).not.toHaveTextContent("数据可能已过期");
+  });
+
+  it("does not warn when stale_days is exactly 7", () => {
+    renderBanner({ stale_days: 7 });
+    expect(screen.getByRole("status")).not.toHaveTextContent("数据可能已过期");
+  });
+
+  it("warns when stale_days is greater than 7", () => {
+    renderBanner({ stale_days: 8 });
+    expect(screen.getByRole("status")).toHaveTextContent("数据可能已过期（超过 7 天）");
+  });
+
+  it("shows the reused-data line when errors are present", () => {
+    renderBanner({ errors: ["fetch failed", "timeout"] });
+    expect(screen.getByRole("status")).toHaveTextContent("部分候选复用旧数据：2 条");
   });
 });

@@ -4,27 +4,28 @@ interface Props {
   children: ReactNode;
 }
 interface State {
-  error: Error | null;
+  error: unknown;
 }
 
 export class ErrorBoundary extends Component<Props, State> {
   state: State = { error: null };
 
-  static getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: unknown): State {
     return { error };
   }
 
-  componentDidCatch(error: Error, info: ErrorInfo) {
+  componentDidCatch(error: unknown, info: ErrorInfo) {
     console.error("render error", error, info);
   }
 
   render() {
-    if (this.state.error) {
+    if (this.state.error !== null) {
+      const { error } = this.state;
       return (
         <main id="main">
           <div className="card" role="alert">
             <h1>页面渲染失败</h1>
-            <p className="muted">{this.state.error.message}</p>
+            <p className="muted">{error instanceof Error ? error.message : String(error)}</p>
             <button type="button" onClick={() => this.setState({ error: null })}>
               重试
             </button>
