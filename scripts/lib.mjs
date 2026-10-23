@@ -15,10 +15,12 @@ export function transformBinding(raw) {
     candidates.push({ model, effort });
   }
   if (!candidates.length) throw new Error("binding: model_efforts is empty");
+  const rawScoreMax = raw?.score_max;
+  const scoreMax = rawScoreMax == null ? NaN : Number(rawScoreMax);
   return {
     benchmark: String(raw?.benchmark ?? ""),
     score_version: String(raw?.score_version ?? ""),
-    score_max: Number(raw?.score_max ?? SCORE_MAX),
+    score_max: Number.isFinite(scoreMax) ? scoreMax : SCORE_MAX,
     catalog_version: String(raw?.catalog_version ?? ""),
     task_set_sha256: String(raw?.task_set_sha256 ?? ""),
     candidates,
@@ -30,7 +32,7 @@ export function transformSummary(raw) {
   const model = String(raw.model ?? "").trim();
   const effort = String(raw.effort ?? "").trim();
   if (!model || !effort) throw new Error("summary: missing model/effort");
-  const score = Number(raw.score);
+  const score = raw.score == null ? NaN : Number(raw.score);
   if (!Number.isFinite(score)) throw new Error("summary: invalid score");
   const points = Array.isArray(raw?.history?.points) ? raw.history.points : [];
   const history = points
@@ -43,6 +45,8 @@ export function transformSummary(raw) {
     }))
     .filter((p) => p.at && Number.isFinite(p.score))
     .sort((a, b) => new Date(a.at) - new Date(b.at));
+  const elapsedMsMean = raw.statistics?.metrics?.elapsed_ms?.mean;
+  const apiEquivalentUsdMean = raw.statistics?.metrics?.api_equivalent_usd?.mean;
   return {
     model,
     effort,
@@ -64,12 +68,18 @@ export function transformSummary(raw) {
     ),
     statistics: {
       sample_count: Number(raw.statistics?.sample_count ?? 0),
-      elapsed_ms_mean: Number.isFinite(Number(raw.statistics?.metrics?.elapsed_ms?.mean))
-        ? Number(raw.statistics.metrics.elapsed_ms.mean)
-        : null,
-      api_equivalent_usd_mean: Number.isFinite(Number(raw.statistics?.metrics?.api_equivalent_usd?.mean))
-        ? Number(raw.statistics.metrics.api_equivalent_usd.mean)
-        : null,
+      elapsed_ms_mean:
+        elapsedMsMean == null
+          ? null
+          : Number.isFinite(Number(elapsedMsMean))
+            ? Number(elapsedMsMean)
+            : null,
+      api_equivalent_usd_mean:
+        apiEquivalentUsdMean == null
+          ? null
+          : Number.isFinite(Number(apiEquivalentUsdMean))
+            ? Number(apiEquivalentUsdMean)
+            : null,
     },
     latest_graded_at: raw.detail_metrics?.latest_graded_at ?? null,
     history,

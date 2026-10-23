@@ -20,6 +20,29 @@ describe("transformBinding", () => {
     expect(b.score_max).toBe(150);
   });
 
+  it("drops duplicate model/effort pairs, keeping the first occurrence", () => {
+    const b = transformBinding({
+      model_efforts: [
+        { model: "gpt-6-astra", effort: "high" },
+        { model: "gpt-6-astra", effort: "high" },
+        { model: "gpt-6-astra", effort: "low" },
+        { model: "gpt-6-astra", effort: "high" },
+      ],
+    });
+    expect(b.candidates).toEqual([
+      { model: "gpt-6-astra", effort: "high" },
+      { model: "gpt-6-astra", effort: "low" },
+    ]);
+  });
+
+  it("falls back to SCORE_MAX when score_max is not finite", () => {
+    const b = transformBinding({
+      model_efforts: [{ model: "gpt-6-astra", effort: "high" }],
+      score_max: "nope",
+    });
+    expect(b.score_max).toBe(150);
+  });
+
   it("throws on empty model_efforts", () => {
     expect(() => transformBinding({ model_efforts: [] })).toThrow(/empty/);
   });
@@ -40,6 +63,44 @@ describe("transformSummary", () => {
 
   it("throws on invalid score", () => {
     expect(() => transformSummary({ ...summaryRaw, score: "nope" })).toThrow(/invalid score/);
+  });
+
+  it("throws on null score instead of coercing it to 0", () => {
+    expect(() => transformSummary({ ...summaryRaw, score: null })).toThrow(/invalid score/);
+  });
+
+  it("preserves null elapsed_ms.mean instead of coercing it to 0", () => {
+    const s = transformSummary({
+      model: "gpt-6-astra",
+      effort: "high",
+      score: 100,
+      statistics: {
+        sample_count: 1,
+        metrics: {
+          elapsed_ms: { mean: null },
+          api_equivalent_usd: { mean: 3 },
+        },
+      },
+    });
+    expect(s.statistics.elapsed_ms_mean).toBeNull();
+    expect(s.statistics.api_equivalent_usd_mean).toBe(3);
+  });
+
+  it("preserves null api_equivalent_usd.mean instead of coercing it to 0", () => {
+    const s = transformSummary({
+      model: "gpt-6-astra",
+      effort: "high",
+      score: 100,
+      statistics: {
+        sample_count: 1,
+        metrics: {
+          elapsed_ms: { mean: 1000 },
+          api_equivalent_usd: { mean: null },
+        },
+      },
+    });
+    expect(s.statistics.elapsed_ms_mean).toBe(1000);
+    expect(s.statistics.api_equivalent_usd_mean).toBeNull();
   });
 });
 
