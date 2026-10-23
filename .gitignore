@@ -21,3 +21,14 @@ Gemfile.lock
 # These are AI-assistant working files, not part of the shipped project.
 docs/superpowers/
 .superpowers/
+
+# Node / Vite
+node_modules/
+dist/
+coverage/
+.vite/
+*.tsbuildinfo
+*.log
+.env
+.env.*
+.worktrees/
