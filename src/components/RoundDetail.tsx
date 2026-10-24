@@ -32,7 +32,7 @@ export function RoundDetail({
       </p>
       <div className="table-wrap">
         <table>
-          <caption className="muted">7 题逐项结果</caption>
+          <caption className="muted">{tasks.length} 题逐项结果</caption>
           <thead>
             <tr>
               <th scope="col">任务</th>

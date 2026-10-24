@@ -168,7 +168,15 @@ export function transformRound(raw) {
         }))
         .filter((t) => t.id)
     : [];
-  if (tasks.length !== 7) throw new Error("round: expected 7 tasks, got " + tasks.length);
+  // 任务集会随上游任务轮换而变化（例如 7 题 → 8 题），这里不做数量硬校验，
+  // 只要求非空，并校验与上游声明的 task_count 一致。
+  if (!tasks.length) throw new Error("round: no tasks");
+  const declaredTaskCount = Number(raw?.taskset?.task_count ?? raw?.round?.task_count);
+  if (Number.isFinite(declaredTaskCount) && declaredTaskCount !== tasks.length) {
+    throw new Error(
+      `round: task_count ${declaredTaskCount} != tasks ${tasks.length}`,
+    );
+  }
   const results = raw?.round?.results ?? {};
   const animations = raw?.round?.animations ?? {};
   const candidates = Object.entries(results).map(([key, taskResults]) => {
@@ -232,7 +240,9 @@ export function transformRound(raw) {
       completed_at: String(raw?.round?.completed_at ?? ""),
       updated_at: String(raw?.round?.updated_at ?? ""),
       taskset_version: String(raw?.round?.taskset_version ?? ""),
-      task_count: Number(raw?.round?.task_count ?? tasks.length),
+      task_count: Number(
+        raw?.round?.task_count ?? raw?.taskset?.task_count ?? tasks.length,
+      ),
       timings: raw?.round?.timings ?? {},
     },
     tasks,
@@ -243,7 +253,7 @@ export function transformRound(raw) {
 export function validateRound(data, { minCandidates = 30 } = {}) {
   if (!data || data.schema_version !== 1) throw new Error("round: bad schema_version");
   if (!data.round || !data.round.updated_at) throw new Error("round: missing updated_at");
-  if (!Array.isArray(data.tasks) || data.tasks.length !== 7) throw new Error("round: expected 7 tasks");
+  if (!Array.isArray(data.tasks) || data.tasks.length === 0) throw new Error("round: no tasks");
   if (!Array.isArray(data.candidates) || data.candidates.length < minCandidates) {
     throw new Error("round: too few candidates");
   }

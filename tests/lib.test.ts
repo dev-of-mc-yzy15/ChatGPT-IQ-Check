@@ -180,6 +180,25 @@ describe("transformRound", () => {
   it("validates schema and task count", () => {
     const r = { schema_version: 1, ...transformRound(roundRaw) };
     expect(() => validateRound(r, { minCandidates: 2 })).not.toThrow();
-    expect(() => validateRound({ ...r, tasks: [] }, { minCandidates: 2 })).toThrow(/7 tasks/);
+    expect(() => validateRound({ ...r, tasks: [] }, { minCandidates: 2 })).toThrow(/no tasks/);
+  });
+  // 回归：上游任务集会轮换（7 → 8 题），不能硬编码数量。
+  it("accepts a task set whose size differs from the fixture", () => {
+    const extra = {
+      ...roundRaw,
+      tasks: [
+        ...roundRaw.tasks,
+        { id: "extra-task", category: "x", title_zh: "额外", title_en: "extra", weight: 1, required: true },
+      ],
+      taskset: { ...roundRaw.taskset, task_count: 8 },
+    };
+    const r = transformRound(extra);
+    expect(r.tasks).toHaveLength(8);
+    expect(r.round.task_count).toBe(8);
+    expect(() => validateRound({ schema_version: 1, ...r }, { minCandidates: 2 })).not.toThrow();
+  });
+  it("rejects a task list that disagrees with the declared task_count", () => {
+    const mismatched = { ...roundRaw, taskset: { ...roundRaw.taskset, task_count: 9 } };
+    expect(() => transformRound(mismatched)).toThrow(/task_count 9 != tasks 7/);
   });
 });

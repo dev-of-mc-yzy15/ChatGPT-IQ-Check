@@ -38,7 +38,7 @@ export function RoundMatrix({
         {unknownCostTasks > 0 ? `（${unknownCostTasks} 题成本未知）` : ""}
       </p>
       <p className="muted">
-        7 题一轮 · 分数 = 100 × 平均 reward × 1.5 · 满分 150 · 数据更新{" "}
+        {round.round.task_count || round.tasks.length} 题一轮 · 分数 = 100 × 平均 reward × 1.5 · 满分 150 · 数据更新{" "}
         {fmtDateTime(round.round.updated_at)}
       </p>
       <div className="table-wrap" style={{ overflowX: "auto" }}>
