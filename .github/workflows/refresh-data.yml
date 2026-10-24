@@ -1,0 +1,67 @@
+name: Refresh data
+
+# 上游 CodexRadar 基本每日更新，这里跟在其日更之后跑一次。
+# UTC 00:30 ≈ 北京时间 08:30。
+on:
+  schedule:
+    - cron: "30 0 * * *"
+  workflow_dispatch:
+
+# 需要写权限把刷新后的 JSON 提交回 main。
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-data
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Refresh data
+        # 失败时脚本退出码为 1（成功率低于 80% 或校验不通过），
+        # 此时不会覆盖已有 JSON，站点继续显示旧数据。
+        run: npm run refresh
+
+      - name: Commit refreshed data
+        id: commit
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data
+          if git diff --cached --quiet; then
+            echo "数据无变化，跳过提交"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "chore(data): refresh radar data"
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  # GITHUB_TOKEN 推送不会触发 deploy.yml 的 push 事件，
+  # 所以这里显式调用部署，保证新数据能上线。
+  deploy:
+    needs: refresh
+    if: needs.refresh.outputs.changed == 'true'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/deploy.yml

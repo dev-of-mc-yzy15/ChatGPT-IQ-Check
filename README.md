@@ -1,0 +1,212 @@
+# 降智雷达 · ChatGPT IQ Check
+
+把 [CodexRadar](https://codexradar.com/) 公开的 RadarBench 分数做成一个每天自动刷新的静态看板：
+模型 × 推理档位矩阵、逐题明细、日桶趋势曲线、降智信号标记。
+
+> **免责声明**
+> 本项目是**非官方**项目，与 OpenAI 无任何关联。
+> 分数是第三方基准测试分数，**不是心理学 IQ**，也不代表模型的通用能力。
+> 数据版权归 codexradar.com 所有。
+
+线上地址：<https://dev-of-mc-yzy15.github.io/ChatGPT-IQ-Check/>
+
+---
+
+## 它做什么 / 不做什么
+
+**做**
+
+- 展示 CodexRadar 的 RadarBench 加权分数（0–150）与覆盖率、评分状态。
+- 给出「本轮雷达」：模型 × 档位（低 / 中 / 高 / 极高 / 最高 / 极限）的分数矩阵，点开可看逐题得分、耗时、成本。
+- 给出「RadarBench 趋势」：按日桶聚合的历史曲线，缺口断开、空心力点表示 provisional、红点标出降智信号。
+- 顶部新鲜度横幅：数据检查时间、最近评分时间、本轮更新时间，超 48h / 7d 两级告警。
+- 深浅色主题、键盘可达（跳过链接 / 焦点样式）、错误边界与空态。
+
+**不做**
+
+- 不自己跑模型评测，不自己实现降智判定算法——信号完全来自上游数据。
+- 没有后端、没有数据库、不存任何密钥。
+- 不在浏览器里直连第三方接口——抓取与裁剪都在 GitHub Actions 里完成。
+
+## 技术栈
+
+React 19 · TypeScript 5 · Vite 8 · Vitest 5 · 原生 CSS 变量（无 UI 框架）· 自绘 SVG 图表（无图表库）
+
+Node 版本要求：**>= 24**。
+
+## 目录结构
+
+```
+src/
+  App.tsx               页面组合：本轮雷达 / 趋势 / 关于 三个 tab
+  components/           RoundMatrix RoundDetail CandidateTable TrendChart
+                        TrendControls FreshnessBanner ThemeToggle SkipLink ErrorBoundary
+  data/loader.ts        拉取 + 校验 public/data/*.json，带超时与错误态
+  lib/derive.ts         纯函数：排序 / Δ / 降智点 / 日桶 / 矩阵
+  lib/format.ts         格式化：分数、耗时、成本、时间
+  lib/useTheme.ts       主题读写与系统偏好跟随
+  styles/theme.css      CSS 变量与基础样式
+  types.ts              数据契约类型
+scripts/
+  refresh.mjs           抓取 CLI：拉上游 → 归一化 → 校验 → 原子写入
+  lib.mjs               纯函数：转换、合并、契约校验（有单测覆盖）
+public/data/
+  radar-bench.json      候选分数 + 历史序列
+  round.json            本轮逐题明细
+  status.json           抓取状态与新鲜度
+tests/                  Vitest 单测与组件测试 + fixtures
+```
+
+## 本地开发
+
+```bash
+npm ci
+npm run dev        # 开发服务器（base 为 /ChatGPT-IQ-Check/）
+npm test           # 跑一遍测试
+npm run build      # tsc -b + vite build，产物在 dist/
+npm run preview    # 预览构建产物
+```
+
+> `vite.config.ts` 里 `base` 固定为 `/ChatGPT-IQ-Check/`，所以本地访问要带上这个前缀：
+> <http://localhost:5173/ChatGPT-IQ-Check/>
+
+## 刷新数据
+
+```bash
+npm run refresh           # 抓取并写入 public/data/
+npm run refresh -- --force  # 内容没变也强制重写（重置时间戳）
+```
+
+行为要点：
+
+- 上游三个接口：`radar-bench-binding.json`（候选清单）、`api/radar-bench-score`（单候选分数，并发 4）、`degradation-codex-latest.json`（本轮明细）。
+- 失败重试 3 次、指数退避；单个候选失败时**回退到上一次已提交的数据**，不写坏数据。
+- 成功数低于 `max(30, 候选数 × 80%)` 时整体失败、退出码 1，不会覆盖已有 JSON。
+- 写入是**原子的**（临时文件 + rename），不会出现半截 JSON。
+- **幂等**：忽略 `generated_at` / `checked_at` / `fetch_id` 后内容相同就不重写，避免 Actions 里产生空提交。
+
+## 部署（GitHub Pages）
+
+两个 workflow：
+
+| 文件 | 触发 | 作用 |
+|---|---|---|
+| `.github/workflows/refresh-data.yml` | 每天 UTC 00:30 + 手动 | 跑 `refresh.mjs`，有变化就提交 `public/data/`，然后调用部署 |
+| `.github/workflows/deploy.yml` | push 到 main、手动、被 refresh 调用 | `npm run build` → 上传产物 → 部署 Pages |
+
+> **为什么 refresh 要显式调用 deploy？**
+> 用 `GITHUB_TOKEN` 推送产生的 `push` 事件**不会**触发其他 workflow（GitHub 的防递归规则），
+> 所以 refresh 提交完数据后必须显式 `uses: ./.github/workflows/deploy.yml`，否则站点不会更新。
+
+### 首次启用（需手动操作一次）
+
+1. 仓库 **Settings → Pages → Build and deployment → Source** 选 **GitHub Actions**。
+2. 确认 **Settings → Actions → General → Workflow permissions** 允许读写（默认即可，workflow 内已声明最小权限）。
+3. 手动跑一次 `Refresh data` workflow 或直接 push 到 main，触发首次部署。
+
+不需要配置任何 secret，用的是默认 `GITHUB_TOKEN`。
+
+## 数据契约
+
+三份 JSON 都由 `scripts/refresh.mjs` 生成，`scripts/lib.mjs` 负责校验，前端 `src/types.ts` 与之对应。
+
+### `radar-bench.json`
+
+```jsonc
+{
+  "schema_version": 1,
+  "generated_at": "ISO8601",
+  "checked_at": "ISO8601",
+  "benchmark": "radar-bench",
+  "score_version": "…",
+  "score_max": 150,
+  "candidates": [
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "high",
+      "score": 126.9,
+      "coverage": 1.0,
+      "required_tasks": 64,
+      "score_status": "complete",
+      "graded_runs_count": 87,
+      "source_scores": { "…": { "score": 0, "coverage": 0, "required_tasks": 0, "graded_runs_count": 0 } },
+      "statistics": { "sample_count": 0, "elapsed_ms_mean": null, "api_equivalent_usd_mean": null },
+      "latest_graded_at": "ISO8601",
+      "history": [
+        { "at": "ISO8601", "score": 124.1, "coverage": 1.0,
+          "required_tasks": 64, "score_status": "complete" }
+      ]
+    }
+  ]
+}
+```
+
+### `round.json`
+
+```jsonc
+{
+  "schema_version": 1,
+  "generated_at": "ISO8601",
+  "checked_at": "ISO8601",
+  "source_schema": "…",
+  "round": {
+    "id": "…", "status": "…",
+    "started_at": "ISO8601", "completed_at": "ISO8601", "updated_at": "ISO8601",
+    "taskset_version": "…", "task_count": 64, "timings": {}
+  },
+  "tasks": [
+    { "id": "…", "category": "…", "title_zh": "…", "title_en": "…",
+      "weight": 1, "required": true }
+  ],
+  "candidates": [
+    {
+      "model": "gpt-6.1-sol", "effort": "high",
+      "score": 126.9, "score_max": 150,
+      "score_status": "complete",        // complete | partial
+      "scored_tasks": 64, "total_tasks": 64,
+      "tasks": [
+        { "task_id": "…", "status": "…", "reward": 1, "seconds": 12.3, "cost_usd": 0.01 }
+      ],
+      "totals": { "seconds": 0, "cost_usd": 0, "cost_known_tasks": 0, "cost_unknown_tasks": 0 },
+      "animation": null                   // 或 { status, score, scores, reason, seconds, cost_usd, asset_url }
+    }
+  ]
+}
+```
+
+### `status.json`
+
+```jsonc
+{
+  "checked_at": "ISO8601",
+  "ok": true,
+  "benchmark": "radar-bench",
+  "candidates_ok": 34,
+  "candidates_total": 34,
+  "round_ok": true,
+  "latest_graded_at": "ISO8601",
+  "round_updated_at": "ISO8601",
+  "stale_days": 0,
+  "errors": []
+}
+```
+
+## 降智信号判定
+
+前端只做展示，判定规则写在 `src/lib/derive.ts`：
+
+> 相邻日桶分数下降 **≥ 5 分**，且覆盖率 **≥ 90%**、评分状态为 `complete` → 标记为降智点（红点）。
+
+## 测试
+
+```bash
+npm test          # 单次
+npm run test:watch
+```
+
+覆盖纯函数（排序 / Δ / 日桶 / 矩阵 / 格式化）、loader 的错误态、抓取脚本的转换与去重、以及主要组件的渲染与交互。
+fixtures 在 `tests/fixtures/`，是从上游真实响应裁剪出的样本。
+
+## 许可
+
+[AGPL-3.0-or-later](./LICENSE)
