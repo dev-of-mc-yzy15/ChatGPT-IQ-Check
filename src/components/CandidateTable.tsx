@@ -2,6 +2,7 @@ import { Fragment, useMemo, useState } from "react";
 import type { RadarCandidate, ScoreStatus } from "../types";
 import { computeDelta, sortCandidates, type SortKey } from "../lib/derive";
 import { fmtDateTime, fmtDelta, fmtEffort, fmtPercent, fmtScore } from "../lib/format";
+import { ModelName } from "./ModelName";
 
 const COLUMNS: { key: SortKey; label: string; defaultDir: "asc" | "desc" }[] = [
   { key: "model", label: "模型", defaultDir: "asc" },
@@ -96,7 +97,7 @@ export function CandidateTable({
                       aria-label={`选择 ${r.model} ${fmtEffort(r.effort)}`}
                     />
                   </td>
-                  <th scope="row">{r.model}</th>
+                  <th scope="row"><ModelName name={r.model} /></th>
                   <td>{fmtEffort(r.effort)}</td>
                   <td>{fmtScore(r.score)}</td>
                   <td>{fmtPercent(r.coverage / Math.max(1, r.required_tasks))}</td>

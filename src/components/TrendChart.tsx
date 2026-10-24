@@ -1,6 +1,7 @@
 import type { RadarCandidate } from "../types";
 import { buildDailyGrid, computeDelta, findDegradationPoints } from "../lib/derive";
 import { fmtDateTime, fmtDelta, fmtEffort, fmtScore } from "../lib/format";
+import { ModelName } from "./ModelName";
 
 const W = 860;
 const H = 340;
@@ -111,7 +112,7 @@ export function TrendChart({ candidates }: { candidates: RadarCandidate[] }) {
         {candidates.map((c, i) => (
           <span key={c.model + "|" + c.effort} className="muted">
             <span style={{ display: "inline-block", width: 10, height: 10, background: COLORS[i % COLORS.length], borderRadius: 999 }} />{" "}
-            {c.model} · {fmtEffort(c.effort)}
+            <ModelName name={c.model} /> · {fmtEffort(c.effort)}
           </span>
         ))}
       </div>
@@ -127,7 +128,7 @@ export function TrendChart({ candidates }: { candidates: RadarCandidate[] }) {
                 return (
                   <tr key={c.model + c.effort + p.at}>
                     <td>{fmtDateTime(p.at)}</td>
-                    <td>{c.model} · {fmtEffort(c.effort)}</td>
+                    <td><ModelName name={c.model} /> · {fmtEffort(c.effort)}</td>
                     <td>{fmtScore(p.score)}</td>
                     <td className={delta != null && delta < 0 ? "down" : ""}>{fmtDelta(delta)}</td>
                   </tr>

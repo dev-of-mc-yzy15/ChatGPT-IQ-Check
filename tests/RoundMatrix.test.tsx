@@ -61,6 +61,12 @@ describe("RoundMatrix", () => {
     expect(screen.getByRole("button", { name: /A 低/ })).toHaveAttribute("aria-pressed", "false");
   });
 
+  it("wraps model row headers in lang=en for screen readers", () => {
+    render(<RoundMatrix round={round} selectedKey={null} onSelect={() => {}} />);
+    expect(screen.getByText("A").closest("[lang='en']")).toHaveAttribute("lang", "en");
+    expect(screen.getByText("B").closest("[lang='en']")).toHaveAttribute("lang", "en");
+  });
+
   it("calls onSelect with model|effort on click", async () => {
     const onSelect = vi.fn();
     render(<RoundMatrix round={round} selectedKey={null} onSelect={onSelect} />);

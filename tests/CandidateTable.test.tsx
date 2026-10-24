@@ -101,6 +101,11 @@ describe("CandidateTable", () => {
     expect(scoreHeader).toHaveAttribute("aria-sort", "ascending");
   });
 
+  it("wraps the model name in lang=en for screen readers", () => {
+    render(<CandidateTable rows={[mk({ model: "A" })]} selectedKeys={[]} onToggle={() => {}} />);
+    expect(screen.getByText("A").closest("[lang='en']")).toHaveAttribute("lang", "en");
+  });
+
   it("renders a negative delta with the down class and window days", () => {
     render(<CandidateTable rows={[mk({ model: "A" })]} selectedKeys={[]} onToggle={() => {}} />);
     const cell = screen.getByText(/-5\.0/).closest("td");

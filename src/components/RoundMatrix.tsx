@@ -1,6 +1,7 @@
 import type { RoundData } from "../types";
 import { fmtDateTime, fmtEffort, fmtMoney, fmtScore, fmtSeconds } from "../lib/format";
 import { roundMatrix } from "../lib/derive";
+import { ModelName } from "./ModelName";
 
 type ScoreBand = "high" | "mid" | "low" | "verylow";
 
@@ -54,7 +55,7 @@ export function RoundMatrix({
           <tbody>
             {models.map((model) => (
               <tr key={model}>
-                <th scope="row">{model}</th>
+                <th scope="row"><ModelName name={model} /></th>
                 {efforts.map((effort) => {
                   const key = model + "|" + effort;
                   const cell = cells.get(key);

@@ -1,5 +1,6 @@
 import type { RadarCandidate } from "../types";
 import { fmtEffort, fmtScore } from "../lib/format";
+import { ModelName } from "./ModelName";
 
 export function TrendControls({
   rows,
@@ -24,7 +25,7 @@ export function TrendControls({
           return (
             <label key={key} className="card" style={{ padding: "6px 10px" }}>
               <input type="checkbox" checked={checked} disabled={disabled} onChange={() => onToggle(key)} />
-              {" "}{r.model} · {fmtEffort(r.effort)} · {fmtScore(r.score)}
+              {" "}<ModelName name={r.model} /> · {fmtEffort(r.effort)} · {fmtScore(r.score)}
             </label>
           );
         })}

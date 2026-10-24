@@ -1,5 +1,6 @@
 import type { RoundCandidate, RoundData, RoundTaskDef } from "../types";
 import { fmtDateTime, fmtEffort, fmtMoney, fmtScore, fmtSeconds } from "../lib/format";
+import { ModelName } from "./ModelName";
 
 export function RoundDetail({
   candidate,
@@ -16,7 +17,7 @@ export function RoundDetail({
   return (
     <section className="card" aria-label="本轮详情">
       <h2>
-        {candidate.model} · {fmtEffort(candidate.effort)} · {fmtScore(candidate.score)}
+        <ModelName name={candidate.model} /> · {fmtEffort(candidate.effort)} · {fmtScore(candidate.score)}
       </h2>
       {round && (
         <p className="muted">
