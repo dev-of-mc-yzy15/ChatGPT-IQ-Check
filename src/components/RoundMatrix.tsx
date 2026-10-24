@@ -40,8 +40,8 @@ export function RoundMatrix({
         7 题一轮 · 分数 = 100 × 平均 reward × 1.5 · 满分 150 · 数据更新{" "}
         {fmtDateTime(round.round.updated_at)}
       </p>
-      <div className="table-wrap">
-        <table>
+      <div className="table-wrap" style={{ overflowX: "auto" }}>
+        <table style={{ minWidth: 560 }}>
           <caption className="muted">模型 × 推理档位，缺失档位显示 —</caption>
           <thead>
             <tr>

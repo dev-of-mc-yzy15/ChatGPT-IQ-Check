@@ -47,8 +47,12 @@ table { width: 100%; border-collapse: collapse; }
 th, td { padding: 8px 6px; border-top: 1px solid var(--line); text-align: left; }
 th button { background: none; border: 0; color: inherit; cursor: pointer; padding: 0; }
 @media (max-width: 720px) {
-  main { padding: 14px; gap: 14px; }
+  main { padding: 12px; gap: 12px; }
   .card { padding: 12px; }
+  .round-matrix td button { min-width: 52px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { scroll-behavior: auto !important; }
 }
 .round-matrix button[data-band="high"] { background: #dcfce7; }
 .round-matrix button[data-band="mid"] { background: #e0f2fe; }

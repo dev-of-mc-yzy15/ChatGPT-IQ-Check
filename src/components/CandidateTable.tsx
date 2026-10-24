@@ -52,7 +52,7 @@ export function CandidateTable({
         <input value={query} onChange={(e) => setQuery(e.target.value)} aria-label="搜索模型或档位" />
       </label>
       <div className="table-wrap">
-        <table>
+        <table style={{ minWidth: 760 }}>
           <caption className="muted">最多选 6 条曲线；分数为 0–150 的基准测试分数</caption>
           <thead>
             <tr>

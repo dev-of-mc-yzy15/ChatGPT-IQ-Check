@@ -54,36 +54,6 @@ export default function App() {
     );
   }, [data, selectedKeys]);
 
-  if (error) {
-    return (
-      <>
-        <SkipLink />
-        <main id="main">
-          <div className="card" role="alert">
-            <h1>降智雷达</h1>
-            <p>加载数据失败：{error}</p>
-            <button type="button" onClick={() => location.reload()}>
-              重试
-            </button>
-          </div>
-        </main>
-      </>
-    );
-  }
-
-  if (!data) {
-    return (
-      <>
-        <SkipLink />
-        <main id="main">
-          <div className="card" role="status" aria-live="polite">
-            加载中…
-          </div>
-        </main>
-      </>
-    );
-  }
-
   return (
     <ErrorBoundary>
       <SkipLink />
@@ -105,103 +75,120 @@ export default function App() {
           <ThemeToggle />
         </header>
 
-        <FreshnessBanner
-          status={data.status}
-          roundUpdatedAt={data.round.round.updated_at}
-        />
-
-        <div role="tablist" aria-label="视图" style={{ display: "flex", gap: 8 }}>
-          {(
-            [
-              ["round", "本轮雷达"],
-              ["trend", "RadarBench 趋势"],
-              ["about", "关于"],
-            ] as const
-          ).map(([key, label]) => (
-            <button
-              key={key}
-              type="button"
-              role="tab"
-              aria-selected={tab === key}
-              onClick={() => setTab(key)}
-            >
-              {label}
+        {error ? (
+          <div className="card" role="alert">
+            <p>加载数据失败：{error}</p>
+            <button type="button" onClick={() => location.reload()}>
+              重试
             </button>
-          ))}
-        </div>
-
-        {tab === "round" && (
+          </div>
+        ) : !data ? (
+          <div className="card" role="status" aria-live="polite">
+            加载中…
+          </div>
+        ) : (
           <>
-            <RoundMatrix
-              round={data.round}
-              selectedKey={selectedRound}
-              onSelect={setSelectedRound}
+            <FreshnessBanner
+              status={data.status}
+              roundUpdatedAt={data.round.round.updated_at}
             />
-            <RoundDetail
-              candidate={selectedCandidate}
-              tasks={data.round.tasks}
-              round={data.round.round}
-            />
+
+            <div role="tablist" aria-label="视图" style={{ display: "flex", gap: 8 }}>
+              {(
+                [
+                  ["round", "本轮雷达"],
+                  ["trend", "RadarBench 趋势"],
+                  ["about", "关于"],
+                ] as const
+              ).map(([key, label]) => (
+                <button
+                  key={key}
+                  type="button"
+                  role="tab"
+                  aria-selected={tab === key}
+                  onClick={() => setTab(key)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {tab === "round" && (
+              <>
+                <RoundMatrix
+                  round={data.round}
+                  selectedKey={selectedRound}
+                  onSelect={setSelectedRound}
+                />
+                <RoundDetail
+                  candidate={selectedCandidate}
+                  tasks={data.round.tasks}
+                  round={data.round.round}
+                />
+              </>
+            )}
+
+            {tab === "trend" && (
+              <>
+                <TrendControls
+                  rows={data.radarBench.candidates}
+                  selectedKeys={selectedKeys}
+                  onToggle={(key) =>
+                    setSelectedKeys((prev) =>
+                      prev.includes(key)
+                        ? prev.filter((k) => k !== key)
+                        : prev.length >= 6
+                          ? prev
+                          : [...prev, key],
+                    )
+                  }
+                />
+                <TrendChart candidates={trendCandidates} />
+                <CandidateTable
+                  rows={data.radarBench.candidates}
+                  selectedKeys={selectedKeys}
+                  onToggle={(key) =>
+                    setSelectedKeys((prev) =>
+                      prev.includes(key)
+                        ? prev.filter((k) => k !== key)
+                        : prev.length >= 6
+                          ? prev
+                          : [...prev, key],
+                    )
+                  }
+                />
+              </>
+            )}
+
+            {tab === "about" && (
+              <section className="card">
+                <h2>关于</h2>
+                <p>
+                  数据来源：
+                  <a href="https://codexradar.com/" target="_blank" rel="noreferrer">
+                    codexradar.com
+                  </a>{" "}
+                  的公开接口。
+                </p>
+                <p>
+                  RadarBench 分数是 64 题基准测试的加权分数（0–150），不是心理学 IQ。
+                </p>
+                <p>
+                  降智信号：相邻日桶分数下降 ≥ 5 分，且覆盖率 ≥ 90%、评分状态为 complete。
+                </p>
+                <p>本项目与 OpenAI 无关联；数据版权归原站所有。</p>
+                <p>源码许可：AGPL-3.0-or-later。</p>
+              </section>
+            )}
           </>
         )}
 
-        {tab === "trend" && (
-          <>
-            <TrendControls
-              rows={data.radarBench.candidates}
-              selectedKeys={selectedKeys}
-              onToggle={(key) =>
-                setSelectedKeys((prev) =>
-                  prev.includes(key)
-                    ? prev.filter((k) => k !== key)
-                    : prev.length >= 6
-                      ? prev
-                      : [...prev, key],
-                )
-              }
-            />
-            <TrendChart candidates={trendCandidates} />
-            <CandidateTable
-              rows={data.radarBench.candidates}
-              selectedKeys={selectedKeys}
-              onToggle={(key) =>
-                setSelectedKeys((prev) =>
-                  prev.includes(key)
-                    ? prev.filter((k) => k !== key)
-                    : prev.length >= 6
-                      ? prev
-                      : [...prev, key],
-                )
-              }
-            />
-          </>
+        {data && (
+          <footer className="muted" style={{ fontSize: 12 }}>
+            数据检查于 {data.status.checked_at} · 北京时间（UTC+8）· 来源 codexradar.com ·
+            非官方项目
+          </footer>
         )}
-
-        {tab === "about" && (
-          <section className="card">
-            <h2>关于</h2>
-            <p>
-              数据来源：
-              <a href="https://codexradar.com/" target="_blank" rel="noreferrer">
-                codexradar.com
-              </a>{" "}
-              的公开接口。
-            </p>
-            <p>
-              RadarBench 分数是 64 题基准测试的加权分数（0–150），不是心理学 IQ。
-            </p>
-            <p>
-              降智信号：相邻日桶分数下降 ≥ 5 分，且覆盖率 ≥ 90%、评分状态为 complete。
-            </p>
-            <p>本项目与 OpenAI 无关联；数据版权归原站所有。</p>
-            <p>源码许可：AGPL-3.0-or-later。</p>
-          </section>
-        )}
-
-        <footer className="muted" style={{ fontSize: 12 }}>
-          数据检查于 {data.status.checked_at} · 北京时间（UTC+8）· 来源 codexradar.com ·
-          非官方项目
-        </footer>
       </main>
     </ErrorBoundary>
   );
