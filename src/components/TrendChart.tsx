@@ -55,7 +55,14 @@ export function TrendChart({ candidates }: { candidates: RadarCandidate[] }) {
         <figcaption className="muted">
           日桶历史（UTC，显示为北京时间）。线在缺口处断开；空心点为 provisional；红点为降智信号（Δ ≤ -5 且覆盖率 ≥ 90%）。
         </figcaption>
-        <svg role="img" aria-label="RadarBench 趋势" viewBox={`0 0 ${W} ${H}`} width="100%" height="auto">
+        <svg
+          role="img"
+          aria-label="RadarBench 趋势"
+          viewBox={`0 0 ${W} ${H}`}
+          width="100%"
+          // SVG 没有 height="auto" 这个合法取值，响应式高度要走 CSS。
+          style={{ height: "auto", display: "block" }}
+        >
           <title>RadarBench 趋势</title>
           <desc>最多 6 条候选曲线的日桶分数，0 到 150。</desc>
           {ticks.map((t) => (
@@ -83,7 +90,15 @@ export function TrendChart({ candidates }: { candidates: RadarCandidate[] }) {
               }
             }
             if (current.length) segments.push(current);
-            const points = c.history.map((p) => ({ p, x: xOf(new Date(p.at).getTime(), min, max), y: yOf(p.score) }));
+            // 折线走的是按天去重后的网格，散点也必须按同样规则取点，
+            // 否则同一天有多次评分时会出现「点飘在折线外」。
+            const lastPerDay = new Map<string, (typeof c.history)[number]>();
+            for (const p of c.history) lastPerDay.set(p.at.slice(0, 10), p);
+            const points = [...lastPerDay.values()].map((p) => ({
+              p,
+              x: xOf(new Date(p.at).getTime(), min, max),
+              y: yOf(p.score),
+            }));
             const degrade = findDegradationPoints(c.history);
             return (
               <g key={c.model + "|" + c.effort}>
