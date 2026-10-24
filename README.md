@@ -57,6 +57,19 @@ public/data/
 tests/                  Vitest 单测与组件测试 + fixtures
 ```
 
+## 数据源
+
+| 用途 | 地址 |
+|---|---|
+| 候选目录 | `https://codexradar.com/data/radar-bench-binding.json` |
+| 单候选分数 + 历史 | `https://codexradar.com/api/radar-bench-score?model=&effort=&view=summary&selection=user-selected-v1` |
+| 本轮看板 | `https://codexradar.com/degradation-codex-latest.json` |
+
+不使用的接口（上游已废弃或不可用，留作备忘）：
+`/data/intelligence-efficiency.json`（旧 fallback）、`/api/v1/table`（410）、`/api/intelligence-efficiency-metrics`（502）。
+
+全部匿名可拉，**不需要任何密钥**。
+
 ## 本地开发
 
 ```bash
@@ -85,24 +98,31 @@ npm run refresh -- --force  # 内容没变也强制重写（重置时间戳）
 - 写入是**原子的**（临时文件 + rename），不会出现半截 JSON。
 - **幂等**：忽略 `generated_at` / `checked_at` / `fetch_id` 后内容相同就不重写，避免 Actions 里产生空提交。
 
+### 回滚坏数据
+
+如果某次刷新写进了坏数据：**先禁用 `refresh-data` 的 schedule**，再 `git revert` 那个数据 commit 并重新部署。
+顺序很重要——不禁用定时任务的话，下一次 cron 会把坏数据再写一遍。
+
 ## 部署（GitHub Pages）
 
 两个 workflow：
 
 | 文件 | 触发 | 作用 |
 |---|---|---|
-| `.github/workflows/refresh-data.yml` | 每天 UTC 00:30 + 手动 | 跑 `refresh.mjs`，有变化就提交 `public/data/`，然后调用部署 |
-| `.github/workflows/deploy.yml` | push 到 main、手动、被 refresh 调用 | `npm run build` → 上传产物 → 部署 Pages |
+| `.github/workflows/refresh-data.yml` | 每天 UTC 00:30 + 手动 | 跑 `refresh.mjs`，有变化就提交 `public/data/`（带 `[skip ci]`），失败自动开 issue |
+| `.github/workflows/deploy.yml` | push 到 main、`refresh-data` 完成后、手动 | `npm ci` + `npm test` + `npm run build` → 上传产物 → 部署 Pages |
 
-> **为什么 refresh 要显式调用 deploy？**
+> **为什么 refresh 提交后还要靠 `workflow_run` 触发部署？**
 > 用 `GITHUB_TOKEN` 推送产生的 `push` 事件**不会**触发其他 workflow（GitHub 的防递归规则），
-> 所以 refresh 提交完数据后必须显式 `uses: ./.github/workflows/deploy.yml`，否则站点不会更新。
+> 而 commit message 里的 `[skip ci]` 又把 push 触发彻底关掉。
+> 所以 deploy 额外监听 `refresh-data` 的 `completed` 事件——这个事件不受防递归规则限制，
+> 并且用 `conclusion == 'success'` 门控，刷新失败时不会把旧产物重新部署一遍。
 
 ### 首次启用（需手动操作一次）
 
 1. 仓库 **Settings → Pages → Build and deployment → Source** 选 **GitHub Actions**。
-2. 确认 **Settings → Actions → General → Workflow permissions** 允许读写（默认即可，workflow 内已声明最小权限）。
-3. 手动跑一次 `Refresh data` workflow 或直接 push 到 main，触发首次部署。
+2. 确认 **Settings → Actions → General → Workflow permissions** 允许读写（workflow 内已声明最小权限）。
+3. 手动跑一次 `refresh-data` workflow 或直接 push 到 main，触发首次部署。
 
 不需要配置任何 secret，用的是默认 `GITHUB_TOKEN`。
 
@@ -209,4 +229,7 @@ fixtures 在 `tests/fixtures/`，是从上游真实响应裁剪出的样本。
 
 ## 许可
 
-[AGPL-3.0-or-later](./LICENSE)
+[AGPL-3.0-or-later](./LICENSE)，第三方数据与商标说明见 [NOTICE](./NOTICE)。
+
+`public/data/` 下的数据不在本项目 AGPL 再许可范围内，版权归 codexradar.com 所有；本项目仅展示并链接来源。
+本项目不保证数据准确性——分数受样本量、覆盖率、任务集版本影响。与 OpenAI 无关联。

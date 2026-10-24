@@ -1,4 +1,4 @@
-name: Refresh data
+name: refresh-data
 
 # 上游 CodexRadar 基本每日更新，这里跟在其日更之后跑一次。
 # UTC 00:30 ≈ 北京时间 08:30。
@@ -7,9 +7,9 @@ on:
     - cron: "30 0 * * *"
   workflow_dispatch:
 
-# 需要写权限把刷新后的 JSON 提交回 main。
 permissions:
   contents: write
+  issues: write
 
 concurrency:
   group: refresh-data
@@ -18,50 +18,41 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    outputs:
-      changed: ${{ steps.commit.outputs.changed }}
+    timeout-minutes: 10
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          ref: main
+          persist-credentials: true
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: "24"
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci
-
+      # scripts/refresh.mjs 只用 Node 内置模块，不需要装依赖。
       - name: Refresh data
-        # 失败时脚本退出码为 1（成功率低于 80% 或校验不通过），
-        # 此时不会覆盖已有 JSON，站点继续显示旧数据。
-        run: npm run refresh
+        run: node scripts/refresh.mjs
 
-      - name: Commit refreshed data
-        id: commit
+      - name: Commit data if changed
         run: |
-          git config user.name  "github-actions[bot]"
+          git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/data
-          if git diff --cached --quiet; then
-            echo "数据无变化，跳过提交"
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-          else
-            git commit -m "chore(data): refresh radar data"
+          git add public/data/radar-bench.json public/data/round.json public/data/status.json
+          if ! git diff --cached --quiet; then
+            # [skip ci] 抑制由 GITHUB_TOKEN 推送触发的 push 事件（防递归），
+            # 部署改由 deploy.yml 的 workflow_run 触发，不会漏。
+            git commit -m "chore(data): refresh RadarBench data [skip ci]"
+            git pull --rebase --autostash origin main
             git push
-            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "no data change"
           fi
 
-  # GITHUB_TOKEN 推送不会触发 deploy.yml 的 push 事件，
-  # 所以这里显式调用部署，保证新数据能上线。
-  deploy:
-    needs: refresh
-    if: needs.refresh.outputs.changed == 'true'
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    uses: ./.github/workflows/deploy.yml
+      - name: Open issue on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create \
+            --title "refresh-data failed" \
+            --body "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

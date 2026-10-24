@@ -1,67 +1,66 @@
-name: Deploy to GitHub Pages
-
-# 可被三种方式触发：
-#   1. push 到 main（代码或数据变更）
-#   2. 手动 workflow_dispatch
-#   3. 被 refresh-data.yml 通过 workflow_call 调用
-#
-# 为什么需要 workflow_call：用 GITHUB_TOKEN 推送产生的 push 事件
-# 不会触发其他 workflow（GitHub 防递归规则），所以 refresh 提交完
-# 数据后必须显式调用本 workflow，否则站点不会更新。
+name: deploy-pages
 
 on:
   push:
     branches: [main]
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "index.html"
+      - "package.json"
+      - "package-lock.json"
+      - "vite.config.ts"
+      - "tsconfig.json"
+      - "public/data/**"
+      - ".github/workflows/**"
+  # refresh-data 用 GITHUB_TOKEN 推送（带 [skip ci]），不会触发上面的 push 事件，
+  # 所以这里用 workflow_run 接住它的完成事件，保证新数据能上线。
+  workflow_run:
+    workflows: ["refresh-data"]
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
-  workflow_call:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
-# Pages 同一时间只允许一个部署，不取消进行中的（避免半截发布）。
 concurrency:
   group: pages
   cancel-in-progress: false
 
 jobs:
   build:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
         with:
-          node-version: 24
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
 
-      - name: Test
-        run: npm test
-
-      - name: Build
-        run: npm run build
-
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
+      - id: deployment
         uses: actions/deploy-pages@v4
