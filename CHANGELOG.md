@@ -45,6 +45,7 @@
 - 新鲜度告警边界 `>` 改 `>=`，`null` 与 `NaN` 的 `stale_days` 一律走「未知」分支（`4e2eca3`、`3119def`）。
 - 抓取失败的 `errors` 按 success / reused / missing 三类分开记账，坏旧数据不再与 `ENOENT` 混成一个 `null`（`339c810`）。
 - 无障碍修复：tab 补 `tabpanel` 与方向键、图例改 `button` 可点灭、选中格补样式、英文模型名包 `lang="en"`（`5083cf2`、`3119def`、`22548ba`）。
+- 补齐 WCAG 2.2 AA 十项缺陷：重复朗读、标签名、区域命名、滚动容器、重名按钮、纯色编码、竞态与键盘操作（`e0ab95a`）。
 - 核验分母改必做题数、盲评分数归一到百分比、`coverage` 分母为 0 时显示破折号（`5083cf2`、`256b36b`）。
 - 首绘主题脚本拆成两个独立 `try`，存储不可用时不再拖垮配色与 `theme-color`（`80f3a58`、`3119def`）。
 - `fetch` 超时的英文 `DOMException` 翻成中文并带毫秒，原始 error 挂 `cause` 留证（`a0c4048`）。
