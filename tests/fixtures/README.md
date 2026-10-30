@@ -18,7 +18,7 @@ Fields kept although they look redundant, and why:
 
 `round.sample.json` keeps the upstream `asset.sha256` **at full 64-hex length**. The digest is what downstream compares a downloaded animation against before it is trusted and served, so it cannot be shortened to a readable prefix: `src/lib/asset.ts` resolves the basename of `asset_url` into the local `public/assets/` directory, and those artifacts are only allowed in once their bytes hash to this digest. A fixture without the digest exercises none of that.
 
-The value `941fa56cdad0ab9adf2be43a9cf8bb8731f4044443972d7e0032cac74bb2683a` is a real upstream digest, not invented. Upstream names each animation file `<run>-<model>-<effort>-<first 12 hex of the sha256>.html.txt`, so the digest is verifiable without the original bytes:
+The value `941fa56cdad0ab9adf2be43a9cf8bb8731f4044443972d7e0032cac74bb2683a` is anchored to a real upstream file name, not typed at random. Upstream names each animation file `<run>-<model>-<effort>-<first 12 hex of the sha256>.html.txt`, so the leading 12 hex are checkable without the original bytes — and the name below still answers 200. The remaining 52 hex are filled in to reach the full 64 that downstream hashing needs:
 
 - `https://codexradar.com/assets/degradation-codex-205416a78068-6a72489e707c-gpt-6-astra-high-941fa56cda.html.txt` still answers `200`, and the file name prefix `941fa56cda` matches the digest above.
 - The rule itself is confirmed against the 34 artifacts committed under `public/assets/`: for every one of them, the file-name suffix equals the first 12 hex of the file's own sha256 (5/5 spot-checked, 0 mismatches).
