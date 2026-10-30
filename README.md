@@ -16,15 +16,15 @@
 
 **做**
 
-- 展示 CodexRadar 的 RadarBench 加权分数（0–150）与覆盖率、评分状态。
+- 展示 CodexRadar 的 RadarBench 加权分数（0–`score_max`，当前 150）与覆盖率、评分状态。
 - 给出「本轮雷达」：模型 × 档位（低 / 中 / 高 / 极高 / 最高 / 极限）的分数矩阵，点开可看逐题得分、耗时、成本。
-- 给出「RadarBench 趋势」：按日桶聚合的历史曲线，缺口断开、空心力点表示 provisional、红点标出降智信号。
+- 给出「RadarBench 趋势」：按日桶聚合的历史曲线，缺口断开、空心点表示 provisional、红点标出降智信号。
 - 顶部新鲜度横幅：数据检查时间、最近评分时间、本轮更新时间，超 48h / 7d 两级告警。
 - 深浅色主题、键盘可达（跳过链接 / 焦点样式）、错误边界与空态。
 
 **不做**
 
-- 不自己跑模型评测，不自己实现降智判定算法——信号完全来自上游数据。
+- 不自己跑模型评测、不自己算分数——分数与覆盖率都来自上游数据；只有降智标记是前端按上游历史自行判定的，规则见[降智信号判定](#降智信号判定)。
 - 没有后端、没有数据库、不存任何密钥。
 - 不在浏览器里直连第三方接口——抓取与裁剪都在 GitHub Actions 里完成。
 
@@ -49,7 +49,8 @@ src/
   types.ts              数据契约类型
 scripts/
   refresh.mjs           抓取 CLI：拉上游 → 归一化 → 校验 → 原子写入
-  lib.mjs               纯函数：转换、合并、契约校验（有单测覆盖）
+  lib.mjs               纯函数：上游响应转换、合并、计分（有单测覆盖）
+  contract.mjs          双端共用的数据契约校验，管道落盘前与浏览器加载后各跑一次
 public/data/
   radar-bench.json      候选分数 + 历史序列
   round.json            本轮逐题明细
@@ -128,7 +129,7 @@ npm run refresh -- --force  # 内容没变也强制重写（重置时间戳）
 
 ## 数据契约
 
-三份 JSON 都由 `scripts/refresh.mjs` 生成，`scripts/lib.mjs` 负责校验，前端 `src/types.ts` 与之对应。
+三份 JSON 都由 `scripts/refresh.mjs` 生成，结构由 `scripts/contract.mjs` 校验（前端 loader 加载时复用同一份），前端 `src/types.ts` 与之对应。
 
 ### `radar-bench.json`
 
@@ -188,7 +189,7 @@ npm run refresh -- --force  # 内容没变也强制重写（重置时间戳）
         { "task_id": "…", "status": "…", "reward": 1, "seconds": 12.3, "cost_usd": 0.01 }
       ],
       "totals": { "seconds": 0, "cost_usd": 0, "cost_known_tasks": 0, "cost_unknown_tasks": 0 },
-      "animation": null                   // 或 { status, score, scores, reason, seconds, cost_usd, asset_url }
+      "animation": null                   // 或 { status, score, scores, reason, seconds, cost_usd, asset_url, asset_sha256 }
     }
   ]
 }
@@ -203,13 +204,26 @@ npm run refresh -- --force  # 内容没变也强制重写（重置时间戳）
   "benchmark": "radar-bench",
   "candidates_ok": 34,
   "candidates_total": 34,
+  "binding_total": 34,          // 上游声明的候选数，含被丢弃的
+  "reused_count": 0,            // 抓取失败、回退到旧数据的候选数
+  "missing_count": 0,           // 抓取失败且无旧数据、被丢弃的候选数
   "round_ok": true,
   "latest_graded_at": "ISO8601",
+  "min_latest": "ISO8601",      // 参与候选里最旧的评分时间
+  "stale_count": 0,             // 评分超过 7 天（或时间未知）的候选数
   "round_updated_at": "ISO8601",
-  "stale_days": 0,
+  "stale_days": 0,              // null = 上游没给，未知不等于 0
   "errors": []
 }
 ```
+
+### 动画资产：已记录，尚未渲染
+
+`asset_url` / `asset_sha256` 目前只是被记下来，界面还没有播放动画的地方。要接线得先补齐三件事：
+
+- `public/assets/` **还不存在**：产物必须先下载进去，不要在浏览器里直接 iframe 上游地址。
+- 下载后先比对 `asset_sha256`，不匹配就当这次抓取失败，别把错文件当资产。
+- 路径经 `urlFor()` 解析（Pages 的 base 是 `/ChatGPT-IQ-Check/`）；iframe 用 `sandbox="allow-scripts"`，**不要**再加 `allow-same-origin`——同源会让 sandbox 的约束基本失效。
 
 ## 降智信号判定
 
