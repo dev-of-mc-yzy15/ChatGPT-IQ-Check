@@ -110,7 +110,7 @@ npm run refresh -- --force  # 内容没变也强制重写（重置时间戳）
 
 | 文件 | 触发 | 作用 |
 |---|---|---|
-| `.github/workflows/ci.yml` | `pull_request` 与手动 `workflow_dispatch` | `npm ci --ignore-scripts` + `npm audit --omit=dev --audit-level=high` + `npm test` + `npm run build`（build 含 `tsc -b`、`typecheck:scripts`）→ PR 闸门 |
+| `.github/workflows/ci.yml` | `pull_request` 与手动 `workflow_dispatch` | `npm ci --ignore-scripts` + `npm audit --omit=dev --audit-level=high --registry=https://registry.npmjs.org/` + `npm test` + `npm run build`（build 含 `tsc -b`、`typecheck:scripts`）+ `npm run check:base` + `npm run verify:assets` + `npm run e2e`（真 Chromium，先 `npx playwright install --with-deps chromium`）→ PR 闸门 |
 | `.github/workflows/refresh-data.yml` | 每天 UTC 00:30 + 手动 | 跑 `refresh.mjs`，有变化就提交 `public/data/`（带 `[skip ci]`），失败自动开 issue |
 | `.github/workflows/deploy.yml` | push 到 main、`refresh-data` 完成后、手动 | `npm ci` + `npm test` + `npm run build` → 上传产物 → 部署 Pages |
 

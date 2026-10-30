@@ -29,11 +29,15 @@ npm run build           # tsc -b + typecheck:scripts + vite build
 
 ## PR 闸门
 
-CI（`.github/workflows/ci.yml`）在 PR 上跑一串 `run:` 步骤，前两条是前置，任一红就轮不到后面：`npm ci --ignore-scripts`、`npm audit --omit=dev --audit-level=high --registry=https://registry.npmjs.org/`。**真正的闸门是后三条，都绿才给合**：
+CI（`.github/workflows/ci.yml`）在 PR 上跑一串 `run:` 步骤，前两条是前置，任一红就轮不到后面：`npm ci --ignore-scripts`、`npm audit --omit=dev --audit-level=high --registry=https://registry.npmjs.org/`（`--registry` 不能省：本机镜像没实现 audit API，不显式指公网这一步等于空跑）。**真正的闸门是下面这五条，都绿才给合**：
 
-- `npm test`
-- `npm run build`
+- `npm test`（jsdom 上的全量单测）
+- `npm run build`（`tsc -b` + `typecheck:scripts` + `vite build`）
 - `npm run check:base`（检查 `dist/index.html` 里没有回退到根绝对路径的引用）
+- `npm run verify:assets`（资产哈希闸门：`public/assets/` 里每个文件都得对得上 `round.json` 钉的 `asset_sha256`，缺文件、哈希不符、有 URL 没钉哈希都会红。改过资产就必须重算并更新哈希）
+- `npm run e2e`（真浏览器基线，`tests/e2e/base-path.spec.ts`）
+
+`npm test` 全跑在 jsdom 上，既不放 CSP 也不做 MIME 检查，**子路径失效与 CSP 写歪这两类整页白屏故障单测一律是绿的**，只有 `npm run e2e` 能兜住，所以它跟其余闸门同级，不是可选步骤。本地跑之前先装一次 Chromium：`npx playwright install chromium`（CI 里是 `npx playwright install --with-deps chromium`），并确保 `npm run build` 已经跑过——e2e 的 `webServer` 直接吃 `dist/`。
 
 `build` 已经串好 `tsc -b` 和 `typecheck:scripts`，所以 `npm run build` 过就等于类型检查也过了。改 `scripts/` 时想更快看 `checkJs` 的报错，可以单独跑 `npm run typecheck:scripts`（`checkJs` 只在 `tsconfig.scripts.json` 里打开）。
 
@@ -72,7 +76,7 @@ npm run refresh
 
 ## 开 PR 前自查
 
-1. `npm test`、`npm run build`、`npm run check:base` 都本地跑过、都绿——不要指望 CI 替你发现。
+1. `npm test`、`npm run build`、`npm run check:base`、`npm run e2e` 都本地跑过、都绿——不要指望 CI 替你发现。动过资产或数据的话，资产校验也要过。
 2. 改的是数据格式的话，`public/data/*.json` 是 `npm run refresh` 生成的，不是手编的。
 3. 新交互/新动画在 `prefers-reduced-motion: reduce` 下试过一遍。
 4. 新增依赖说清理由；它能进 `dependencies` 还是只该进 `devDependencies`。

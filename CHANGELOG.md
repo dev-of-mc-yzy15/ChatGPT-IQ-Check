@@ -55,6 +55,7 @@
 - 修回被误塞进 JSX 属性区的注释（`ThemeToggle.tsx`；`78634ab`）。
 - 时间戳、`asset.sha256`、分数上限等 round 侧静默漂移收口（`13707fd`、`24685d8`、`eee61a9`）。
 - 上游降智动画资产落地并渲染：34 个产物按 `asset_sha256` 逐个校验后存入 `public/assets/`，`assetUrl()` 剥掉上游根绝对前缀再经 `urlFor()` 拼 base，详情页折叠、展开才取回并经 `srcDoc` 注入（`.html.txt` 的 `text/plain` 不会渲染为 HTML），`sandbox="allow-scripts"` 且不含 `allow-same-origin`，旁边显示校验和前 8 位（`src/lib/asset.ts`、`RoundDetail.tsx`、`public/assets/`）。
+- `derive` 四处时间口径缺陷收口：`lastPerDay` 改按解析后的毫秒排序，不再拿 `at` 原始字符串比字典序（混时区会把跌算成涨并漏报降智）；`buildDailyGrid` 与 `lastPerDay` 共用 `latestPerUtcDay`，同日取值统一按毫秒取最新而非数组末位；`Math.min(...spread)` 改成单趟循环，六条曲线各带一个 1970 坏点也不再撑爆实参；网格跨度加 `MAX_GRID_DAYS`（1100 天）封顶，两万多空桶不再把横轴拉成一条线（`src/lib/derive.ts`、`TrendChart.tsx`；`5220254`、`2207ec2`）。对应 XFAIL 用例已同步转真断言（`tests/derive.test.ts`）。
 
 ### 测试与工程
 
@@ -68,14 +69,14 @@
 - 钉死 `fmtSeconds` 负时长取错误分钟位的回归用例（`253c5d9`）。
 - 钉死无时区 ISO 串按本地时区解释的用例（`tests/format.test.ts`；`c5dd8ab`）。
 - 各组件回归用例随修复同步补齐（`tests/` 下 15 个测试文件；贯穿 `d764ebc`、`4e2eca3`、`256b36b`、`5083cf2`、`3119def`）。
+- 资产哈希闸门：`scripts/verify-assets.mjs` 逐条比对 `round.json` 钉的 `asset_sha256` 与 `public/assets/` 实际内容，missing / mismatch / unpinned 一律红，孤儿文件只报不判失败；已挂进 `ci.yml` 排在 `check:base` 之后（`tests/verify-assets.test.ts`、`package.json` 的 `verify:assets`）。
 
 ## 已知问题
 
-- **`npm audit` 在本机镜像下不可用。** 当前 registry 为 `https://registry.npmmirror.com/`，其未实现该 API，实测返回 `404 [NOT_IMPLEMENTED] /-/npm/v1/security/* not implemented yet`。需显式打公网：`npm audit --registry=https://registry.npmjs.org/`（实跑结果为 0 漏洞）。
+- **`npm audit` 走本机默认 registry 会直接失败。** 本仓库默认 registry 是 `https://registry.npmmirror.com/`，它没实现 audit API，实跑返回 `404 [NOT_IMPLEMENTED] /-/npm/v1/security/* not implemented yet`——不显式指定就会误以为「没有漏洞」，其实是这一步空跑了。**CI 里已经自带** `--registry=https://registry.npmjs.org/`，本机手工跑必须照抄同一串：`npm audit --omit=dev --audit-level=high --registry=https://registry.npmjs.org/`（实跑结果为 0 漏洞）。
 - **上游 round 数据本身仍陈旧。** 移交前虽已重抓一次（`813e6d0`，`checked_at` 刷新至 2026-10-30），但那只是刷新了检查时间：`round_updated_at` 仍停在 `2026-10-24T14:30:39Z`（约 6.2 天），`min_latest` 是 `2026-10-21T02:39:21Z`（约 9 天），`stale_count` 为 **28/34**。上游迟迟不发新的评分轮次，改代码解决不了，得等上游或把刷新频率与告警阈值一起重估。
-- **`derive` 三处缺陷在测试里已标注待修，代码尚未跟进。** `lastPerDay` 末尾用字符串字典序排序（`a.at < b.at`）而非 `Date.parse` 比较，混合时区会倒挂并漏报降智；`buildDailyGrid` 同日取值依赖数组位置，且 1970 坏点没有跨度上限；`Math.min(...spread)` 在 6 条曲线各带一个 1970 坏点时抛 `RangeError`。出处：`6ca9920` 的 commit message 与 `tests/derive.test.ts`。
 - **整改计划中被驳回的 minor 条目仍维持原状。** 计划 §5 明确不做：`task_count` 写回 7（上游已扩到 9 题集，故未回退）、合并双校验（已由 `contract.mjs` 单一化替代）、引入 `react-error-boundary`（仍用自研 `ErrorBoundary`）。另 `fmtRelativeTime`、`loadStatus` 超时两条已在实现中落地，无需再动。
-- **零 e2e、零真实浏览器验证。** 全量测试跑在 jsdom 上，base 路径冒烟只有 `95b7698` 记录的一次手工 200 检查，没有自动化兜住。
+- **jsdom 单测兜不住子路径与 CSP，那两块只由 e2e 守。** `npm test` 全跑在 jsdom 上，既不放 CSP 也不做 MIME 检查，子路径失效与 CSP 写歪这两类整页白屏故障在单测里一律是绿的。现已补 `tests/e2e/base-path.spec.ts`，5 条真 Chromium 用例：根路径重定向到子路径且落地页可用、页面自报的脚本与样式逐个可达且 `content-type` 对得上、缺失资源走 SPA fallback（200 + `text/html`）、全程零 CSP 违规/零 console 错误/零未捕获异常、真实业务内容渲染且 `/data/` 请求恰 3 次全落子路径。该用例在 `ci.yml` 里排在构建与产物/资产校验之后真跑（先 `npx playwright install --with-deps chromium`），本地跑前需先 `npx playwright install chromium`。
 
 ## 许可
 
