@@ -2,7 +2,12 @@
   "schema": "degradation-codex-plan/2",
   "taskset": { "version": "codex-set-01c3e200e66b", "status": "selected", "harness": "codex", "task_count": 7 },
   "settings": [
-    { "model": "gpt-6-astra", "effort": "high", "availability": { "status": "available", "checked_at": "2026-10-23T08:25:00.590027+00:00", "reason": null, "seconds": 11.41, "cost": { "usd": 0.105898, "kind": "estimated", "source": "usage_pricing", "includes_subagents": true } } }
+    { "model": "gpt-6-astra", "effort": "high", "availability": { "status": "available", "checked_at": "2026-10-23T08:25:00.590027+00:00", "reason": null, "seconds": 11.41, "cost": { "usd": 0.105898, "kind": "estimated", "source": "usage_pricing", "includes_subagents": true } } },
+    { "model": "gpt-6-astra", "effort": "low", "availability": { "status": "available", "checked_at": "2026-10-23T08:25:00.590027+00:00", "reason": null, "seconds": 9.87, "cost": { "usd": 0.051324, "kind": "estimated", "source": "usage_pricing", "includes_subagents": true } } }
+  ],
+  "candidates": [
+    { "model": "gpt-6-astra", "effort": "high" },
+    { "model": "gpt-6-astra", "effort": "low" }
   ],
   "tasks": [
     { "id": "local-reasoning:candy-cross-shape", "category": "local-reasoning", "title_zh": "糖果十字", "title_en": "Candy cross", "weight": 0.142857, "required": true },
@@ -48,7 +53,8 @@
         "seconds": 400.36,
         "cost": { "usd": 0.840332, "kind": "estimated", "source": "usage_pricing", "includes_subagents": true },
         "judge": { "status": "scored", "version": "pelican-fc7412ae540c", "total": 91, "scores": { "pelican": 24, "cycling": 23, "motion": 25, "finish": 19 }, "reason": "长喙、喉囊与体态使鹈鹕辨识清楚。", "defects": [], "seconds": 38.37, "cost": { "usd": 0.114864 } },
-        "asset": { "url": "/assets/example.html.txt", "bytes": 19605, "sha256": "7b979b4febfe", "download": "gpt-6-astra-high-pelican.html" }
+        "asset": { "url": "/assets/example.html.txt", "bytes": 19605, "sha256": "941fa56cdad0ab9adf2be43a9cf8bb8731f4044443972d7e0032cac74bb2683a", "download": "gpt-6-astra-high-pelican.html" },
+        "asset_sha256": "941fa56cdad0ab9adf2be43a9cf8bb8731f4044443972d7e0032cac74bb2683a"
       }
     }
   },

@@ -5,8 +5,8 @@
   "benchmark": "radar-bench-final64-20261004",
   "catalog_version": "dradar-four-library-deployment007-server024-20261004-config64",
   "task_set_sha256": "f75ff09b6117cd83d3ab6ea744fe379ac117676c042538d5df5e38489af27bc4",
-  "total_tasks": 64,
-  "total_cells": 320,
+  "total_tasks": 1,
+  "total_cells": 3,
   "score_version": "radar-bench-v2-150",
   "score_max": 150,
   "model_efforts": [
