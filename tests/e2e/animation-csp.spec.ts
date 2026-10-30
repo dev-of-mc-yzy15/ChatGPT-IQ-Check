@@ -1,4 +1,4 @@
-import { expect, test, type Frame, type Page } from "@playwright/test";
+import { expect, test, type Frame, type Locator, type Page } from "@playwright/test";
 import { readFileSync, readdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -154,6 +154,46 @@ async function readProbe(frame: Frame): Promise<{ raf: number; violations: strin
   });
 }
 
+/**
+ * 点一次 `#toggle` 之后核对状态：`aria-pressed` 必须是期望值，`#status` 文案必须跟着变。
+ * 失败时把**实际**的 `aria-pressed` 与文案原样带出来，不用二次复跑取证。
+ *
+ * 用精确 `textContent` 而不是 `toHaveText`：后者归一空白，会把产物文案里的 `&nbsp;`
+ * 和脚本写入的普通空格当成同一串（`#status` 目前不含 nbsp，但同类改写随时可能引入）。
+ */
+async function expectToggled(
+  toggle: Locator,
+  status: Locator,
+  hasStatus: boolean,
+  pressed: string,
+  text: string | null,
+  note: string,
+): Promise<void> {
+  try {
+    await expect(toggle, `${note} aria-pressed 必须变成 "${pressed}"`).toHaveAttribute(
+      "aria-pressed",
+      pressed,
+      { timeout: 5_000 },
+    );
+    if (!hasStatus) return;
+    await expect
+      .poll(() => status.textContent(), {
+        message: `${note} #status 文案必须变成 ${JSON.stringify(text)}`,
+        timeout: 5_000,
+      })
+      .toBe(text);
+  } catch (error) {
+    const actualPressed = await toggle.getAttribute("aria-pressed").catch(() => "<读不到>");
+    const actualStatus = hasStatus ? await status.textContent().catch(() => "<读不到>") : "<无该节点>";
+    throw new Error(
+      `${note}状态没跟上：期望 aria-pressed="${pressed}"` +
+        (hasStatus ? `、#status=${JSON.stringify(text)}` : "（该产物无 #status）") +
+        `；实际 aria-pressed=${JSON.stringify(actualPressed)}、#status=${JSON.stringify(actualStatus)}` +
+        `\n原始错误：${(error as Error).message}`,
+    );
+  }
+}
+
 test.describe("降智动画在沙箱 iframe 内可执行且无 CSP 违规", () => {
   // 核心用例：脚本执行 + 零违规。修复前（srcDoc 继承父 CSP）在第一步就红。
   test("展开动画后内联脚本真的跑起来，且全程无 CSP 违规", async ({ page }) => {
@@ -202,21 +242,64 @@ test.describe("降智动画在沙箱 iframe 内可执行且无 CSP 违规", () =
     const inside = await readProbe(frame);
     expect(inside.violations, `子文档 CSP 违规：${inside.violations.join(" | ")}`).toEqual([]);
 
-    // 收敛：动画是 rAF 常驻循环。再钉一个「脚本真的改到了可见 DOM、没中途崩」的证据：
-    // 挑中的产物若带 `#toggle`，其运行后的 textContent 必须偏离静态初值。
-    // 用精确 textContent 而不是 toHaveText（后者归一空白，会把初值里的 &nbsp; 和脚本写入的
-    // 普通空格归一成同一串而假绿）；两种 prefers-reduced-motion 取值下都会偏离：
-    // paused 走「继续出发」，非 paused 走「Ⅱ  暂停片刻」，后者与原值只差那个 nbsp。
+    // 收敛：光有 rAF 只能证明「在跑」，还要证明脚本真的改到了可见 DOM、且中途没崩。
+    //
+    // 不能拿「文本必须偏离静态初值」当判据——产物里 `#status` 的文字**只在 setPaused() 里变**
+    // （`statusText.textContent = paused ? '在海边歇一会儿' : '海岸骑行中'`），而初始化那句
+    // `setPaused(reduced.matches)` 在非 reduced-motion 下写回的就是「海岸骑行中」，与静态初值
+    // 字面完全相同。也就是说没人点按钮时，运行值与初值**永远相等**，旧断言是恒假红。
+    //
+    // 所以改成主动驱动交互：点 `#toggle` → `aria-pressed` 必须翻转、`#status` 文案必须跟着翻；
+    // 再点一次 → 必须整体复原。一次同时证明三件事：脚本执行过、改到了可见 DOM、sandbox 里点得动。
+    //
+    // 初始状态由产物自己定（开了 reduced-motion 时它一上来就是 paused），期望值一律从**当前实际值**
+    // 推导，不写死 "false"，两种 prefers-reduced-motion 取值下都成立。
     const toggle = frame.locator("#toggle");
+    const status = frame.locator("#status");
     if ((await toggle.count()) > 0) {
-      const staticHtml = readFileSync(resolve(repoRoot, "public/assets", target.asset), "utf8");
-      const raw = /id="toggle"[^>]*>([^<]*)</.exec(staticHtml)?.[1] ?? null;
-      const initial = raw === null ? null : raw.replace(/&nbsp;/g, String.fromCharCode(160));
-      if (initial !== null) {
-        await expect
-          .poll(() => toggle.textContent(), { message: "脚本必须改写过 #toggle 可见文本" })
-          .not.toBe(initial);
-      }
+      await toggle.scrollIntoViewIfNeeded();
+      const hasStatus = (await status.count()) > 0;
+      const before = (await toggle.getAttribute("aria-pressed")) ?? "<null>";
+      expect(
+        before,
+        `#toggle 的 aria-pressed 必须是 "true"/"false" 布尔字符串，实际 ${JSON.stringify(before)}` +
+          "（拿不到说明脚本没跑过 setPaused，或 aria-pressed 被删了）",
+      ).toMatch(/^(true|false)$/);
+
+      const flipped = before === "true" ? "false" : "true";
+      const beforeStatus = hasStatus ? await status.textContent() : null;
+      // paused 与运行态的固定文案，取自产物自己的 setPaused()。
+      const pausedText = "在海边歇一会儿";
+      const runningText = "海岸骑行中";
+
+      // 第一次点击：翻转（paused=true 时文案为「在海边歇一会儿」，翻回运行态则为「海岸骑行中」）。
+      await toggle.click();
+      await expectToggled(toggle, status, hasStatus, flipped, flipped === "true" ? pausedText : runningText, "第一次点击后");
+      // 第二次点击：回到初始状态，证明不是改一次就卡死。
+      await toggle.click();
+      await expectToggled(toggle, status, hasStatus, before, beforeStatus, "第二次点击后");
+
+      test.info().annotations.push({
+        type: "#toggle",
+        description: `已驱动交互：aria-pressed ${before}→${flipped}→${before}` + (hasStatus ? "，且状态文案同步翻转" : "（该产物无 #status）"),
+      });
+    } else {
+      // 退化分支：挑中的产物没有 `#toggle`（34 个产物里只有 6 个带按钮），点不了就改用
+      // 两个时刻的 body.innerHTML 对比——rAF 循环每帧都在写 SVG 的 d / transform 属性，
+      // 脚本真在写 DOM 时两次序列化必然不同；被 CSP 挡死或脚本崩掉时两串逐字节相同。
+      // 400ms 在 60fps 下是 20 多帧，够稳又不拖测试。
+      const t0 = await frame.evaluate(() => document.body.innerHTML);
+      await page.waitForTimeout(400);
+      const t1 = await frame.evaluate(() => document.body.innerHTML);
+      expect(
+        t1,
+        `产物 ${target.asset} 没有 #toggle 可点，且 400ms 后 body.innerHTML 与 400ms 前完全一致` +
+          `（${t0.length} 字节）——子文档脚本没有写 DOM`,
+      ).not.toBe(t0);
+      test.info().annotations.push({
+        type: "退化判据",
+        description: "该产物无 #toggle，改用 body.innerHTML 两时刻不等取证",
+      });
     }
 
     // 页面级信号：父文档也没被自己的 CSP 打到。
