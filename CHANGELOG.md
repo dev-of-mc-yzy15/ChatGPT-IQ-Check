@@ -65,6 +65,7 @@
 - loader 唯一网络出口的专属用例：超时、非 2xx、并发独立 signal（`tests/loader.test.ts`；`a0c4048`）。
 - `format` 库的守卫用例（`tests/format.test.ts`；`df08833`）。
 - 钉死 `fmtSeconds` 负时长取错误分钟位的回归用例（`253c5d9`）。
+- 钉死无时区 ISO 串按本地时区解释的用例（`tests/format.test.ts`；`c5dd8ab`）。
 - 各组件回归用例随修复同步补齐（`tests/` 下 15 个测试文件；贯穿 `d764ebc`、`4e2eca3`、`256b36b`、`5083cf2`、`3119def`）。
 
 ## 已知问题
