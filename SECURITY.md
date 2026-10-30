@@ -61,6 +61,76 @@ ChatGPT IQ Check（降智雷达）是 **[codexradar.com](https://codexradar.com/
 
   在镜像上直接跑 `npm audit` 只会拿到 `NOT_IMPLEMENTED`，误以为"没漏洞"。`--omit=dev` 是因为运行时依赖只有 `react` / `react-dom`，devDependencies 不进产物。
 
+### 前端侧的 CSP 与 Referrer-Policy
+
+`index.html:7-11` 是一段 `<meta http-equiv="Content-Security-Policy">`（上方注释 + meta 本体），`index.html:12` 是 `<meta name="referrer" content="strict-origin-when-cross-origin">`。策略本身是 `default-src 'self'` + 内联脚本 sha256 白名单 + `object-src 'none'` + `base-uri 'self'` + `form-action 'none'` + `connect-src 'self'`，用来兜住"上游 JSON 被当成脚本执行"这类 XSS，以及基址、表单劫持。它必须早于所有资源引用，所以放在 `<head>` 最前面。
+
+但它是 `<meta>` 形态的，先天弱于响应头形态。下面两件事在本部署形态下做不到，写在这里，免得后来人以为它有那个效力。
+
+#### 本形态做不到的两件事
+
+**1. `frame-ancestors` 在 `<meta>` 里不生效——点防 iframe 嵌套目前没有任何运行时保护。**
+
+MDN 的 `frame-ancestors` 页面明写：
+
+> This directive is not supported in the `<meta>` element.
+
+<https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/frame-ancestors>
+
+策略里那句 `frame-ancestors 'self'` 是**写给将来换宿主用的**——浏览器在 meta 形态下直接忽略它。后果是任何人都可以用 `<iframe src="https://dev-of-mc-yzy15.github.io/ChatGPT-IQ-Check/">` 把本站嵌进任意页面，套壳点击（clickjacking）没有任何拦截。
+
+要真生效只能走 HTTP 响应头，而 GitHub Pages 不给自定义头。出路是换到支持下发响应头的宿主（Cloudflare Pages / Netlify 的 `_headers`，或任何能配头的反代、对象存储），把同一串策略原样搬成 `Content-Security-Policy` 响应头即可，不必重写策略。
+
+**2. 违规无法上报——`report-uri` / `report-to` 同样不支持。**
+
+同样的原因，MDN 这两个指令页写着同一句话：
+
+> This directive is not supported in the `<meta>` element.
+
+- <https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/report-uri>
+- <https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/report-to>
+
+所以线上真发生违规，不会有人收到通知，只能在 DevTools console 里看到 `Refused to execute inline script…` 这类日志，靠人肉发现。`report-to` 还额外依赖 `Reporting-Endpoints` 响应头，同样只能等换宿主。
+
+#### 改内联脚本必须重算 hash
+
+首绘主题脚本（`index.html:22-47`）是内联的，靠 `script-src` 里的 `sha256-…` 放行。**正文里任何一个字节变——注释、缩进、空行都算——hash 就失配，浏览器直接拒执行**，首屏主题判断失效、页面闪白，严重时整块白屏；而且 CSP 本身不会给你报错（见上一条），只在 console 里留一行。
+
+所以：**改完那段脚本，必须在同一次提交里重算 hash 并替换掉 `index.html` 里的值。** 当前值是：
+
+```
+sha256-QRtBo4K/rL32+D+p4l/o5Yk5ixR0CSfY0TuNoTqALZI=
+```
+
+重算（hash 覆盖 `<script>` 与 `</script>` 之间的全部字节）：
+
+```bash
+node -e "const fs=require('fs'),c=require('crypto');const b=fs.readFileSync('index.html');const s=b.indexOf('<script>')+8,e=b.indexOf('</script>',s);console.log(c.createHash('sha256').update(b.subarray(s,e)).digest('base64'))"
+```
+
+没有 node 时用 awk + openssl，结果等价：
+
+```bash
+awk 'BEGIN{f=0} { if(f==0){ p=index($0,"<script>"); if(p){ f=1; rest=substr($0,p+8); if((q=index(rest,"</script>"))>0){printf "%s",substr(rest,1,q-1); exit} printf "%s\n",rest } } else { q=index($0,"</script>"); if(q){printf "%s",substr($0,1,q-1); exit} print } }' index.html | openssl dgst -sha256 -binary | openssl base64 -A
+```
+
+算出的值直接回写（`grep -q` 命中就说明已经同步，不必改）：
+
+```bash
+new=$(node -e "const fs=require('fs'),c=require('crypto');const b=fs.readFileSync('index.html');const s=b.indexOf('<script>')+8,e=b.indexOf('</script>',s);console.log(c.createHash('sha256').update(b.subarray(s,e)).digest('base64'))")
+grep -q "sha256-$new" index.html || sed -i "s#sha256-[A-Za-z0-9+/=]*#sha256-$new#" index.html
+```
+
+收尾自检：
+
+```bash
+grep -n "script-src" index.html   # 值必须与上一步的 $new 逐字相同
+npm test
+npm run build
+```
+
+`<script type="module" src="/src/main.tsx">` 是外链，归 `'self'` 管，不参与 hash；只有内联那一段要算。
+
 ### 改 workflow 时的规矩
 
 动 `.github/workflows/` 属于改安全边界，几条硬约束：
