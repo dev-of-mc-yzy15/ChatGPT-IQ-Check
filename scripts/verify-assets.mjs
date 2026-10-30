@@ -274,6 +274,14 @@ async function main() {
   }
 
   const pins = collectPins(data);
+  // 一条 asset_url 都没声明时，下面会输出一排 0 并退出 0——闸门空跑比报错更难发现，
+  // 所以这里单独红一次。
+  if (pins.length === 0) {
+    console.error(dataPath + ": round.json 里没有声明任何 asset_url，闸门等于空跑");
+    process.exitCode = 1;
+    return;
+  }
+
   const report = await classify(options.root, pins);
   await findOrphans(options.root, report, pins);
   emit(report, options.json);

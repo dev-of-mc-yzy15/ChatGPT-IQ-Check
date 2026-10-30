@@ -204,6 +204,17 @@ describe("verify-assets", () => {
     expect(r.stdout + r.stderr).toContain("读不到");
   });
 
+  it("数据里一条 asset_url 都没有时也算空跑，退出 1", async () => {
+    // 全零计数最容易假绿：candidates 洗空了同样打印 ok=0 missing=0…，看着一切正常。
+    const root = await repo();
+    await writeRound(root, []);
+
+    const r = run(root);
+
+    expect(r.code).toBe(1);
+    expect(r.stdout + r.stderr).toContain("没有声明");
+  });
+
   it("默认 root 取脚本上两级目录", async () => {
     // 不带 --root 时必须自己定位到仓库根，否则 CI 里只能靠 cwd 碰运气。
     const out = spawnSync(process.execPath, [script], { cwd: tmpdir(), encoding: "utf8" });
