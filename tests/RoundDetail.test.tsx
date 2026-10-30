@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { RoundDetail } from "../src/components/RoundDetail";
 import type { RoundCandidate, RoundData, RoundTaskDef } from "../src/types";
@@ -96,8 +96,8 @@ describe("RoundDetail", () => {
 describe("RoundDetail 动画资产", () => {
   const SHA = "69d67bc51db3e2ee7826b9ae19b863bab200efee8359b5c72a1f676267b107b2";
   const UPSTREAM = "/assets/degradation-codex-205416a78068-6a72489e707c-gpt-6.1-sol-low-69d67bc51db3.html.txt";
-  const NAME = UPSTREAM.split("/").pop()!;
-  const BODY = "<html><body><svg id=\"a\"></svg></body></html>";
+  /** 本地落盘名：`.html.txt` 去掉 `.txt`，iframe 用 src 加载的就是它。 */
+  const LOCAL = "degradation-codex-205416a78068-6a72489e707c-gpt-6.1-sol-low-69d67bc51db3.html";
   const withAsset = (over: Partial<RoundCandidate> = {}): RoundCandidate => ({
     ...candidate,
     ...over,
@@ -111,27 +111,25 @@ describe("RoundDetail 动画资产", () => {
     fireEvent(details, new Event("toggle"));
   }
 
-  beforeEach(() => {
-    vi.stubGlobal("fetch", vi.fn(async () => new Response(BODY, { status: 200 })));
-  });
-  afterEach(() => vi.unstubAllGlobals());
-
-  it("默认折叠，展开前不加载、不挂 iframe", () => {
+  it("默认折叠，展开前不挂 iframe", () => {
     const { container } = render(<RoundDetail candidate={withAsset()} tasks={tasks} />);
     expect(container.querySelector("details")).not.toHaveAttribute("open");
+    // 一轮 34 个候选各有几十 KB，折叠时不进 DOM，别让首屏替全部候选买单。
     expect(container.querySelector("iframe")).toBeNull();
-    expect(fetch).not.toHaveBeenCalled();
   });
 
-  it("展开后按 base 路径取回文本，走 srcDoc 而不是 src", async () => {
-    // 产物是 *.html.txt，托管按扩展名回 text/plain；若用 src，iframe 里只会显示源码。
+  it("展开后用 src 指向本地 .html，不再走 srcDoc", async () => {
+    // 关键契约：srcDoc 的子文档继承父文档 CSP，index.html 的 script-src 只放行主题脚本
+    // 那一个 hash，产物自带的内联 script 会被 script-src-elem 全挡掉，动画只剩静帧。
+    // 改用 src 后子文档是独立文档、不继承父 CSP；前提是产物按 .html 落盘（托管回 text/html）。
     const { container } = render(<RoundDetail candidate={withAsset()} tasks={tasks} />);
     expand(container);
     const frame = await screen.findByTitle(/降智动画/);
-    expect(fetch).toHaveBeenCalledWith(`${import.meta.env.BASE_URL}assets/${NAME}`, expect.anything());
-    // 关键：不渲染 src，改用 srcDoc 强制按 HTML 解析。
-    expect(frame).not.toHaveAttribute("src");
-    expect(frame.getAttribute("srcDoc")).toContain("<svg");
+    expect(frame).toHaveAttribute("src", `${import.meta.env.BASE_URL}assets/${LOCAL}`);
+    // src 必须落成本地 .html：留着上游的 .html.txt 会拿到 text/plain，屏上是源码。
+    expect(frame.getAttribute("src")).not.toContain(".html.txt");
+    // 两条路只能留一条：src 和 srcDoc 同时挂会以 srcDoc 为准，等于白改。
+    expect(frame).not.toHaveAttribute("srcDoc");
   });
 
   it("沙箱恰好只放脚本，绝不放 allow-same-origin", async () => {
@@ -150,12 +148,16 @@ describe("RoundDetail 动画资产", () => {
     expect(frame).toHaveAttribute("width", "100%");
   });
 
-  it("取回失败时给出可读提示，不留空框", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => new Response("", { status: 404 })));
+  it("展开即挂 iframe，失败交给浏览器兜底，不留空的取回中间态", async () => {
+    // 改成 src 之后组件不再 fetch：没有「正在加载动画…」这种自己维护的中间态，
+    // 也不再需要自己渲染 HTTP 错误文案（jsdom 不加载 iframe，断言不到真实错误页，
+    // 真实取回失败由 tests/e2e 覆盖）。这里钉住的是「展开后必定有 iframe」。
     const { container } = render(<RoundDetail candidate={withAsset()} tasks={tasks} />);
     expand(container);
-    expect(await screen.findByText(/动画加载失败：HTTP 404/)).toBeInTheDocument();
-    expect(container.querySelector("iframe")).toBeNull();
+    const frame = await screen.findByTitle(/降智动画/);
+    expect(frame.tagName).toBe("IFRAME");
+    expect(screen.queryByText(/正在加载动画/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/动画加载失败/)).not.toBeInTheDocument();
   });
 
   it("渲染 asset_sha256 的前 8 位供人肉核对", () => {

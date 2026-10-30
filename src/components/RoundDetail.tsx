@@ -10,43 +10,29 @@ function norm(score: number | null | undefined): string {
 }
 
 /**
- * 上游产物是 `*.html.txt`，静态托管按扩展名一律回 `text/plain`——把它直接塞进
- * iframe 的 `src`，浏览器会当纯文本显示、屏上是源码而不是动画。所以先取文本再走
- * `srcDoc`，浏览器强制按 HTML 解析；取回前不挂 iframe。
+ * 动画产物走 `src` 加载，不走 `srcDoc`。
+ *
+ * 起因：上游产物扩展名是 `.html.txt`，托管按扩展名回 `text/plain`，直接塞 `src` 会让
+ * 浏览器把源码当纯文本显示——所以早期只能 fetch 成文本再 `srcDoc`。
+ *
+ * 但 `srcDoc` 的子文档是**继承父文档 CSP** 的：`index.html` 的 `script-src` 只放行
+ * 主题脚本那一个 hash，34 个产物里 23 个靠内联 `<script>` 驱动交互，于是被
+ * `script-src-elem` 全部挡掉，线上只剩静帧（产物的 Google Fonts 也被 `style-src` 挡）。
+ *
+ * 解法是产物按 `.html` 落盘（见 `lib/asset.ts` 的 `localAssetName` 与 `public/assets/`），
+ * 托管即回 `text/html`，`src` 可直接加载。`src` 的子文档是独立文档、不继承父 CSP，
+ * 产物自己的脚本与样式表都正常生效，而 `sandbox="allow-scripts"` 的隔离一分不减。
  */
 function AnimationPlayer({ src, title }: { src: string; title: string }) {
-  const [html, setHtml] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  useEffect(() => {
-    let alive = true;
-    const ctrl = new AbortController();
-    setHtml(null);
-    setError(null);
-    fetch(src, { signal: ctrl.signal })
-      .then((res) => (res.ok ? res.text() : Promise.reject(new Error(`HTTP ${res.status}`))))
-      .then((text) => {
-        if (alive) setHtml(text);
-      })
-      .catch((err: unknown) => {
-        if (!alive) return;
-        setError(err instanceof Error ? err.message : String(err));
-      });
-    return () => {
-      alive = false;
-      ctrl.abort();
-    };
-  }, [src]);
-
-  if (error) return <p className="muted">动画加载失败：{error}</p>;
-  if (html == null) return <p className="muted">正在加载动画…</p>;
   return (
     <iframe
       // 只放脚本：动画靠内联 script 跑。坚决不加 allow-same-origin——加了同源，沙箱隔离基本失效。
       sandbox="allow-scripts"
-      srcDoc={html}
+      src={src}
       title={title}
       width="100%"
       height={220}
+      loading="lazy"
       referrerPolicy="no-referrer"
       style={{ border: "1px solid var(--line)", borderRadius: 8, display: "block", marginTop: 8 }}
     />
