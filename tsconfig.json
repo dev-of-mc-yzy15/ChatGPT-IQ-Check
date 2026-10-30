@@ -19,5 +19,5 @@
     "checkJs": false,
     "types": ["vitest/globals", "vite/client", "node"]
   },
-  "include": ["src", "tests", "scripts", "vite.config.ts"]
+  "include": ["src", "tests", "scripts", "vite.config.ts", "playwright.config.ts"]
 }

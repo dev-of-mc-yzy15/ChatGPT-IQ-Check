@@ -42,3 +42,8 @@ coverage/
 .env
 .env.*
 .worktrees/
+
+# Playwright（e2e 产物，仅本机与 CI 有效，不入库）
+test-results/
+playwright-report/
+.playwright/
