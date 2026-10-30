@@ -1,3 +1,52 @@
+/**
+ * 管道侧的纯函数层：把上游原始 payload 转成 public/data 的落盘形状。
+ * 上游字段随时会变，所以入口一律收 any，转换后由 contract.mjs 的
+ * assert*Shape 在落盘前把住结构。
+ *
+ * @typedef {object} HistoryRow
+ * @property {string} at
+ * @property {number} score
+ * @property {number} coverage
+ * @property {number} required_tasks
+ * @property {string} score_status
+ *
+ * @typedef {object} Summary
+ * @property {string} model
+ * @property {string} effort
+ * @property {number} score
+ * @property {number} coverage
+ * @property {number} required_tasks
+ * @property {string} score_status
+ * @property {number} graded_runs_count
+ * @property {Record<string, SourceScore>} source_scores
+ * @property {{sample_count: number, elapsed_ms_mean: number|null, api_equivalent_usd_mean: number|null}} statistics
+ * @property {string|null} latest_graded_at
+ * @property {HistoryRow[]} history
+ *
+ * @typedef {object} RadarBenchDoc
+ * @property {number} schema_version
+ * @property {string} fetch_id
+ * @property {string} generated_at
+ * @property {string} checked_at
+ * @property {string} benchmark
+ * @property {string} score_version
+ * @property {number} score_max
+ * @property {string} catalog_version
+ * @property {string} task_set_sha256
+ * @property {Summary[]} candidates
+ *
+ * @typedef {object} RoundDoc
+ * @property {string} source_schema
+ * @property {any} round
+ * @property {any[]} tasks
+ * @property {any[]} candidates
+ *
+ * @typedef {object} SourceScore
+ * @property {number} score
+ * @property {number} coverage
+ * @property {number} required_tasks
+ * @property {number} graded_runs_count
+ */
 import {
   assertMinCandidates,
   assertRadarBenchShape,
@@ -8,9 +57,27 @@ import {
   strictString,
 } from "./contract.mjs";
 
+/**
+ * @param {any} value
+ * @param {string} path
+ * @returns {number}
+ */
+const num = (value, path) => /** @type {number} */ (strictNumber(value, path, { min: 0 }));
+
+/**
+ * @param {any} value
+ * @param {string} path
+ * @returns {string}
+ */
+const str = (value, path) => /** @type {string} */ (strictString(value, path));
+
 export const SCORE_MAX = 150;
 export const ROUND_MULTIPLIER = 1.5;
 
+/**
+ * @param {any} raw 上游 radar-bench-binding.json
+ * @returns {{benchmark: string, score_version: string, score_max: number, catalog_version: string, task_set_sha256: string, candidates: {model: string, effort: string}[]}}
+ */
 export function transformBinding(raw) {
   const modelEfforts = Array.isArray(raw?.model_efforts) ? raw.model_efforts : [];
   const seen = new Set();
@@ -37,59 +104,50 @@ export function transformBinding(raw) {
   };
 }
 
+/**
+ * @param {any} raw 上游 summaries 单条
+ * @returns {Summary}
+ */
 export function transformSummary(raw) {
   if (!raw || typeof raw !== "object") throw new Error("summary: invalid payload");
   const model = String(raw.model ?? "").trim();
   const effort = String(raw.effort ?? "").trim();
   if (!model || !effort) throw new Error("summary: missing model/effort");
-  const score = strictNumber(raw.score, "summary.score", { min: 0 });
+  const score = num(raw.score, "summary.score");
+  /** @type {any[]} */
   const points = Array.isArray(raw?.history?.points) ? raw.history.points : [];
   const history = points
     .map((p, i) => ({
-      at: strictString(p?.at, "summary.history[" + i + "].at"),
-      score: strictNumber(p?.score, "summary.history[" + i + "].score", { min: 0 }),
-      coverage: strictNumber(p?.coverage ?? 0, "summary.history[" + i + "].coverage", { min: 0 }),
-      required_tasks: strictNumber(p?.required_tasks ?? 0, "summary.history[" + i + "].required_tasks", {
-        min: 0,
-      }),
+      at: str(p?.at, "summary.history[" + i + "].at"),
+      score: num(p?.score, "summary.history[" + i + "].score"),
+      coverage: num(p?.coverage ?? 0, "summary.history[" + i + "].coverage"),
+      required_tasks: num(p?.required_tasks ?? 0, "summary.history[" + i + "].required_tasks"),
       score_status: p?.score_status === "complete" ? "complete" : "provisional",
     }))
-    .sort((a, b) => new Date(a.at) - new Date(b.at));
+    .sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime());
   const elapsedMsMean = raw.statistics?.metrics?.elapsed_ms?.mean;
   const apiEquivalentUsdMean = raw.statistics?.metrics?.api_equivalent_usd?.mean;
   return {
     model,
     effort,
     score,
-    coverage: strictNumber(raw.coverage ?? 0, "summary.coverage", { min: 0 }),
-    required_tasks: strictNumber(raw.required_tasks ?? 0, "summary.required_tasks", { min: 0 }),
+    coverage: num(raw.coverage ?? 0, "summary.coverage"),
+    required_tasks: num(raw.required_tasks ?? 0, "summary.required_tasks"),
     score_status: raw.score_status === "complete" ? "complete" : "provisional",
-    graded_runs_count: strictNumber(raw.graded_runs_count ?? 0, "summary.graded_runs_count", { min: 0 }),
+    graded_runs_count: num(raw.graded_runs_count ?? 0, "summary.graded_runs_count"),
     source_scores: Object.fromEntries(
       Object.entries(raw.source_scores ?? {}).map(([key, value]) => [
         key,
         {
-          score: strictNumber(value?.score ?? 0, "summary.source_scores." + key + ".score", { min: 0 }),
-          coverage: strictNumber(value?.coverage ?? 0, "summary.source_scores." + key + ".coverage", {
-            min: 0,
-          }),
-          required_tasks: strictNumber(
-            value?.required_tasks ?? 0,
-            "summary.source_scores." + key + ".required_tasks",
-            { min: 0 },
-          ),
-          graded_runs_count: strictNumber(
-            value?.graded_runs_count ?? 0,
-            "summary.source_scores." + key + ".graded_runs_count",
-            { min: 0 },
-          ),
+          score: num(value?.score ?? 0, "summary.source_scores." + key + ".score"),
+          coverage: num(value?.coverage ?? 0, "summary.source_scores." + key + ".coverage"),
+          required_tasks: num(value?.required_tasks ?? 0, "summary.source_scores." + key + ".required_tasks"),
+          graded_runs_count: num(value?.graded_runs_count ?? 0, "summary.source_scores." + key + ".graded_runs_count"),
         },
       ]),
     ),
     statistics: {
-      sample_count: strictNumber(raw.statistics?.sample_count ?? 0, "summary.statistics.sample_count", {
-        min: 0,
-      }),
+      sample_count: num(raw.statistics?.sample_count ?? 0, "summary.statistics.sample_count"),
       elapsed_ms_mean:
         elapsedMsMean == null
           ? null
@@ -108,6 +166,10 @@ export function transformSummary(raw) {
   };
 }
 
+/**
+ * @param {{binding: any, summaries: Summary[], generatedAt: string, checkedAt: string, fetchId: string}} args
+ * @returns {RadarBenchDoc}
+ */
 export function mergeRadarBench({ binding, summaries, generatedAt, checkedAt, fetchId }) {
   const b = transformBinding(binding);
   const byKey = new Map(summaries.map((s) => [candidateKey(s.model, s.effort), s]));
@@ -130,19 +192,34 @@ export function mergeRadarBench({ binding, summaries, generatedAt, checkedAt, fe
   };
 }
 
+/**
+ * @param {any} data
+ * @param {{minCandidates?: number}} [options]
+ * @returns {RadarBenchDoc}
+ */
 export function validateRadarBench(data, { minCandidates = 30 } = {}) {
   assertRadarBenchShape(data);
   assertMinCandidates(data, minCandidates, "radar-bench");
   return data;
 }
 
+/**
+ * @param {unknown} value
+ * @returns {number|null}
+ */
 function finiteOrNull(value) {
   if (value == null) return null;
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
 }
 
+/**
+ * @param {any} results 单档位的 task 结果表
+ * @param {any[]} tasks
+ * @returns {{score: number|null, scored_tasks: number, total_tasks: number, status: string}}
+ */
 export function computeRoundScore(results, tasks) {
+  /** @type {number[]} */
   const rewards = [];
   let scored = 0;
   for (const task of tasks) {
@@ -165,17 +242,20 @@ export function computeRoundScore(results, tasks) {
   };
 }
 
+/**
+ * @param {any} raw 上游 degradation-codex-latest.json
+ * @returns {RoundDoc}
+ */
 export function transformRound(raw) {
+  /** @type {any[]} */
   const tasks = Array.isArray(raw?.tasks)
-    ? raw.tasks
+    ? /** @type {any[]} */ (raw.tasks)
         .map((t) => ({
           id: String(t?.id ?? ""),
           category: String(t?.category ?? ""),
           title_zh: String(t?.title_zh ?? ""),
           title_en: String(t?.title_en ?? ""),
-          weight: strictNumber(t?.weight ?? 0, "round.tasks[" + (t?.id ?? "?") + "].weight", {
-            min: 0,
-          }),
+          weight: num(t?.weight ?? 0, "round.tasks[" + (t?.id ?? "?") + "].weight"),
           required: Boolean(t?.required),
         }))
         .filter((t) => t.id)
@@ -262,6 +342,11 @@ export function transformRound(raw) {
   };
 }
 
+/**
+ * @param {any} data
+ * @param {{minCandidates?: number}} [options]
+ * @returns {RoundDoc}
+ */
 export function validateRound(data, { minCandidates = 30 } = {}) {
   assertRoundShape(data);
   assertMinCandidates(data, minCandidates, "round");

@@ -7,8 +7,9 @@
   "engines": { "node": ">=24" },
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && npm run typecheck:scripts && vite build",
     "preview": "vite preview",
+    "typecheck:scripts": "tsc -p tsconfig.scripts.json",
     "test": "vitest run",
     "test:watch": "vitest",
     "refresh": "node scripts/refresh.mjs"

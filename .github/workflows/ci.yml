@@ -31,4 +31,5 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npx tsc -b
+      - run: npm run typecheck:scripts
       - run: npm run build

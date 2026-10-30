@@ -26,12 +26,22 @@ function defaultDataDir() {
 const DATA_DIR = defaultDataDir();
 
 class HttpError extends Error {
+  /**
+   * @param {number} status
+   * @param {string} url
+   */
   constructor(status, url) {
     super(`HTTP ${status} for ${url}`);
     this.status = status;
   }
 }
 
+/**
+ * @param {string} url
+ * @param {{tries?: number, timeoutMs?: number, headers?: Record<string, string>}} [options]
+ * @param {typeof fetch} [fetchImpl]
+ * @returns {Promise<any>}
+ */
 export async function fetchJson(url, { tries = 3, timeoutMs = 20000, headers = {} } = {}, fetchImpl = fetch) {
   for (let i = 0; i < tries; i++) {
     const ctrl = new AbortController();
@@ -55,6 +65,13 @@ export async function fetchJson(url, { tries = 3, timeoutMs = 20000, headers = {
   throw new Error("unreachable");
 }
 
+/**
+ * @template T, R
+ * @param {T[]} items
+ * @param {number} limit
+ * @param {(item: T, index: number) => Promise<R>} fn
+ * @returns {Promise<R[]>}
+ */
 export async function mapLimit(items, limit, fn) {
   const out = new Array(items.length);
   let next = 0;
@@ -69,6 +86,11 @@ export async function mapLimit(items, limit, fn) {
   return out;
 }
 
+/**
+ * @param {string} model
+ * @param {string} effort
+ * @returns {string}
+ */
 export function summaryUrl(model, effort) {
   const query = new URLSearchParams({
     model,
@@ -79,6 +101,10 @@ export function summaryUrl(model, effort) {
   return `${SUMMARY_URL}?${query.toString()}`;
 }
 
+/**
+ * @param {string} file
+ * @returns {Promise<any|null>}
+ */
 async function readJsonIfExists(file) {
   try {
     return JSON.parse(await readFile(file, "utf8"));
@@ -87,6 +113,10 @@ async function readJsonIfExists(file) {
   }
 }
 
+/**
+ * @param {any} data
+ * @returns {any}
+ */
 function stripVolatile(data) {
   if (!data || typeof data !== "object") return data;
   const copy = { ...data };
@@ -96,10 +126,20 @@ function stripVolatile(data) {
   return copy;
 }
 
+/**
+ * @param {any} a
+ * @param {any} b
+ * @returns {boolean}
+ */
 function contentEqual(a, b) {
   return JSON.stringify(stripVolatile(a)) === JSON.stringify(stripVolatile(b));
 }
 
+/**
+ * @param {string} file
+ * @param {any} data
+ * @returns {Promise<void>}
+ */
 async function writeJson(file, data) {
   await mkdir(dirname(file), { recursive: true });
   const tmp = `${file}.${process.pid}.${randomUUID()}.tmp`;
@@ -112,6 +152,10 @@ async function writeJson(file, data) {
   }
 }
 
+/**
+ * @param {any[]} summaries
+ * @returns {string|null}
+ */
 function maxLatest(summaries) {
   let latest = null;
   let latestMs = -Infinity;
@@ -126,6 +170,11 @@ function maxLatest(summaries) {
   return latest;
 }
 
+/**
+ * @param {string|null} iso
+ * @param {Date} now
+ * @returns {number|null}
+ */
 function staleDays(iso, now) {
   if (!iso) return null;
   const days = Math.floor((now.getTime() - new Date(iso).getTime()) / 86400000);
@@ -153,9 +202,11 @@ export async function refreshAll({
   const bindingRaw = await fetchJson(BINDING_URL, {}, fetchImpl);
   const binding = transformBinding(bindingRaw);
   const oldRadar = await readJsonIfExists(join(outDir, "radar-bench.json"));
-  const oldByKey = new Map((oldRadar?.candidates ?? []).map((c) => [candidateKey(c.model, c.effort), c]));
+  const oldByKey = new Map(
+    /** @type {any[]} */ (oldRadar?.candidates ?? []).map((c) => [candidateKey(c.model, c.effort), c]),
+  );
 
-  const results = await mapLimit(binding.candidates, 4, async (candidate) => {
+  const results = await mapLimit(binding.candidates, 4, async (/** @type {any} */ candidate) => {
     const key = candidateKey(candidate.model, candidate.effort);
     try {
       const raw = await fetchJson(
@@ -166,14 +217,15 @@ export async function refreshAll({
       return { key, candidate, summary: transformSummary(raw), fresh: true, error: null };
     } catch (error) {
       const old = oldByKey.get(key);
+      const message = error instanceof Error ? error.message : String(error);
       return {
         key,
         candidate,
         summary: old ?? null,
         fresh: false,
         error: old
-          ? `${key}: reused previous data (${error.message})`
-          : `${key}: ${error.message}`,
+          ? `${key}: reused previous data (${message})`
+          : `${key}: ${message}`,
       };
     }
   });

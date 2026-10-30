@@ -4,7 +4,8 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
 
-const workflowsDir = resolve(dirname(fileURLToPath(import.meta.url)), "../.github/workflows");
+const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const workflowsDir = resolve(repoRoot, ".github/workflows");
 const load = (name: string) => parse(readFileSync(resolve(workflowsDir, name), "utf8"));
 
 describe("workflows", () => {
@@ -38,6 +39,16 @@ describe("workflows", () => {
     expect(wf.permissions.pages).toBeUndefined();
     const runs = wf.jobs.verify.steps.map((s: { run?: string }) => s.run).filter(Boolean);
     expect(runs).toEqual(expect.arrayContaining(["npm test", "npx tsc -b", "npm run build"]));
+    // A-9：scripts 的 checkJs 闸门必须真的在 CI 里跑，不能只写在 package.json。
+    expect(runs).toContain("npm run typecheck:scripts");
+  });
+
+  it("scripts are covered by the checkJs gate", () => {
+    const cfg = JSON.parse(readFileSync(resolve(repoRoot, "tsconfig.scripts.json"), "utf8"));
+    expect(cfg.compilerOptions.checkJs).toBe(true);
+    expect(cfg.include).toEqual(["scripts"]);
+    const pkg = JSON.parse(readFileSync(resolve(repoRoot, "package.json"), "utf8"));
+    expect(pkg.scripts.build).toContain("typecheck:scripts");
   });
 
   it("deploy is reachable from both push and refresh-data completion", () => {
