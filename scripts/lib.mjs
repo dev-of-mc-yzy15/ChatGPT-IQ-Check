@@ -1,4 +1,10 @@
-import { assertMinCandidates, assertRadarBenchShape, assertRoundShape } from "./contract.mjs";
+import {
+  assertMinCandidates,
+  assertRadarBenchShape,
+  assertRoundShape,
+  strictNumber,
+  strictString,
+} from "./contract.mjs";
 
 export const SCORE_MAX = 150;
 export const ROUND_MULTIPLIER = 1.5;
@@ -17,12 +23,12 @@ export function transformBinding(raw) {
     candidates.push({ model, effort });
   }
   if (!candidates.length) throw new Error("binding: model_efforts is empty");
-  const rawScoreMax = raw?.score_max;
-  const scoreMax = rawScoreMax == null ? NaN : Number(rawScoreMax);
+  const scoreMax =
+    strictNumber(raw?.score_max, "binding.score_max", { nullable: true, min: 1 }) ?? SCORE_MAX;
   return {
     benchmark: String(raw?.benchmark ?? ""),
     score_version: String(raw?.score_version ?? ""),
-    score_max: Number.isFinite(scoreMax) ? scoreMax : SCORE_MAX,
+    score_max: scoreMax,
     catalog_version: String(raw?.catalog_version ?? ""),
     task_set_sha256: String(raw?.task_set_sha256 ?? ""),
     candidates,
@@ -34,18 +40,18 @@ export function transformSummary(raw) {
   const model = String(raw.model ?? "").trim();
   const effort = String(raw.effort ?? "").trim();
   if (!model || !effort) throw new Error("summary: missing model/effort");
-  const score = raw.score == null ? NaN : Number(raw.score);
-  if (!Number.isFinite(score)) throw new Error("summary: invalid score");
+  const score = strictNumber(raw.score, "summary.score", { min: 0 });
   const points = Array.isArray(raw?.history?.points) ? raw.history.points : [];
   const history = points
-    .map((p) => ({
-      at: String(p?.at ?? ""),
-      score: Number(p?.score),
-      coverage: Number(p?.coverage ?? 0),
-      required_tasks: Number(p?.required_tasks ?? 0),
+    .map((p, i) => ({
+      at: strictString(p?.at, "summary.history[" + i + "].at"),
+      score: strictNumber(p?.score, "summary.history[" + i + "].score", { min: 0 }),
+      coverage: strictNumber(p?.coverage ?? 0, "summary.history[" + i + "].coverage", { min: 0 }),
+      required_tasks: strictNumber(p?.required_tasks ?? 0, "summary.history[" + i + "].required_tasks", {
+        min: 0,
+      }),
       score_status: p?.score_status === "complete" ? "complete" : "provisional",
     }))
-    .filter((p) => p.at && Number.isFinite(p.score))
     .sort((a, b) => new Date(a.at) - new Date(b.at));
   const elapsedMsMean = raw.statistics?.metrics?.elapsed_ms?.mean;
   const apiEquivalentUsdMean = raw.statistics?.metrics?.api_equivalent_usd?.mean;
@@ -53,23 +59,35 @@ export function transformSummary(raw) {
     model,
     effort,
     score,
-    coverage: Number(raw.coverage ?? 0),
-    required_tasks: Number(raw.required_tasks ?? 0),
+    coverage: strictNumber(raw.coverage ?? 0, "summary.coverage", { min: 0 }),
+    required_tasks: strictNumber(raw.required_tasks ?? 0, "summary.required_tasks", { min: 0 }),
     score_status: raw.score_status === "complete" ? "complete" : "provisional",
-    graded_runs_count: Number(raw.graded_runs_count ?? 0),
+    graded_runs_count: strictNumber(raw.graded_runs_count ?? 0, "summary.graded_runs_count", { min: 0 }),
     source_scores: Object.fromEntries(
       Object.entries(raw.source_scores ?? {}).map(([key, value]) => [
         key,
         {
-          score: Number(value?.score ?? 0),
-          coverage: Number(value?.coverage ?? 0),
-          required_tasks: Number(value?.required_tasks ?? 0),
-          graded_runs_count: Number(value?.graded_runs_count ?? 0),
+          score: strictNumber(value?.score ?? 0, "summary.source_scores." + key + ".score", { min: 0 }),
+          coverage: strictNumber(value?.coverage ?? 0, "summary.source_scores." + key + ".coverage", {
+            min: 0,
+          }),
+          required_tasks: strictNumber(
+            value?.required_tasks ?? 0,
+            "summary.source_scores." + key + ".required_tasks",
+            { min: 0 },
+          ),
+          graded_runs_count: strictNumber(
+            value?.graded_runs_count ?? 0,
+            "summary.source_scores." + key + ".graded_runs_count",
+            { min: 0 },
+          ),
         },
       ]),
     ),
     statistics: {
-      sample_count: Number(raw.statistics?.sample_count ?? 0),
+      sample_count: strictNumber(raw.statistics?.sample_count ?? 0, "summary.statistics.sample_count", {
+        min: 0,
+      }),
       elapsed_ms_mean:
         elapsedMsMean == null
           ? null
@@ -153,7 +171,9 @@ export function transformRound(raw) {
           category: String(t?.category ?? ""),
           title_zh: String(t?.title_zh ?? ""),
           title_en: String(t?.title_en ?? ""),
-          weight: Number(t?.weight ?? 0),
+          weight: strictNumber(t?.weight ?? 0, "round.tasks[" + (t?.id ?? "?") + "].weight", {
+            min: 0,
+          }),
           required: Boolean(t?.required),
         }))
         .filter((t) => t.id)

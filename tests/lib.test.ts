@@ -35,12 +35,30 @@ describe("transformBinding", () => {
     ]);
   });
 
-  it("falls back to SCORE_MAX when score_max is not finite", () => {
+  it("falls back to SCORE_MAX only when score_max is absent", () => {
     const b = transformBinding({
       model_efforts: [{ model: "gpt-6-astra", effort: "high" }],
-      score_max: "nope",
     });
     expect(b.score_max).toBe(150);
+  });
+
+  // 给了坏值就抛，不再静默回退成 150 掩盖上游变化。
+  it("throws when score_max is present but not finite", () => {
+    expect(() =>
+      transformBinding({
+        model_efforts: [{ model: "gpt-6-astra", effort: "high" }],
+        score_max: "nope",
+      }),
+    ).toThrow(/binding\.score_max/);
+  });
+
+  it("throws when score_max is zero or negative", () => {
+    expect(() =>
+      transformBinding({
+        model_efforts: [{ model: "gpt-6-astra", effort: "high" }],
+        score_max: 0,
+      }),
+    ).toThrow(/binding\.score_max/);
   });
 
   it("throws on empty model_efforts", () => {
@@ -62,11 +80,11 @@ describe("transformSummary", () => {
   });
 
   it("throws on invalid score", () => {
-    expect(() => transformSummary({ ...summaryRaw, score: "nope" })).toThrow(/invalid score/);
+    expect(() => transformSummary({ ...summaryRaw, score: "nope" })).toThrow(/summary\.score/);
   });
 
   it("throws on null score instead of coercing it to 0", () => {
-    expect(() => transformSummary({ ...summaryRaw, score: null })).toThrow(/invalid score/);
+    expect(() => transformSummary({ ...summaryRaw, score: null })).toThrow(/summary\.score/);
   });
 
   it("preserves null elapsed_ms.mean instead of coercing it to 0", () => {
@@ -101,6 +119,33 @@ describe("transformSummary", () => {
     });
     expect(s.statistics.elapsed_ms_mean).toBe(1000);
     expect(s.statistics.api_equivalent_usd_mean).toBeNull();
+  });
+});
+
+describe("transformSummary 的静默归零", () => {
+  it("throws on empty-string score", () => {
+    expect(() => transformSummary({ ...summaryRaw, score: "" })).toThrow(/summary\.score/);
+  });
+
+  it("throws on empty-string coverage instead of writing 0", () => {
+    expect(() => transformSummary({ ...summaryRaw, coverage: "" })).toThrow(/summary\.coverage/);
+  });
+
+  it("throws on a history point with an unparseable score", () => {
+    const broken = {
+      ...summaryRaw,
+      history: { points: [{ at: "2026-10-09T00:00:00.000Z", score: "", coverage: 64 }] },
+    };
+    expect(() => transformSummary(broken)).toThrow(/summary\.history\[0\]\.score/);
+  });
+
+  it("still keeps an absent score nullable for elapsed/api means", () => {
+    expect(transformSummary(summaryRaw).statistics.elapsed_ms_mean).not.toBeUndefined();
+  });
+
+  it("accepts numeric strings without changing their value", () => {
+    const s2 = transformSummary({ ...summaryRaw, coverage: "64" });
+    expect(s2.coverage).toBe(64);
   });
 });
 
