@@ -150,3 +150,50 @@ describe("FreshnessBanner ok 消费", () => {
     expect(banner).not.toHaveTextContent("本轮数据未刷新成功");
   });
 });
+
+// 一条陈旧候选不能藏在整体新鲜的板后面（min_latest / stale_count），
+// 同时覆盖数要和真正抓到的对上（binding_total）。
+describe("FreshnessBanner 隐蔽的陈旧候选", () => {
+  it("names how many candidates went stale and turns the card into a warning", () => {
+    const { container } = renderBanner({ stale_count: 3 });
+    expect(screen.getByRole("status")).toHaveTextContent("有 3 个候选已长时间未更新。");
+    expect(container.querySelector(".card.warn")).not.toBeNull();
+  });
+
+  it("calls out the oldest score when min_latest is 3 days old", () => {
+    renderBanner({ min_latest: hoursAgo(72) });
+    const banner = screen.getByRole("status");
+    expect(banner).toHaveTextContent("最旧的最近评分停在");
+    // 2026-10-24T02:00Z 往前 72 小时 = 2026-10-21T02:00Z，Asia/Shanghai 即 10:00
+    expect(banner).toHaveTextContent("2026-10-21 10:00");
+  });
+
+  // 旧 status.json 一个字段都没有：三行都不能印、不能冒出 NaN 或 undefined。
+  it("degrades silently when all three fields are absent", () => {
+    renderBanner({
+      stale_count: undefined as unknown as number,
+      min_latest: undefined as unknown as string,
+      binding_total: undefined as unknown as number,
+    });
+    const banner = screen.getByRole("status");
+    expect(banner).not.toHaveTextContent("已长时间未更新");
+    expect(banner).not.toHaveTextContent("最旧的最近评分");
+    expect(banner.textContent).not.toContain("NaN");
+    expect(banner.textContent).not.toContain("undefined");
+    expect(screen.queryByText(/本次覆盖/)).toBeNull();
+  });
+});
+
+describe("FreshnessBanner 覆盖行", () => {
+  it("prints coverage outside the live region so alerts are not re-announced", () => {
+    const { container } = renderBanner({ binding_total: 34, missing_count: 2, reused_count: 1 });
+    const banner = screen.getByRole("status");
+    const coverage = screen.getByText("本次覆盖 31/34 个候选。");
+    expect(coverage).toBeInTheDocument();
+    expect(banner).not.toContainElement(coverage);
+    expect(banner).not.toHaveTextContent("本次覆盖");
+    // 中性信息：不因为覆盖不全就把卡片升级成告警
+    expect(container.querySelector(".card")).not.toHaveClass("warn");
+    expect(container).toHaveTextContent("本次覆盖 31/34 个候选。");
+  });
+});
