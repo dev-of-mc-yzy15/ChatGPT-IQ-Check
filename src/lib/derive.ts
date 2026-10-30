@@ -4,6 +4,14 @@ import { candidateKey } from "../../scripts/contract.mjs";
 export const EFFORT_ORDER = ["low", "medium", "high", "xhigh", "max", "ultra"];
 export type SortKey = "model" | "effort" | "score" | "coverage" | "graded_runs_count" | "latest_graded_at";
 
+/**
+ * 模型名走自然序（numeric-aware）：数字段按数值比，`gpt-6` 必须排在 `gpt-10` 前面。
+ * 纯 localeCompare 是逐字符字典序，"1" < "6"，点一下「按模型排序」看到的就是反直觉的顺序。
+ * Collator 构造不便宜（同 fmtDateTime 的教训），提到模块级复用，比较函数里不再每次 new；
+ * 数字段相等时 ICU 的 tie-break 已经是确定性的（gpt-6 → gpt-6-mini、gpt-6 → GPT-6），不必再手写。
+ */
+const MODEL_COLLATOR = new Intl.Collator("en", { numeric: true });
+
 /** 未知档位（上游新加的档）排到已知档之后，而不是 indexOf 得 -1 挤到最前。 */
 function effortRank(effort: string): number {
   const at = EFFORT_ORDER.indexOf(effort);
@@ -45,6 +53,12 @@ export const DEGRADE_THRESHOLD = -5;
 export const MIN_COVERAGE_RATIO = 0.9;
 /** 趋势最多同时画几条曲线：默认选中、上限闸门、TrendControls 的默认 max 共用一个源，别再各自写 6。 */
 export const MAX_TREND_SERIES = 6;
+/**
+ * 日桶网格的最大跨度（含首尾，单位天）。正常数据是 1~2 年历史，两年 731 天，这里留约 50% 冗余；
+ * 再往上基本就是 1970 坏点（epoch 哨兵/上游默认值）撑出来的两万多桶，横轴会被拉成一条线。
+ * 跨度不超上限时行为与不限幅完全一致，只有真正越界才截掉最老的那几天。
+ */
+export const MAX_GRID_DAYS = 1100;
 
 /**
  * Δ 的方向符号——颜色之外的第二重编码，色觉障碍用户不靠红绿也能读出涨跌。
@@ -61,19 +75,47 @@ export function deltaClass(delta: number | null): string {
   return delta < 0 ? "down" : "up";
 }
 
+/** 解析时间戳毫秒；坏日期回 null，比较时一律垫底。 */
+function msOf(at: string): number | null {
+  const ms = Date.parse(at);
+  return Number.isFinite(ms) ? ms : null;
+}
+
 /**
- * 按 UTC 日去重，同一天只留最后一条（与 buildDailyGrid 的后写覆盖语义一致），
- * 并按时间升序。折线、散点、降智红点必须共用这一条序列，否则点会飘在折线外。
+ * 时间升序比较。基准是毫秒而不是原始 at 字符串：混时区时 `"…+14:00"` 的字典序
+ * 会排在 `"…-12:00"` 之后，而真实时间相反，序列一旦倒挂下游就把跌算成涨。
+ * 解不出来的坏日期垫到末尾，不因为 NaN 比较恒假就卡在队首。
  */
-export function lastPerDay(history: HistoryPoint[]): HistoryPoint[] {
+function byTimeAsc(a: HistoryPoint, b: HistoryPoint): number {
+  const am = msOf(a.at);
+  const bm = msOf(b.at);
+  if (am === null || bm === null) return am === bm ? 0 : am === null ? 1 : -1;
+  return am - bm;
+}
+
+/**
+ * 按 UTC 日聚成「当天最晚一条」。折线（buildDailyGrid）与散点/降智红点（lastPerDay）
+ * 必须共用这一份口径：各自实现过一次，一个按数组位置、一个按时间，同一天多次评分时
+ * 点和线会各指一个值。比较基准与排序同口径（解析后的毫秒），坏日期不顶掉可用的点。
+ */
+function latestPerUtcDay(history: HistoryPoint[]): Map<string, HistoryPoint> {
   const byDay = new Map<string, HistoryPoint>();
   for (const p of history) {
     const day = utcDayKey(p.at);
     const seen = byDay.get(day);
-    // 取当天最晚的一条，不依赖上游给的数组顺序。
-    if (!seen || Date.parse(p.at) > Date.parse(seen.at)) byDay.set(day, p);
+    const pm = msOf(p.at);
+    const seenMs = seen ? msOf(seen.at) : null;
+    if (!seen || (pm !== null && (seenMs === null || pm > seenMs))) byDay.set(day, p);
   }
-  return [...byDay.values()].sort((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : 0));
+  return byDay;
+}
+
+/**
+ * 按 UTC 日去重，同一天只留最晚一条，并按时间升序。
+ * 折线、散点、降智红点必须共用这一条序列，否则点会飘在折线外。
+ */
+export function lastPerDay(history: HistoryPoint[]): HistoryPoint[] {
+  return [...latestPerUtcDay(history).values()].sort(byTimeAsc);
 }
 
 export function findDegradationPoints(
@@ -105,19 +147,33 @@ export function topCandidates(rows: RadarCandidate[], n = 6): RadarCandidate[] {
 
 export function buildDailyGrid(history: HistoryPoint[]): { at: string; score: number | null }[] {
   if (!history.length) return [];
-  const times = history.map((h) => Date.parse(h.at)).filter((ms) => Number.isFinite(ms));
-  // start > end（上游给了倒序或坏时间）时早退，别产出空网格还当成"没有降智"。
-  if (!times.length) return [];
-  const lowest = Math.min(...times);
-  const highest = Math.max(...times);
+  // 单趟循环求首尾，不摊成 `Math.min(...times)`：实参列表一过 V8 上限（十几万点）就
+  // RangeError 白屏，而 TrendChart 外层没有 try。
+  let lowest = Number.POSITIVE_INFINITY;
+  let highest = Number.NEGATIVE_INFINITY;
+  for (const h of history) {
+    const ms = Date.parse(h.at);
+    if (!Number.isFinite(ms)) continue;
+    if (ms < lowest) lowest = ms;
+    if (ms > highest) highest = ms;
+  }
+  // 一个能解析的时间都没有，别产出空网格还当成"没有降智"。
+  if (lowest > highest) return [];
   // 从 UTC 零点起走，否则首尾当天会因取整被吞掉一天。
   const from = new Date(lowest);
   from.setUTCHours(0, 0, 0, 0);
-  const byDay = new Map(history.map((h) => [utcDayKey(h.at), h.score]));
+  // 跨度封顶：只保留最近 MAX_GRID_DAYS 天，坏点被挤出窗口。
+  // 起点往「最近 N 天」的方向前移，终点（最新的一天）始终保留；跨度本就 ≤ 上限时这里是空操作。
+  const highestDay = new Date(highest);
+  highestDay.setUTCHours(0, 0, 0, 0);
+  const windowStart = highestDay.getTime() - (MAX_GRID_DAYS - 1) * 86400000;
+  const start = Math.max(from.getTime(), windowStart);
+  // 同日取值与 lastPerDay 共用 latestPerUtcDay：折线和散点必须是同一个数。
+  const byDay = latestPerUtcDay(history);
   const out: { at: string; score: number | null }[] = [];
-  for (let d = from.getTime(); d <= highest; d += 86400000) {
+  for (let d = start; d <= highest; d += 86400000) {
     const key = new Date(d).toISOString().slice(0, 10);
-    out.push({ at: key + "T00:00:00.000Z", score: byDay.get(key) ?? null });
+    out.push({ at: key + "T00:00:00.000Z", score: byDay.get(key)?.score ?? null });
   }
   return out;
 }

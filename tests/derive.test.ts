@@ -3,6 +3,7 @@ import summaryRaw from "./fixtures/summary.sample.json";
 import {
   DEGRADE_THRESHOLD,
   EFFORT_ORDER,
+  MAX_GRID_DAYS,
   MAX_TREND_SERIES,
   MIN_COVERAGE_RATIO,
   buildDailyGrid,
@@ -172,23 +173,36 @@ describe("lastPerDay", () => {
     expect(lastPerDay([])).toEqual([]);
   });
 
-  // BUG: 排序比的是原始 at 字符串（`a.at < b.at`），不是解析后的时间。
-  // 混合时区时本地日期文本可能和真实先后相反，返回序列因此倒挂：
+  // 排序的基准必须是解析后的毫秒值，不能是原始 at 字符串。
+  // 混时区时本地日期文本可能和真实先后相反，返回序列一旦倒挂：
   // 下游 computeDelta 把跌算成涨、把 days 算成负数，findDegradationPoints 直接**漏报降智**。
-  it("按字符串排序，混合时区时会把先后顺序倒挂并让降智漏报", () => {
+  it("按解析时间排序，混合时区不再倒挂也不再漏报降智", () => {
     const earlier = hp("2026-10-25T00:00:00+14:00", 110); // UTC 10-24T10:00
     const later = hp("2026-10-24T23:59:00-12:00", 100); // UTC 10-25T11:59，真实是跌了 10 分
     expect(Date.parse(earlier.at)).toBeLessThan(Date.parse(later.at));
-    // 真实先后是 earlier → later，返回的却是 later → earlier。
-    expect(lastPerDay([earlier, later]).map((r) => r.at)).toEqual([later.at, earlier.at]);
-    // 跌 10 被算成涨 10，days 变成负数。
-    expect(computeDelta(lastPerDay([earlier, later]))).toEqual({ delta: 10, days: -1 });
-    // findDegradationPoints 内部自己再排一次，调用方把入参排好也没用：真实的降智被漏掉。
-    expect(findDegradationPoints([earlier, later])).toEqual([]);
-    expect(findDegradationPoints([later, earlier])).toEqual([]);
-    // 按解析时间重排才是对的，修复方向就是排序函数本身。
-    const fixed = [...lastPerDay([earlier, later])].sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
-    expect(computeDelta(fixed)).toEqual({ delta: -10, days: 1 });
+    // 真实先后是 earlier → later，两种入参顺序都必须排成同一结果。
+    expect(lastPerDay([earlier, later]).map((r) => r.at)).toEqual([earlier.at, later.at]);
+    expect(lastPerDay([later, earlier]).map((r) => r.at)).toEqual([earlier.at, later.at]);
+    // 跌 10 就是跌 10，days 是正的 1。
+    expect(computeDelta(lastPerDay([later, earlier]))).toEqual({ delta: -10, days: 1 });
+    // findDegradationPoints 内部自己再排一次，调用方把入参排成什么样都要报出来。
+    for (const input of [[earlier, later], [later, earlier]]) {
+      const found = findDegradationPoints(input);
+      expect(found).toHaveLength(1);
+      expect(found[0].point.score).toBe(100);
+      expect(found[0].delta).toBe(-10);
+      expect(found[0].days).toBe(1);
+    }
+  });
+
+  // 坏日期解析成 NaN，排序时垫到末尾，不能因为 NaN 比较恒假就卡在队首。
+  it("解不出时间的点排在末尾，好点仍按时间升序", () => {
+    const rows = lastPerDay([
+      hp("garbage", 1),
+      hp("2026-10-23T09:00:00Z", 100),
+      hp("2026-10-21T00:00:00Z", 105),
+    ]);
+    expect(rows.map((r) => r.at)).toEqual(["2026-10-21T00:00:00Z", "2026-10-23T09:00:00Z", "garbage"]);
   });
 });
 
@@ -350,12 +364,43 @@ describe("sortCandidates", () => {
     expect(sortCandidates(rows, "latest_graded_at", "desc").map((r) => r.model)).toEqual(["a", "b"]);
   });
 
-  // 契约：字符串走 localeCompare("en")，纯字典序——不认数字。
-  // 所以 gpt-10 排在 gpt-6 前面；要按版本号排得换 numeric 比较。
-  it("sorts model strings with localeCompare", () => {
+  // 契约：模型名走自然序（numeric-aware）——数字段按数值比。gpt-6 必须排在 gpt-10 前面。
+  // 纯字典序逐字符比，"1" < "6"，点一下「按模型排序」看到的就是 gpt-10 在前这种反直觉顺序。
+  it("sorts model strings in natural (numeric-aware) order", () => {
     const rows = [mk({ model: "gpt-6" }), mk({ model: "gpt-10" }), mk({ model: "claude" })];
-    expect(sortCandidates(rows, "model", "asc").map((r) => r.model)).toEqual(["claude", "gpt-10", "gpt-6"]);
-    expect(sortCandidates(rows, "model", "desc").map((r) => r.model)).toEqual(["gpt-6", "gpt-10", "claude"]);
+    expect(sortCandidates(rows, "model", "asc").map((r) => r.model)).toEqual(["claude", "gpt-6", "gpt-10"]);
+    expect(sortCandidates(rows, "model", "desc").map((r) => r.model)).toEqual(["gpt-10", "gpt-6", "claude"]);
+  });
+
+  it("puts gpt-6 before gpt-10 on asc — numeric, not lexicographic", () => {
+    const rows = [mk({ model: "gpt-10" }), mk({ model: "gpt-6" })];
+    expect(sortCandidates(rows, "model", "asc").map((r) => r.model)).toEqual(["gpt-6", "gpt-10"]);
+  });
+
+  it("puts gpt-10 before gpt-6 on desc — the direction flips, the numeric reading does not", () => {
+    const rows = [mk({ model: "gpt-6" }), mk({ model: "gpt-10" })];
+    expect(sortCandidates(rows, "model", "desc").map((r) => r.model)).toEqual(["gpt-10", "gpt-6"]);
+  });
+
+  it("compares the o-series numerically too: o3-mini before o10-mini", () => {
+    const rows = [mk({ model: "o10-mini" }), mk({ model: "o3-mini" })];
+    expect(sortCandidates(rows, "model", "asc").map((r) => r.model)).toEqual(["o3-mini", "o10-mini"]);
+    expect(sortCandidates(rows, "model", "desc").map((r) => r.model)).toEqual(["o10-mini", "o3-mini"]);
+  });
+
+  // 规则：数字段相等时短名在前（gpt-6 → gpt-6-mini）。-mini 是同一版本的降档，不该排到主版本前面。
+  it("puts the shorter name first when numeric segments tie: gpt-6 before gpt-6-mini", () => {
+    const rows = [mk({ model: "gpt-6-mini" }), mk({ model: "gpt-6" })];
+    expect(sortCandidates(rows, "model", "asc").map((r) => r.model)).toEqual(["gpt-6", "gpt-6-mini"]);
+  });
+
+  // 只差大小写：不抛，且两次调用必须是同一个顺序（确定性，不靠运气）。
+  it("keeps case-only variants deterministic: gpt-6 before GPT-6, identical across calls", () => {
+    const rows = [mk({ model: "GPT-6" }), mk({ model: "gpt-6" })];
+    const asc = () => sortCandidates(rows, "model", "asc").map((r) => r.model);
+    expect(asc()).toEqual(["gpt-6", "GPT-6"]);
+    expect(asc()).toEqual(asc());
+    expect(sortCandidates(rows, "model", "desc").map((r) => r.model)).toEqual(["GPT-6", "gpt-6"]);
   });
 
   it("sorts graded_runs_count numerically, not as text", () => {
@@ -428,66 +473,107 @@ describe("buildDailyGrid", () => {
     ]);
   });
 
-  // BUG: 同日取值靠 Map 的**数组位置**后写覆盖，不是靠"当天最晚一条"。
-  // lastPerDay 用 Date.parse 比时间取最晚，同一个 buildDailyGrid 却取最后出现的那个，
-  // 两条序列因此可能给出两个不同的当天值，折线与红点对不上。
-  it("同一天多条时取数组最后一个，而不是时间最晚的一条", () => {
+  // 同日取值必须和 lastPerDay 同口径：比的是时间，不是数组位置。
+  // 两条序列一旦各留一个值，折线和红点就会指着同一天的两个不同分数。
+  it("同一天多条时取时间最晚的一条，与 lastPerDay 同口径", () => {
     const rows = [hp("2026-10-20T09:00:00Z", 100), hp("2026-10-20T08:00:00Z", 108)];
-    // 09:00 更晚，理应留下 100；实际留下的是数组末位的 108。
+    // 09:00 更晚，两处都必须留 100。
     expect(lastPerDay(rows)[0].score).toBe(100);
-    expect(buildDailyGrid(rows)[0].score).toBe(108);
+    expect(buildDailyGrid(rows)[0].score).toBe(100);
+    // 把数组顺序反过来，两处也都不许变。
+    const reversed = [...rows].reverse();
+    expect(lastPerDay(reversed)[0].score).toBe(100);
+    expect(buildDailyGrid(reversed)[0].score).toBe(100);
   });
 
-  // BUG: 没有任何跨度上限。一个 1970 的坏点（epoch 哨兵/上游默认值）会把网格从 1970 铺到今天，
-  // 两万个桶里只有两个有值，其余全是 null。
-  it("一个 1970 的坏点会把网格撑到 2 万多个空桶", () => {
+  // 跨度必须封顶。一个 1970 的坏点（epoch 哨兵/上游默认值）能把网格铺出两万多个桶，
+  // 其中只有一两个有值，横轴被拉成一条线，其他正常曲线全被压平。
+  it("一个 1970 的坏点不再把网格撑到两万多个空桶", () => {
     const grid = buildDailyGrid([hp("1970-01-01T00:00:00Z", 0), hp("2026-10-24T00:00:00Z", 100)]);
-    const expected = Math.round(
+    const uncapped = Math.round(
       (Date.parse("2026-10-24T00:00:00Z") - Date.parse("1970-01-01T00:00:00Z")) / 86400000,
     ) + 1;
-    expect(expected).toBe(20751);
-    expect(grid).toHaveLength(expected);
-    expect(grid[0]).toEqual({ at: "1970-01-01T00:00:00.000Z", score: 0 });
+    // 不受限时本会是 20751 个桶（列出来是为了盯住封顶到底压掉了多少）。
+    expect(uncapped).toBe(20751);
+    // 封顶后正好是「最近 MAX_GRID_DAYS 天」，坏点被挤出窗口。
+    expect(grid).toHaveLength(MAX_GRID_DAYS);
+    expect(grid[0]).toEqual({ at: "2023-10-21T00:00:00.000Z", score: null });
     expect(grid[grid.length - 1]).toEqual({ at: "2026-10-24T00:00:00.000Z", score: 100 });
-    expect(grid.filter((g) => g.score != null)).toHaveLength(2);
+    // 窗口里只剩最近那个点：不再有两万个 null 陪跑。
+    expect(grid.filter((g) => g.score != null)).toHaveLength(1);
   });
 
-  // BUG: `Math.min(...times)` 把整段历史摊成实参。V8 的实参上限撑不住 13 万：
-  // 抛 RangeError: Maximum call stack size exceeded，整张图直接白屏（TrendChart 没有 try）。
-  it("13 万个点时自带 spread 溢出，直接抛 RangeError", () => {
+  // 边界：跨度正好等于上限时不截，多一天才截掉最老的一天。上限只能截、不能吞正常数据。
+  it("跨度正好在上限上时不截断，超一天才挤掉最老的一天", () => {
+    const day = 86400000;
+    const lastMs = Date.parse("2026-10-24T00:00:00Z");
+    const atDaysAgo = (n: number) => new Date(lastMs - (n - 1) * day).toISOString();
+    const onLimit = buildDailyGrid([hp(atDaysAgo(MAX_GRID_DAYS), 1), hp(atDaysAgo(1), 2)]);
+    expect(onLimit).toHaveLength(MAX_GRID_DAYS);
+    expect(onLimit[0].score).toBe(1);
+    const overLimit = buildDailyGrid([hp(atDaysAgo(MAX_GRID_DAYS + 1), 1), hp(atDaysAgo(1), 2)]);
+    expect(overLimit).toHaveLength(MAX_GRID_DAYS);
+    expect(overLimit[0].score).toBeNull();
+    expect(overLimit[overLimit.length - 1].score).toBe(2);
+  });
+
+  // 判据用例：正常数据是 1~2 年历史，两年（731 天）必须一个字都不变——逐日完整、不被截。
+  it("两年历史仍在上限内，网格逐日完整不被截断", () => {
+    const start = Date.parse("2026-01-01T00:00:00Z");
+    const rows = Array.from({ length: 731 }, (_, i) =>
+      hp(new Date(start + i * 86400000).toISOString(), i % 100),
+    );
+    const grid = buildDailyGrid(rows);
+    expect(grid).toHaveLength(731);
+    expect(grid.filter((g) => g.score == null)).toHaveLength(0);
+    expect(grid[0].score).toBe(0);
+    expect(grid[730].score).toBe(730 % 100);
+  });
+
+  // `Math.min(...times)` 把整段历史摊成实参，V8 的实参上限撑不住 13 万：
+  // 抛 RangeError: Maximum call stack size exceeded，整张图直接白屏（TrendChart 外层没有 try）。
+  // 断言不锁定桶数：跨度上限（MAX_GRID_DAYS）落地后网格会被截短，但「不炸」必须成立。
+  it("13 万个点不再把 min/max 摊成实参，网格照常产出", () => {
     const start = Date.parse("2026-01-01T00:00:00Z");
     const huge = Array.from({ length: 130000 }, (_, i) =>
       hp(new Date(start + i * 86400000).toISOString(), i % 150),
     );
     expect(huge).toHaveLength(130000);
-    expect(() => buildDailyGrid(huge)).toThrow(RangeError);
-    expect(() => buildDailyGrid(huge)).toThrow(/Maximum call stack size exceeded/);
+    const lastMs = start + 129999 * 86400000;
+    const lastDay = new Date(lastMs).toISOString();
+    let grid: { at: string; score: number | null }[] = [];
+    expect(() => {
+      grid = buildDailyGrid(huge);
+    }).not.toThrow();
+    // 真跑完全程：末桶是最后一天且带着最后一条的分值，不是半路截断的空壳。
+    expect(grid.length).toBeGreaterThan(0);
+    expect(grid.length).toBeLessThanOrEqual(130000);
+    expect(grid[grid.length - 1]).toEqual({ at: lastDay, score: 129999 % 150 });
   });
 });
 
 describe("TrendChart 聚合：grids.flat() 后再 spread", () => {
-  // TrendChart.tsx:76-81 是 `const times = grids.flat().map(...)` 之后 `Math.min(...times)`。
-  // 它不是按原始点数摊，而是按**日桶**摊：一条带 1970 坏点的曲线就是 20751 个桶。
-  // MAX_TREND_SERIES 条曲线一起叠 = 124506 个实参，刚好越过 V8 实参上限
-  // （实测 124000 还能过，124506 就抛）——也就是说六条曲线各沾一个坏点，首页整张图白屏。
-  it("六条曲线各带一个 1970 坏点就够炸：flat 出 124506 个实参", () => {
+  // 组件侧原本是 `grids.flat()` 之后 `Math.min(...times)`：按**日桶**摊，不是按原始点数。
+  // 未封顶时一条带 1970 坏点的曲线就是 20751 个桶，MAX_TREND_SERIES 条叠起来 124506 个实参
+  // （实测 124000 还能过、124506 就抛 RangeError），六条各沾一个坏点首页整张图白屏。
+  // 跨度封顶（MAX_GRID_DAYS）落地后总实参降到 6 × MAX_GRID_DAYS，spread 又扛得住了；
+  // 组件侧仍改成单趟循环，不让「上限哪天被调大或去掉就重新白屏」由运气决定。
+  it("六条曲线各带一个 1970 坏点：封顶后总桶数受控，首尾仍算得出来", () => {
     const bad = () => [hp("1970-01-01T00:00:00Z", 0), hp("2026-10-24T00:00:00Z", 100)];
     const candidates = Array.from({ length: MAX_TREND_SERIES }, () => mk({ history: bad() }));
     const grids = candidates.map((c) => buildDailyGrid(c.history));
     const times = grids.flat().map((p) => new Date(p.at).getTime());
     expect(grids).toHaveLength(MAX_TREND_SERIES);
-    expect(times).toHaveLength(124506);
+    expect(times).toHaveLength(MAX_TREND_SERIES * MAX_GRID_DAYS);
 
-    expect(() => Math.min(...times)).toThrow(RangeError);
-    expect(() => Math.max(...times)).toThrow(RangeError);
-
-    // 不摊实参的等价写法，结果和 spread 一致，可以直接当修复方向。
-    expect(times.reduce((m, t) => Math.min(m, t), Number.POSITIVE_INFINITY)).toBe(Date.parse("1970-01-01T00:00:00Z"));
-    expect(times.reduce((m, t) => Math.max(m, t), Number.NEGATIVE_INFINITY)).toBe(Date.parse("2026-10-24T00:00:00Z"));
+    expect(() => Math.min(...times)).not.toThrow();
+    // 封顶把 1970 挤出窗口：横轴首日是窗口首日，不再是 1970。
+    expect(Math.min(...times)).toBe(Date.parse("2023-10-21T00:00:00.000Z"));
+    expect(Math.max(...times)).toBe(Date.parse("2026-10-24T00:00:00Z"));
   });
 
-  // 同一处上限的边界对照：五条还活着，第六条就死。整条链路都走真实函数，不手搓桶。
-  it("第五条曲线还扛得住，第六条就越界", () => {
+  // 桶数按 MAX_GRID_DAYS 线性增长，两条都远在上限内。
+  it("封顶后五条、六条都在实参上限内，桶数线性增长", () => {
     const bad = () => [hp("1970-01-01T00:00:00Z", 0), hp("2026-10-24T00:00:00Z", 100)];
     const probe = (n: number) => {
       const times = Array.from({ length: n }, () => buildDailyGrid(bad())).flat().map((p) => new Date(p.at).getTime());
@@ -498,10 +584,8 @@ describe("TrendChart 聚合：grids.flat() 后再 spread", () => {
         return { len: times.length, error: error as Error };
       }
     };
-    expect(probe(5)).toEqual({ len: 103755, error: null });
-    const six = probe(6);
-    expect(six.len).toBe(124506);
-    expect(six.error).toBeInstanceOf(RangeError);
+    expect(probe(5)).toEqual({ len: 5 * MAX_GRID_DAYS, error: null });
+    expect(probe(6)).toEqual({ len: 6 * MAX_GRID_DAYS, error: null });
   });
 });
 
