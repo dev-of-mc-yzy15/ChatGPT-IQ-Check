@@ -23,6 +23,22 @@ const round: RoundData = {
 };
 
 describe("RoundMatrix", () => {
+  // A-4 回归：分档按满分比例走。B/low 的 130 在 150 满分下是 high，在 300 满分下掉到 low。
+  it("bands scores against the data's own score_max", () => {
+    const scaled: RoundData = {
+      ...round,
+      candidates: round.candidates.map((c) => ({ ...c, score_max: 300 })),
+    };
+    render(<RoundMatrix round={scaled} selectedKey={null} onSelect={() => {}} />);
+    expect(screen.getByRole("button", { name: /^B 低/ })).toHaveAttribute("data-band", "low");
+  });
+
+  it("spells the scoreMax and factor in the summary line", () => {
+    render(<RoundMatrix round={round} selectedKey={null} onSelect={() => {}} />);
+    expect(screen.getByText(/满分 150/)).toBeInTheDocument();
+    expect(screen.getByText(/× 1\.5/)).toBeInTheDocument();
+  });
+
   it("renders models, efforts and the specific B|high missing cell", () => {
     render(<RoundMatrix round={round} selectedKey={null} onSelect={() => {}} />);
     expect(screen.getByText("A")).toBeInTheDocument();

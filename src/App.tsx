@@ -143,10 +143,11 @@ export default function App() {
                     )
                   }
                 />
-                <TrendChart candidates={trendCandidates} />
+                <TrendChart candidates={trendCandidates} scoreMax={data.radarBench.score_max} />
                 <CandidateTable
                   rows={data.radarBench.candidates}
                   selectedKeys={selectedKeys}
+                  scoreMax={data.radarBench.score_max}
                   onToggle={(key) =>
                     setSelectedKeys((prev) =>
                       prev.includes(key)
@@ -171,7 +172,8 @@ export default function App() {
                   的公开接口。
                 </p>
                 <p>
-                  RadarBench 分数是 64 题基准测试的加权分数（0–150），不是心理学 IQ。
+                  RadarBench 分数是 {data.radarBench.benchmark} 基准测试的加权分数（0–{data.radarBench.score_max}），
+                  不是心理学 IQ。
                 </p>
                 <p>
                   降智信号：相邻日桶分数下降 ≥ 5 分，且覆盖率 ≥ 90%、评分状态为 complete。

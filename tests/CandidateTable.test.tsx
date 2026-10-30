@@ -18,7 +18,7 @@ const rowTexts = () => screen.getAllByRole("row").slice(1).map((r) => r.textCont
 describe("CandidateTable", () => {
   it("defaults to score descending and toggles to ascending on click", async () => {
     const rows = [mk({ model: "A", score: 90 }), mk({ model: "B", score: 110 })];
-    render(<CandidateTable rows={rows} selectedKeys={[]} onToggle={() => {}} />);
+    render(<CandidateTable rows={rows} selectedKeys={[]} onToggle={() => {}}  scoreMax={150} />);
     expect(screen.getByText("A")).toBeInTheDocument();
     expect(rowTexts()[0]).toContain("B");
     await userEvent.click(screen.getByRole("button", { name: /分数/ }));
@@ -27,7 +27,7 @@ describe("CandidateTable", () => {
 
   it("filters by model", async () => {
     const rows = [mk({ model: "A" }), mk({ model: "B" })];
-    render(<CandidateTable rows={rows} selectedKeys={[]} onToggle={() => {}} />);
+    render(<CandidateTable rows={rows} selectedKeys={[]} onToggle={() => {}}  scoreMax={150} />);
     await userEvent.type(screen.getByLabelText(/搜索模型/), "B");
     expect(screen.queryByText("A")).not.toBeInTheDocument();
     expect(screen.getByText("B")).toBeInTheDocument();
@@ -35,7 +35,7 @@ describe("CandidateTable", () => {
 
   it("toggles selection", async () => {
     const onToggle = vi.fn();
-    render(<CandidateTable rows={[mk({ model: "A" })]} selectedKeys={[]} onToggle={onToggle} />);
+    render(<CandidateTable rows={[mk({ model: "A" })]} selectedKeys={[]} onToggle={onToggle}  scoreMax={150} />);
     await userEvent.click(screen.getByRole("checkbox", { name: /选择 A/ }));
     expect(onToggle).toHaveBeenCalledWith("A|high");
   });
@@ -45,7 +45,7 @@ describe("CandidateTable", () => {
       mk({ model: "A", score: 110, score_status: "complete" }),
       mk({ model: "B", score: 90, score_status: "provisional" }),
     ];
-    render(<CandidateTable rows={rows} selectedKeys={[]} onToggle={() => {}} />);
+    render(<CandidateTable rows={rows} selectedKeys={[]} onToggle={() => {}}  scoreMax={150} />);
     expect(screen.getByText("完整")).toBeInTheDocument();
     const provisional = screen.getByText("临时");
     expect(provisional).toBeInTheDocument();
@@ -53,14 +53,14 @@ describe("CandidateTable", () => {
   });
 
   it("shows 暂无候选 when there are no rows", () => {
-    render(<CandidateTable rows={[]} selectedKeys={[]} onToggle={() => {}} />);
+    render(<CandidateTable rows={[]} selectedKeys={[]} onToggle={() => {}}  scoreMax={150} />);
     expect(screen.getByText("暂无候选")).toBeInTheDocument();
     expect(screen.queryByText("没有匹配的候选")).not.toBeInTheDocument();
   });
 
   it("shows 没有匹配的候选 when the filter matches nothing", async () => {
     const rows = [mk({ model: "A" }), mk({ model: "B" })];
-    render(<CandidateTable rows={rows} selectedKeys={[]} onToggle={() => {}} />);
+    render(<CandidateTable rows={rows} selectedKeys={[]} onToggle={() => {}}  scoreMax={150} />);
     await userEvent.type(screen.getByLabelText(/搜索模型/), "Z");
     expect(screen.getByText("没有匹配的候选")).toBeInTheDocument();
     expect(screen.queryByText("暂无候选")).not.toBeInTheDocument();
@@ -72,7 +72,7 @@ describe("CandidateTable", () => {
       mk({ model: "A", effort: "low" }),
       mk({ model: "B", effort: "high" }),
     ];
-    render(<CandidateTable rows={rows} selectedKeys={[]} onToggle={() => {}} />);
+    render(<CandidateTable rows={rows} selectedKeys={[]} onToggle={() => {}}  scoreMax={150} />);
     await userEvent.click(screen.getByRole("button", { name: /档位/ }));
     const order = rowTexts();
     expect(order[0]).toContain("A");
@@ -85,7 +85,7 @@ describe("CandidateTable", () => {
       mk({ model: "A", latest_graded_at: null }),
       mk({ model: "B", latest_graded_at: "2026-10-23T00:00:00Z" }),
     ];
-    render(<CandidateTable rows={rows} selectedKeys={[]} onToggle={() => {}} />);
+    render(<CandidateTable rows={rows} selectedKeys={[]} onToggle={() => {}}  scoreMax={150} />);
     await userEvent.click(screen.getByRole("button", { name: /最近评分/ }));
     const order = rowTexts();
     expect(order[0]).toContain("B");
@@ -93,7 +93,7 @@ describe("CandidateTable", () => {
   });
 
   it("reflects sort direction in aria-sort", async () => {
-    render(<CandidateTable rows={[mk({ model: "A" })]} selectedKeys={[]} onToggle={() => {}} />);
+    render(<CandidateTable rows={[mk({ model: "A" })]} selectedKeys={[]} onToggle={() => {}}  scoreMax={150} />);
     const scoreHeader = screen.getByRole("columnheader", { name: /分数/ });
     expect(scoreHeader).toHaveAttribute("aria-sort", "descending");
     expect(screen.getByRole("columnheader", { name: /模型/ })).toHaveAttribute("aria-sort", "none");
@@ -102,12 +102,12 @@ describe("CandidateTable", () => {
   });
 
   it("wraps the model name in lang=en for screen readers", () => {
-    render(<CandidateTable rows={[mk({ model: "A" })]} selectedKeys={[]} onToggle={() => {}} />);
+    render(<CandidateTable rows={[mk({ model: "A" })]} selectedKeys={[]} onToggle={() => {}}  scoreMax={150} />);
     expect(screen.getByText("A").closest("[lang='en']")).toHaveAttribute("lang", "en");
   });
 
   it("renders a negative delta with the down class and window days", () => {
-    render(<CandidateTable rows={[mk({ model: "A" })]} selectedKeys={[]} onToggle={() => {}} />);
+    render(<CandidateTable rows={[mk({ model: "A" })]} selectedKeys={[]} onToggle={() => {}}  scoreMax={150} />);
     const cell = screen.getByText(/-5\.0/).closest("td");
     expect(cell).toHaveClass("down");
     expect(cell).toHaveTextContent("1 天");

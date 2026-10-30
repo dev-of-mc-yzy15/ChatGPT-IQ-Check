@@ -21,10 +21,12 @@ export function CandidateTable({
   rows,
   selectedKeys,
   onToggle,
+  scoreMax,
 }: {
   rows: RadarCandidate[];
   selectedKeys: string[];
   onToggle: (key: string) => void;
+  scoreMax: number;
 }) {
   const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "score", dir: "desc" });
   const [query, setQuery] = useState("");
@@ -54,7 +56,7 @@ export function CandidateTable({
       </label>
       <div className="table-wrap">
         <table style={{ minWidth: 760 }}>
-          <caption className="muted">最多选 6 条曲线；分数为 0–150 的基准测试分数</caption>
+          <caption className="muted">最多选 6 条曲线；分数为 0–{scoreMax} 的基准测试分数</caption>
           <thead>
             <tr>
               <th scope="col">选择</th>

@@ -1,14 +1,16 @@
 import type { RoundData } from "../types";
+import { SCORE_MAX_FALLBACK } from "../../scripts/contract.mjs";
 import { fmtDateTime, fmtEffort, fmtMoney, fmtScore, fmtSeconds } from "../lib/format";
 import { roundMatrix } from "../lib/derive";
 import { ModelName } from "./ModelName";
 
 type ScoreBand = "high" | "mid" | "low" | "verylow";
 
-function scoreBand(score: number): ScoreBand {
-  if (score >= 120) return "high";
-  if (score >= 90) return "mid";
-  if (score >= 60) return "low";
+// 分档按满分比例算（80% / 60% / 40%），满分不是 150 时依旧成立。
+function scoreBand(score: number, scoreMax: number): ScoreBand {
+  if (score >= scoreMax * 0.8) return "high";
+  if (score >= scoreMax * 0.6) return "mid";
+  if (score >= scoreMax * 0.4) return "low";
   return "verylow";
 }
 
@@ -22,6 +24,7 @@ export function RoundMatrix({
   onSelect: (key: string) => void;
 }) {
   const { models, efforts, cells } = roundMatrix(round);
+  const scoreMax = round.candidates[0]?.score_max ?? SCORE_MAX_FALLBACK;
   const verified = round.candidates.filter((c) => c.scored_tasks === c.total_tasks).length;
   const totalCost = round.candidates.reduce(
     (sum, c) => sum + (Number.isFinite(c.totals.cost_usd) ? c.totals.cost_usd : 0),
@@ -38,7 +41,8 @@ export function RoundMatrix({
         {unknownCostTasks > 0 ? `（${unknownCostTasks} 题成本未知）` : ""}
       </p>
       <p className="muted">
-        {round.round.task_count || round.tasks.length} 题一轮 · 分数 = 100 × 平均 reward × 1.5 · 满分 150 · 数据更新{" "}
+        {round.round.task_count || round.tasks.length} 题一轮 · 分数 = 100 × 平均 reward ×{" "}
+        {(scoreMax / 100).toFixed(2).replace(/0$/, "")} · 满分 {scoreMax} · 数据更新{" "}
         {fmtDateTime(round.round.updated_at)}
       </p>
       <div className="table-wrap" style={{ overflowX: "auto" }}>
@@ -60,7 +64,7 @@ export function RoundMatrix({
                   const key = model + "|" + effort;
                   const cell = cells.get(key);
                   const band =
-                    cell?.score == null || !Number.isFinite(cell.score) ? undefined : scoreBand(cell.score);
+                    cell?.score == null || !Number.isFinite(cell.score) ? undefined : scoreBand(cell.score, scoreMax);
                   return (
                     <td key={effort}>
                       {cell ? (

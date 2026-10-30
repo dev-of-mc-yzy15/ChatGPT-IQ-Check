@@ -22,19 +22,33 @@ const candidate = mk();
 
 describe("TrendChart", () => {
   it("renders a chart with a text alternative and data table", () => {
-    render(<TrendChart candidates={[candidate]} />);
+    render(<TrendChart candidates={[candidate]} scoreMax={150} />);
     expect(screen.getByRole("img", { name: /RadarBench 趋势/ })).toBeInTheDocument();
     expect(screen.getByText(/分数下降/)).toBeInTheDocument();
     expect(screen.getByText(/2026-10-23/)).toBeInTheDocument();
   });
 
+  // A-4 回归：满分来自数据，换上限时刻度必须跟着变，不能死贴 150。
+  it("scales y-axis ticks to the provided scoreMax", () => {
+    render(<TrendChart candidates={[mk()]} scoreMax={300} />);
+    const labels = screen.getAllByText(/^\d+$/).map((n) => n.textContent);
+    expect(labels).toContain("100");
+    expect(labels).toContain("300");
+    expect(labels).not.toContain("50");
+  });
+
+  it("spells the real scoreMax in the description", () => {
+    render(<TrendChart candidates={[mk()]} scoreMax={300} />);
+    expect(screen.getByText(/0 到 300/)).toBeInTheDocument();
+  });
+
   it("renders empty state", () => {
-    render(<TrendChart candidates={[]} />);
+    render(<TrendChart candidates={[]} scoreMax={150} />);
     expect(screen.getByText(/暂无可展示的曲线/)).toBeInTheDocument();
   });
 
   it("renders 暂无历史数据 when candidates have no points", () => {
-    render(<TrendChart candidates={[mk({ history: [] })]} />);
+    render(<TrendChart candidates={[mk({ history: [] })]} scoreMax={150} />);
     expect(screen.getByText(/暂无历史数据/)).toBeInTheDocument();
   });
 
@@ -45,7 +59,7 @@ describe("TrendChart", () => {
         { at: "2026-10-19T00:00:00Z", score: 101, coverage: 64, required_tasks: 64, score_status: "complete" },
       ],
     });
-    const { container } = render(<TrendChart candidates={[withGap]} />);
+    const { container } = render(<TrendChart candidates={[withGap]} scoreMax={150} />);
     expect(container.querySelectorAll("polyline")).toHaveLength(2);
   });
 
@@ -56,7 +70,7 @@ describe("TrendChart", () => {
         { at: "2026-10-18T00:00:00Z", score: 101, coverage: 64, required_tasks: 64, score_status: "complete" },
       ],
     });
-    const { container } = render(<TrendChart candidates={[mixed]} />);
+    const { container } = render(<TrendChart candidates={[mixed]} scoreMax={150} />);
     const circles = Array.from(container.querySelectorAll("circle"));
     expect(circles).toHaveLength(2);
     expect(circles[0]).toHaveAttribute("fill", "var(--bg)");
@@ -64,7 +78,7 @@ describe("TrendChart", () => {
   });
 
   it("marks degradation points in red with an annotation", () => {
-    const { container } = render(<TrendChart candidates={[candidate]} />);
+    const { container } = render(<TrendChart candidates={[candidate]} scoreMax={150} />);
     const degrade = Array.from(container.querySelectorAll("circle")).find(
       (c) => c.getAttribute("fill") === "var(--down)",
     );
@@ -73,7 +87,7 @@ describe("TrendChart", () => {
   });
 
   it("labels the x axis in Asia/Shanghai MM-DD", () => {
-    const { container } = render(<TrendChart candidates={[candidate]} />);
+    const { container } = render(<TrendChart candidates={[candidate]} scoreMax={150} />);
     const labels = Array.from(container.querySelectorAll("svg text")).map((t) => t.textContent ?? "");
     expect(labels).toContain("10-17");
     expect(labels).toContain("10-23");

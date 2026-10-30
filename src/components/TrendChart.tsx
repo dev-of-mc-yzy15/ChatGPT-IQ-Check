@@ -18,8 +18,8 @@ function xOf(t: number, min: number, max: number) {
   if (max === min) return PAD.left + plotWidth() / 2;
   return PAD.left + ((t - min) / (max - min)) * plotWidth();
 }
-function yOf(score: number) {
-  return PAD.top + (1 - score / 150) * plotHeight();
+function yOf(score: number, scoreMax: number) {
+  return PAD.top + (1 - score / scoreMax) * plotHeight();
 }
 const MONTH_DAY = new Intl.DateTimeFormat("zh-CN", {
   timeZone: "Asia/Shanghai",
@@ -33,7 +33,13 @@ function fmtMonthDay(t: number) {
   return `${get("month")}-${get("day")}`;
 }
 
-export function TrendChart({ candidates }: { candidates: RadarCandidate[] }) {
+export function TrendChart({
+  candidates,
+  scoreMax,
+}: {
+  candidates: RadarCandidate[];
+  scoreMax: number;
+}) {
   if (!candidates.length) {
     return <section className="card"><h2>RadarBench 趋势</h2><p className="muted">暂无可展示的曲线。</p></section>;
   }
@@ -44,7 +50,8 @@ export function TrendChart({ candidates }: { candidates: RadarCandidate[] }) {
   }
   const min = Math.min(...times);
   const max = Math.max(...times);
-  const ticks = [0, 50, 100, 150];
+  // 刻度跟着数据的满分走，上游改评分上限时图不会失真。
+  const ticks = [0, 1, 2, 3].map((i) => Math.round((scoreMax * i) / 3));
   const xTickTimes = Array.from({ length: 5 }, (_, i) => min + ((max - min) * i) / 4);
   const xTicks = [...new Map(xTickTimes.map((t) => [fmtMonthDay(t), t])).values()];
 
@@ -64,11 +71,11 @@ export function TrendChart({ candidates }: { candidates: RadarCandidate[] }) {
           style={{ height: "auto", display: "block" }}
         >
           <title>RadarBench 趋势</title>
-          <desc>最多 6 条候选曲线的日桶分数，0 到 150。</desc>
+          <desc>最多 6 条候选曲线的日桶分数，0 到 {scoreMax}。</desc>
           {ticks.map((t) => (
             <g key={t}>
-              <line x1={PAD.left} x2={W - PAD.right} y1={yOf(t)} y2={yOf(t)} stroke="var(--line)" />
-              <text x={PAD.left - 8} y={yOf(t) + 4} textAnchor="end" fill="var(--muted)" fontSize="11">{t}</text>
+              <line x1={PAD.left} x2={W - PAD.right} y1={yOf(t, scoreMax)} y2={yOf(t, scoreMax)} stroke="var(--line)" />
+              <text x={PAD.left - 8} y={yOf(t, scoreMax) + 4} textAnchor="end" fill="var(--muted)" fontSize="11">{t}</text>
             </g>
           ))}
           {xTicks.map((t) => (
@@ -86,7 +93,7 @@ export function TrendChart({ candidates }: { candidates: RadarCandidate[] }) {
                 if (current.length) segments.push(current);
                 current = [];
               } else {
-                current.push({ x: xOf(new Date(p.at).getTime(), min, max), y: yOf(p.score) });
+                current.push({ x: xOf(new Date(p.at).getTime(), min, max), y: yOf(p.score, scoreMax) });
               }
             }
             if (current.length) segments.push(current);
@@ -97,7 +104,7 @@ export function TrendChart({ candidates }: { candidates: RadarCandidate[] }) {
             const points = [...lastPerDay.values()].map((p) => ({
               p,
               x: xOf(new Date(p.at).getTime(), min, max),
-              y: yOf(p.score),
+              y: yOf(p.score, scoreMax),
             }));
             const degrade = findDegradationPoints(c.history);
             return (
@@ -113,7 +120,7 @@ export function TrendChart({ candidates }: { candidates: RadarCandidate[] }) {
                   </circle>
                 ))}
                 {degrade.map(({ point, delta, days }) => (
-                  <circle key={"d" + point.at} cx={xOf(new Date(point.at).getTime(), min, max)} cy={yOf(point.score)}
+                  <circle key={"d" + point.at} cx={xOf(new Date(point.at).getTime(), min, max)} cy={yOf(point.score, scoreMax)}
                     r={6} fill="var(--down)" stroke="var(--bg)" strokeWidth={2}>
                     <title>{`分数下降 ${fmtDelta(delta)}（${days} 天）`}</title>
                   </circle>
