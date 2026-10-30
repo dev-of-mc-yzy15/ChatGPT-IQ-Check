@@ -139,6 +139,20 @@ describe("transformSummary 的静默归零", () => {
     expect(() => transformSummary(broken)).toThrow(/summary\.history\[0\]\.score/);
   });
 
+  it("throws on an unparseable history timestamp", () => {
+    const broken = { ...summaryRaw, history: { points: [{ at: "not-a-date", score: 10 }] } };
+    expect(() => transformSummary(broken)).toThrow(/summary\.history\[0\]\.at/);
+  });
+
+  // 整段 history 缺失是合法的（候选没跑过），但形状对了却给不出数组就不是"没有历史"。
+  it("throws when history exists but carries no points array", () => {
+    expect(() => transformSummary({ ...summaryRaw, history: {} })).toThrow(/summary\.history\.points/);
+  });
+
+  it("accepts a summary with no history at all", () => {
+    expect(transformSummary({ ...summaryRaw, history: undefined }).history).toEqual([]);
+  });
+
   it("still keeps an absent score nullable for elapsed/api means", () => {
     expect(transformSummary(summaryRaw).statistics.elapsed_ms_mean).not.toBeUndefined();
   });

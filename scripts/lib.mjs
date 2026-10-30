@@ -53,8 +53,8 @@ import {
   assertRoundShape,
   candidateKey,
   parseCandidateKey,
+  strictIso,
   strictNumber,
-  strictString,
 } from "./contract.mjs";
 
 /**
@@ -65,11 +65,13 @@ import {
 const num = (value, path) => /** @type {number} */ (strictNumber(value, path, { min: 0 }));
 
 /**
+ * `at` 只校验"是字符串"不够：解析不出来的时间串会让后面的排序与日桶全是 NaN，
+ * 而且现场完全看不出来。
  * @param {any} value
  * @param {string} path
  * @returns {string}
  */
-const str = (value, path) => /** @type {string} */ (strictString(value, path));
+const iso = (value, path) => /** @type {string} */ (strictIso(value, path));
 
 export const SCORE_MAX = 150;
 export const ROUND_MULTIPLIER = 1.5;
@@ -114,11 +116,16 @@ export function transformSummary(raw) {
   const effort = String(raw.effort ?? "").trim();
   if (!model || !effort) throw new Error("summary: missing model/effort");
   const score = num(raw.score, "summary.score");
+  // 整段 history 缺失可以接受（这个候选就没跑过），但给了 history 却拿不出 points 数组，
+  // 说明上游改过形状 —— 静默当空会把这个候选的历史整段抹掉。
+  if (raw.history != null && !Array.isArray(raw.history.points)) {
+    throw new Error("summary.history.points: expected array");
+  }
   /** @type {any[]} */
   const points = Array.isArray(raw?.history?.points) ? raw.history.points : [];
   const history = points
     .map((p, i) => ({
-      at: str(p?.at, "summary.history[" + i + "].at"),
+      at: iso(p?.at, "summary.history[" + i + "].at"),
       score: num(p?.score, "summary.history[" + i + "].score"),
       coverage: num(p?.coverage ?? 0, "summary.history[" + i + "].coverage"),
       required_tasks: num(p?.required_tasks ?? 0, "summary.history[" + i + "].required_tasks"),
