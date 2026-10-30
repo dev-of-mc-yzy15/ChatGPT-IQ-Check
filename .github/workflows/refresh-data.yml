@@ -23,6 +23,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: true
+          # 没了 merge-base 就没法 rebase 到 origin/main，浅克隆会直接失败。
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -34,25 +36,41 @@ jobs:
         run: node scripts/refresh.mjs
 
       - name: Commit data if changed
+        env:
+          DATA_PATHS: public/data/radar-bench.json public/data/round.json public/data/status.json
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/data/radar-bench.json public/data/round.json public/data/status.json
-          if ! git diff --cached --quiet; then
-            # [skip ci] 抑制由 GITHUB_TOKEN 推送触发的 push 事件（防递归），
-            # 部署改由 deploy.yml 的 workflow_run 触发，不会漏。
-            git commit -m "chore(data): refresh RadarBench data [skip ci]"
-            git pull --rebase --autostash origin main
-            git push
-          else
+          if [ -z "$(git status --porcelain -- $DATA_PATHS)" ]; then
             echo "no data change"
+            exit 0
           fi
+          # 先把数据改动挂起来让工作区干净，同步到最新 main 之后才提交。
+          # 原来是先 commit 再 pull --rebase --autostash，rebase 会把本地提交
+          # 和远端提交堆成一条，冲突出没出都说不清。
+          git stash push -u -- $DATA_PATHS
+          git fetch origin main
+          git rebase origin/main
+          git stash pop
+          git add $DATA_PATHS
+          # [skip ci] 抑制由 GITHUB_TOKEN 推送触发的 push 事件（防递归），
+          # 部署改由 deploy.yml 的 workflow_run 触发，不会漏。
+          git commit -m "chore(data): refresh RadarBench data [skip ci]"
+          git push
 
       - name: Open issue on failure
         if: failure()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh issue create \
-            --title "refresh-data failed" \
-            --body "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          TITLE="refresh-data failed"
+          BODY="Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          # 日更失败会天天触发，同一标题已经有 open issue 就补一条评论，
+          # 不要每天刷一个新的把看板淹掉。
+          EXISTING="$(gh issue list --state open --search "\"$TITLE\" in:title" --json number --jq '.[0].number // empty' || true)"
+          if [ -n "$EXISTING" ]; then
+            echo "reusing open issue #$EXISTING"
+            gh issue comment "$EXISTING" --body "$BODY"
+          else
+            gh issue create --title "$TITLE" --body "$BODY"
+          fi
