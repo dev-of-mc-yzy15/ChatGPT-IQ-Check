@@ -1,6 +1,7 @@
 # ChatGPT IQ Check（降智雷达）— 设计规格 v2
 
-- 状态：待用户审阅
+- 状态：已实现
+- 实现落于 commit 99bf530 之后，以 git log 为准
 - 日期：2026-10-24
 - 取代：`2026-10-23-chatgpt-iq-radar-design.md`（v1）
 - 仓库：`dev-of-mc-yzy15/ChatGPT-IQ-Check`（GitHub Pages 静态托管，AGPL-3.0）

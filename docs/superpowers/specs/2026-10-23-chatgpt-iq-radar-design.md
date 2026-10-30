@@ -2,6 +2,8 @@
 
 > **Superseded by v2 (2026-10-24):** `docs/superpowers/specs/2026-10-24-chatgpt-iq-radar-design-v2.md`。v1 的主数据源 `/data/intelligence-efficiency.json` 是已停更的 fallback（2026-10-01），真实页面使用 `radar-bench-binding.json` + `radar-bench-score?view=summary` + `degradation-codex-latest.json`。
 
+> 实际实现未采用 v1 计划的 `fixture.mjs` 与 `tsconfig.node.json`，改用 `tests/fixtures/*.json` 与 `tsconfig.scripts.json`。
+
 - 状态：待用户审阅
 - 日期：2026-10-23
 - 仓库：`dev-of-mc-yzy15/ChatGPT-IQ-Check`（GitHub Pages 静态托管，AGPL-3.0）

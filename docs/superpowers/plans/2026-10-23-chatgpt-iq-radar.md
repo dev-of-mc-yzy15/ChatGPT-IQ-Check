@@ -2,6 +2,8 @@
 
 > **Superseded by v2 (2026-10-24):** `docs/superpowers/plans/2026-10-24-chatgpt-iq-radar-v2.md`。v1 计划围绕已停更的 `/data/intelligence-efficiency.json` 编写，不能按原样执行。
 
+> 实际实现未采用 v1 计划的 `fixture.mjs` 与 `tsconfig.node.json`，改用 `tests/fixtures/*.json` 与 `tsconfig.scripts.json`。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 构建一个纯前端"降智雷达"网站，用 GitHub Actions 每日抓取无密钥公开数据源，静态托管到 GitHub Pages，实时展示各模型 IQ、趋势与降智。
