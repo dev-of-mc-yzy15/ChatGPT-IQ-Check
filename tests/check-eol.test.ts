@@ -1,5 +1,6 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { spawnSync } from "node:child_process";
+import { existsSync } from "node:fs";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
@@ -120,7 +121,7 @@ describe("check-eol", () => {
 
     const r = run(root);
 
-    expect(r.code).toBe(1);
+    expect(r.code, r.stderr).toBe(1);
     expect(r.stderr).toContain("draft.md");
     // 合规的那个文件不能被顺手点名，否则「点名」不成立。
     expect(r.stderr).not.toContain("notes.txt");
@@ -132,10 +133,12 @@ describe("check-eol", () => {
   it("工作区删掉已跟踪文件时退 1，说明读取失败", async () => {
     const { root, clean } = await makeRepo();
     await rm(clean, { force: true });
+    // 夹具自检：文件真没了才有意义，删失败会让这条退化成「全合规」假验。
+    expect(existsSync(clean), "夹具文件必须先真的删掉").toBe(false);
 
     const r = run(root);
 
-    expect(r.code).toBe(1);
+    expect(r.code, r.stderr).toBe(1);
     expect(r.stderr).toContain("notes.txt");
     expect(r.stderr).toContain("读取失败");
     // 空清单会被吞成「均以换行结尾」——这正是简化版假绿的出口。
@@ -155,7 +158,7 @@ describe("check-eol", () => {
 
     const r = run(parent);
 
-    expect(r.code).toBe(1);
+    expect(r.code, r.stderr).toBe(1);
     expect(r.stderr).not.toBe("");
     expect(r.stderr).toContain("not a git repository");
     expect(r.stdout).not.toContain(OK_TEXT);
