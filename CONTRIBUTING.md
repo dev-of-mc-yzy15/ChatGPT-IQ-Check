@@ -35,7 +35,7 @@ CI（`.github/workflows/ci.yml`）在 PR 上跑一串 `run:` 步骤，前两条�
 - `npm run build`（`tsc -b` + `typecheck:scripts` + `vite build`）
 - `npm run check:base`（检查 `dist/index.html` 里没有回退到根绝对路径的引用）
 - `npm run verify:assets`（资产哈希闸门：`public/assets/` 里每个文件都得对得上 `round.json` 钉的 `asset_sha256`，缺文件、哈希不符、有 URL 没钉哈希都会红。改过资产就必须重算并更新哈希）
-- `npm run e2e`（真浏览器基线，`tests/e2e/base-path.spec.ts`）
+- `npm run e2e`（真浏览器基线，两个 spec：`tests/e2e/base-path.spec.ts` 守子路径与 CSP 下的整页可用；`tests/e2e/animation-csp.spec.ts` 点进详情、展开折叠，按子 frame 的 `requestAnimationFrame` 调用计数判产物内联脚本真的执行过，而非「iframe 出现了」）
 
 `npm test` 全跑在 jsdom 上，既不放 CSP 也不做 MIME 检查，**子路径失效与 CSP 写歪这两类整页白屏故障单测一律是绿的**，只有 `npm run e2e` 能兜住，所以它跟其余闸门同级，不是可选步骤。本地跑之前先装一次 Chromium：`npx playwright install chromium`（CI 里是 `npx playwright install --with-deps chromium`），并确保 `npm run build` 已经跑过——e2e 的 `webServer` 直接吃 `dist/`。
 
