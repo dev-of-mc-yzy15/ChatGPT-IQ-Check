@@ -80,6 +80,13 @@ export function deltaClass(delta: number | null): string {
   return delta < 0 ? "down" : "up";
 }
 
+/** 该时间戳所在 UTC 日的零点毫秒：日桶一律从零点起走，否则首尾当天会因取整被吞掉一天。 */
+function dayStartMs(ms: number): number {
+  const d = new Date(ms);
+  d.setUTCHours(0, 0, 0, 0);
+  return d.getTime();
+}
+
 /** 解析时间戳毫秒；坏日期回 null，比较时一律垫底。 */
 function msOf(at: string): number | null {
   const ms = Date.parse(at);
@@ -164,15 +171,10 @@ export function buildDailyGrid(history: HistoryPoint[]): { at: string; score: nu
   }
   // 一个能解析的时间都没有，别产出空网格还当成"没有降智"。
   if (lowest > highest) return [];
-  // 从 UTC 零点起走，否则首尾当天会因取整被吞掉一天。
-  const from = new Date(lowest);
-  from.setUTCHours(0, 0, 0, 0);
   // 跨度封顶：只保留最近 MAX_GRID_DAYS 天，坏点被挤出窗口。
   // 起点往「最近 N 天」的方向前移，终点（最新的一天）始终保留；跨度本就 ≤ 上限时这里是空操作。
-  const highestDay = new Date(highest);
-  highestDay.setUTCHours(0, 0, 0, 0);
-  const windowStart = highestDay.getTime() - (MAX_GRID_DAYS - 1) * 86400000;
-  const start = Math.max(from.getTime(), windowStart);
+  const windowStart = dayStartMs(highest) - (MAX_GRID_DAYS - 1) * 86400000;
+  const start = Math.max(dayStartMs(lowest), windowStart);
   // 同日取值与 lastPerDay 共用 latestPerUtcDay：折线和散点必须是同一个数。
   const byDay = latestPerUtcDay(history);
   const out: { at: string; score: number | null }[] = [];
