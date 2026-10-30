@@ -21,11 +21,16 @@ describe("workflows", () => {
     expect(wf.permissions.contents).toBe("write");
   });
 
-  it("refresh-data suppresses the push event so deploy is not double-triggered", () => {
+  it("refresh-data suppresses the push event so deploy is not double-triggered and reports failures or cancellations", () => {
     const wf = load("refresh-data.yml");
     expect(JSON.stringify(wf)).toContain("[skip ci]");
-    // 失败时要能被看见，不能静默烂掉。
-    expect(wf.jobs.refresh.steps.some((s: { if?: string }) => s.if === "failure()")).toBe(true);
+    // 失败时要能被看见，不能静默烂掉。取消时同样要开 issue，所以实现是
+    // `failure() || cancelled()`——用包含匹配，只要求覆盖到 failure，不钉字面量。
+    expect(
+      wf.jobs.refresh.steps.some(
+        (s: { if?: string }) => typeof s.if === "string" && s.if.includes("failure()"),
+      ),
+    ).toBe(true);
   });
 
   it("deploy gates workflow_run on success and scopes permissions", () => {
@@ -41,10 +46,31 @@ describe("workflows", () => {
     expect(Object.keys(wf.on)).toContain("pull_request");
     expect(wf.permissions.contents).toBe("read");
     expect(wf.permissions.pages).toBeUndefined();
-    const runs = wf.jobs.verify.steps.map((s: { run?: string }) => s.run).filter(Boolean);
-    expect(runs).toEqual(expect.arrayContaining(["npm test", "npx tsc -b", "npm run build"]));
-    // A-9：scripts 的 checkJs 闸门必须真的在 CI 里跑，不能只写在 package.json。
-    expect(runs).toContain("npm run typecheck:scripts");
+    const runs: string[] = wf.jobs.verify.steps
+      .map((s: { run?: string }) => s.run)
+      .filter(Boolean);
+    expect(runs).toEqual(expect.arrayContaining(["npm test", "npm run build"]));
+    // A-9：scripts 的 checkJs 闸门必须真的在 CI 里跑到。闸门可以独立成 step，也可以
+    // 并进 build——所以照 build 脚本展开一层按命令判断，不钉 step 数量与顺序。
+    const executed = `${runs.join("\n")}\n${JSON.parse(readFileSync(resolve(repoRoot, "package.json"), "utf8")).scripts.build}`;
+    expect(executed).toContain("tsc -b");
+    expect(executed).toContain("typecheck:scripts");
+    // 安装期不跑任意 install script。
+    expect(executed).toContain("npm ci --ignore-scripts");
+  });
+
+  // 子路径部署的产物闸门：check:base 读的是 dist/index.html，不是源码。放在 build
+  // 之前就会读到上一次构建的陈旧产物、甚至读不到直接红，闸门等于白设。
+  it("ci runs check:base after build so the subpath gate reads a fresh build", () => {
+    const wf = load("ci.yml");
+    const runs: string[] = wf.jobs.verify.steps
+      .map((s: { run?: string }) => s.run)
+      .filter(Boolean);
+    const build = runs.indexOf("npm run build");
+    const check = runs.indexOf("npm run check:base");
+    expect(build, "build 步骤必须还在").toBeGreaterThanOrEqual(0);
+    expect(check, "check:base 步骤必须进 CI").toBeGreaterThanOrEqual(0);
+    expect(check, "check:base 必须排在 build 之后").toBeGreaterThan(build);
   });
 
   it("scripts are covered by the checkJs gate", () => {
