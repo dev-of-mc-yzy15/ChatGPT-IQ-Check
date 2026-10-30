@@ -207,29 +207,10 @@ async function renderReady() {
   return view;
 }
 
-/**
- * 触发跳过链接并返回它指向的目标。
- *
- * jsdom 不实现 fragment 导航的焦点转移（浏览器点击 #hash 链接后会 scroll 并聚焦 target），
- * 且 target 没有 tabindex 时 jsdom 的 focus() 也会被忽略。这里补上浏览器语义，
- * 让断言测到真实契约——焦点确实落到 #main，而不是停在链接上。
- */
-function activateSkipLink(link: HTMLElement): HTMLElement {
-  const href = link.getAttribute("href")!;
-  const target = document.querySelector<HTMLElement>(href);
-  if (!target) throw new Error(`跳过链接的 href="${href}" 找不到目标元素`);
-  fireEvent.click(link);
-  if (document.activeElement !== target) {
-    if (target.tabIndex < 0) target.setAttribute("tabindex", "-1");
-    target.focus();
-  }
-  return target;
-}
-
 describe("无障碍闸门", () => {
   // 首屏（本轮雷达 + 状态横幅）跑一遍 axe，切到趋势面板再跑一遍：
-  // violations 与 incomplete 都要空——aria 引用断链只会掉进后者。
   // 两个 panel 的表格、按钮、live region 都要过，不能只扫当前可见那一屏。
+  // violations 与 incomplete 都要空——aria 引用断链只会掉进后者。
   it("渲染完成的页面没有 critical / serious 的 axe 违规或待核项", async () => {
     const { container } = await renderReady();
 
@@ -258,8 +239,17 @@ describe("无障碍闸门", () => {
     expect(href).toBe("#main");
     expect(document.querySelectorAll(href!)).toHaveLength(1);
 
-    const target = activateSkipLink(skipLink);
+    const target = document.querySelector<HTMLElement>(href!)!;
     expect(target.tagName).toBe("MAIN");
+
+    // 关键：main 自己就得带 tabindex="-1"，不能靠测试临时补。
+    // 只有 -1（不是 0）才是对的——0 会把 main 塞进 Tab 序列，-1 只在被 focus() 时才接焦点。
+    expect(target.getAttribute("tabindex")).toBe("-1");
+
+    fireEvent.click(skipLink);
+    // 浏览器点 #hash 链接会和 scroll 一起把焦点落到 target 上；jsdom 不实现这段导航，
+    // 这里代劳调 focus()。若源码丢了 tabindex，jsdom 会忽略这次 focus()，断言随即变红。
+    target.focus();
     expect(document.activeElement).toBe(target);
   });
 

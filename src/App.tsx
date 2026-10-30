@@ -153,7 +153,7 @@ export default function App() {
   return (
     <>
       <SkipLink />
-      <main id="main">
+      <main id="main" tabIndex={-1}>
         <header
           style={{
             display: "flex",
