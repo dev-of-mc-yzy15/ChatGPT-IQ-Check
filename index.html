@@ -19,6 +19,14 @@
         var t = s === "light" || s === "dark" ? s
           : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
         document.documentElement.dataset.theme = t;
+        // 首屏就把浏览器配色定对，跟 useTheme 运行期写入同一套取值。
+        var m = document.querySelector('meta[name="theme-color"]');
+        if (!m) {
+          m = document.createElement("meta");
+          m.setAttribute("name", "theme-color");
+          document.head.appendChild(m);
+        }
+        m.setAttribute("content", t === "dark" ? "#0f1115" : "#ffffff");
       } catch (_) {}
     </script>
   </head>
