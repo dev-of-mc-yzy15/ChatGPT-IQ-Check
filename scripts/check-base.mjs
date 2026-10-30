@@ -8,22 +8,38 @@
 // 内部引用必须带 base 前缀。放行：data: URI（内联 favicon）、https:// 之类绝对外链、
 // //host 协议相对外链。
 //
-// 已知未覆盖（本版有意不贪）：
-//   - dist/assets/*.css 内的 url(/…)
-//   - srcset 里未带引号的候选串
+// 引号形态三种都认：vite 对源 HTML 里的属性引号是**原样保留**的，产物里同时可能存在
+// 双引号、单引号、无引号三种写法。只认双引号的话，`href='/assets/x.css'` 会静默过闸门。
+// srcset 是多值（逗号分隔的候选串），逐个候选都要看，只看第一段会漏掉逗号后面的。
+// 内联 style 的 url(/…) 同样会去域名根，一并判。
+//
+// 已知未覆盖（本版有意不贪）：dist/assets/*.css 里经 vite 处理后的 url(/…)。
 // 找不到 dist/index.html 一律红，不允许静默通过（否则 CI 忘跑 build 就成了空闸门）。
 
 import { readFile } from "node:fs/promises";
 
 /** 部署子路径，必须与 vite.config.ts 的 base 保持一致；那里改了这里要同步。 */
 const BASE = "/ChatGPT-IQ-Check/";
+/** `BASE` 去掉前导斜杠，供正则的负向先行断言内联（正则会吃掉那个 `/`）。 */
+const BASE_BARE = BASE.slice(1);
 const TARGET = "dist/index.html";
 
 /**
- * 抓 (src|href)="/x"，也抓单独的 (src|href)="/"。
- * [^/] 天然排除协议相对 //host/x，负向先行断言排除已带 base 前缀的引用。
+ * 单值属性与 srcset 的首个候选。
+ * `\/(?!\/)` 放行协议相对 //host；负向先行断言放行已带 base 前缀的引用。
+ * 值字符类停在引号/空白/`>`，无引号属性才能正确收尾。
  */
-const PATTERN = new RegExp(String.raw`(?:src|href)\s*=\s*"(\/(?!${BASE.slice(1)})[^"\s]*)?"`, "g");
+const ATTR_PATTERN = new RegExp(
+  String.raw`(?:src|href|srcset|poster)\s*=\s*(["']?)\/(?!\/)(?!${BASE_BARE})[^"'\s>]*`,
+  "g",
+);
+
+/** srcset 的整段值（到引号或 `>` 为止），用来逐个检查逗号分隔的候选。 */
+const SRCSET_PATTERN = /srcset\s*=\s*(["']?)([^"'>]*)/g;
+
+/** 内联 style 的 url(/…)；判据与属性一致，`\s*` 容忍 url( 与斜杠之间的空白。 */
+const URL_PATTERN = new RegExp(String.raw`url\(\s*\/(?!\/)(?!${BASE_BARE})`, "g");
+
 /** 片段上下文宽度：够判断引到哪、又不至于刷屏。 */
 const PAD = 40;
 
@@ -37,6 +53,38 @@ function squeeze(text) {
 }
 
 /**
+ * srcset 里从第二个候选起逐个判：只有首段由 ATTR_PATTERN 负责，这里不重复报。
+ * 首段带 base 时 ATTR_PATTERN 整条匹配不上，得靠这里兜住逗号后的候选——
+ * 那正是「只看第一个候选」会漏掉的那一半。
+ * @param {string} line
+ * @param {(index: number) => void} onHit
+ * @returns {void}
+ */
+function findSrcsetViolations(line, onHit) {
+  SRCSET_PATTERN.lastIndex = 0;
+  /** @type {RegExpExecArray | null} */
+  let m = SRCSET_PATTERN.exec(line);
+  while (m !== null) {
+    const value = m[2] ?? "";
+    const valueStart = m.index + m[0].length - value.length;
+    let offset = 0;
+    const parts = value.split(",");
+    for (let i = 0; i < parts.length; i += 1) {
+      const part = parts[i] ?? "";
+      const token = part.trim().split(/\s+/)[0] ?? "";
+      const at = valueStart + offset + (part.length - part.trimStart().length);
+      offset += part.length + 1;
+      if (i === 0) continue;
+      if (!token.startsWith("/") || token.startsWith("//") || token.startsWith(BASE)) continue;
+      onHit(at);
+    }
+    m = SRCSET_PATTERN.exec(line);
+  }
+}
+
+/**
+ * 逐行收集命中位置，行内按列升序返回。同一条 srcset 可能由属性与候选两路各自命中，
+ * 位置不同、都要保留。
  * @param {string} html
  * @returns {{ line: number, column: number, snippet: string }[]}
  */
@@ -46,14 +94,26 @@ function findViolations(html) {
   const lines = html.split(/\r?\n/);
   for (let i = 0; i < lines.length; i += 1) {
     const line = lines[i] ?? "";
-    PATTERN.lastIndex = 0;
-    /** @type {RegExpExecArray | null} */
-    let m = PATTERN.exec(line);
-    while (m !== null) {
-      const start = Math.max(0, m.index - PAD);
-      const end = Math.min(line.length, m.index + m[0].length + PAD);
-      hits.push({ line: i + 1, column: m.index + 1, snippet: squeeze(line.slice(start, end)) });
-      m = PATTERN.exec(line);
+    /** @type {number[]} */
+    const indexes = [];
+    for (const pattern of [ATTR_PATTERN, URL_PATTERN]) {
+      pattern.lastIndex = 0;
+      /** @type {RegExpExecArray | null} */
+      let m = pattern.exec(line);
+      while (m !== null) {
+        indexes.push(m.index);
+        m = pattern.exec(line);
+      }
+    }
+    findSrcsetViolations(line, (index) => indexes.push(index));
+    indexes.sort((a, b) => a - b);
+    let previous = -1;
+    for (const index of indexes) {
+      if (index === previous) continue;
+      previous = index;
+      const start = Math.max(0, index - PAD);
+      const end = Math.min(line.length, index + PAD);
+      hits.push({ line: i + 1, column: index + 1, snippet: squeeze(line.slice(start, end)) });
     }
   }
   return hits;
