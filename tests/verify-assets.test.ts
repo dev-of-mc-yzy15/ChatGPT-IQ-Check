@@ -196,6 +196,34 @@ describe("verify-assets", () => {
     expect(r.stdout).toContain(`ok        public/assets/${plain}`);
   });
 
+  it("资产文件仍用上游原名时也能命中（改名过渡期）", async () => {
+    // 改名是分批落的：文件还叫 .html.txt 的中间态必须也绿，否则这期间 CI 全红，
+    // 闸门反而逼人把它关掉。
+    const root = await repo();
+    await rm(join(root, "public", "assets", LOCAL_NAME));
+    await writeFile(join(root, "public", "assets", NAME), BODY);
+    await writeRound(root, [{ asset_url: `/assets/${NAME}`, asset_sha256: sha256(BODY) }]);
+
+    const r = run(root);
+
+    expect(r.code).toBe(0);
+    expect(r.stdout).toContain(`ok        public/assets/${NAME}`);
+  });
+
+  it("同名两种后缀都在时以精确名为准", async () => {
+    // 两份内容不同、期望哈希对应 .html.txt：命中项必须指它，否则「文件里到底是
+    // 哪份内容」就说不清了。本地名那份退化成多余文件，只报 orphan。
+    const root = await repo(`${BODY}stale`);
+    await writeFile(join(root, "public", "assets", NAME), BODY);
+    await writeRound(root, [{ asset_url: `/assets/${NAME}`, asset_sha256: sha256(BODY) }]);
+
+    const r = run(root);
+
+    expect(r.code).toBe(0);
+    expect(r.stdout).toContain(`ok        public/assets/${NAME}`);
+    expect(r.stdout).toContain("orphan=1");
+  });
+
   it("哈希比较不分大小写", async () => {
     // 上游哈希大小写不保证，sha256 本身也没有大小写语义，逐字节比会误报。
     const root = await repo();

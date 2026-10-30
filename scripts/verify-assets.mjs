@@ -40,6 +40,7 @@ const BACKSLASH = String.fromCharCode(92);
  *   mismatch: Mismatch[],
  *   unpinned: string[],
  *   orphan: string[],
+ *   used: string[],
  * }} Report
  */
 
@@ -88,11 +89,12 @@ function localAssetName(name) {
 
 /**
  * 上游 `asset_url` 是站点根绝对路径（`/assets/x.html.txt`），也可能是完整 URL、
- * 带 query/fragment 的串。取 basename、映射成本地文件名，再拼到本项目自己的 assets/ 下。
+ * 带 query/fragment 的串。这里只取 basename，**不映射**：`round.json` 是上游快照，
+ * 里面记的永远是上游名，映射留给查找阶段做候选，命中时才知道真实文件名。
  *
- * 映射是必须的：`round.json` 是上游快照，里面记的永远是上游的 `.html.txt`；
- * 本地按 `.html` 落盘才能让托管回 `text/html`、iframe 才敢用 `src`（见 lib/asset.ts）。
- * 少了这一步，闸门会拿上游名字去比本地文件，34 条全部 missing。
+ * 映射本身是必须的：本地按 `.html` 落盘才能让托管回 `text/html`、iframe 才敢用
+ * `src`（见 lib/asset.ts）。若在取 basename 时就映射，老布局（文件还叫 .html.txt）
+ * 会被彻底丢掉。
  * @param {unknown} url
  * @returns {string | null}
  */
@@ -100,7 +102,7 @@ function assetName(url) {
   if (typeof url !== "string") return null;
   const path = url.split(/[?#]/)[0] ?? "";
   const name = path.split(BACKSLASH).join("/").split("/").filter(Boolean).pop();
-  return name === undefined ? null : localAssetName(name);
+  return name === undefined ? null : name;
 }
 
 /**
@@ -166,21 +168,35 @@ async function listAssetFiles(dir) {
  */
 async function classify(root, pins) {
   /** @type {Report} */
-  const report = { ok: [], missing: [], mismatch: [], unpinned: [], orphan: [] };
+  const report = { ok: [], missing: [], mismatch: [], unpinned: [], orphan: [], used: [] };
   for (const pin of pins) {
-    const file = "public/assets/" + pin.name;
-    const target = join(root, "public", "assets", pin.name);
+    // 两个候选名：精确的上游名（老布局、也是改名过渡期的真实状态）优先，找不到再
+    // 用映射后的本地名。只认映射名的话，文件还没改名的那段时间会整片假 missing。
+    const names = [pin.name];
+    const mapped = localAssetName(pin.name);
+    if (mapped !== pin.name) names.push(mapped);
     /** @type {string} */
-    let actual;
-    try {
-      actual = await fileHash(target);
-    } catch (error) {
-      // 读失败（含不存在）一律算 missing 并留错误码：区分 ENOENT 与 EACCES 对
-      // 修问题有帮助，但两者都是「拿不到内容」，不该再拆一类。
-      const code = /** @type {NodeJS.ErrnoException} */ (error).code ?? "unknown";
-      report.missing.push(file + "（" + code + "）");
+    let actual = "";
+    let used = "";
+    let code = "ENOENT";
+    for (const candidate of names) {
+      try {
+        actual = await fileHash(join(root, "public", "assets", candidate));
+        used = candidate;
+        code = "";
+        break;
+      } catch (error) {
+        // 读失败（含不存在）留错误码：区分 ENOENT 与 EACCES 对修问题有帮助，
+        // 但两者都是「拿不到内容」，不该再拆一类，也不该为每个候选各报一条。
+        code = /** @type {NodeJS.ErrnoException} */ (error).code ?? "unknown";
+      }
+    }
+    if (code !== "") {
+      report.missing.push("public/assets/" + pin.name + "（" + code + "）");
       continue;
     }
+    const file = "public/assets/" + used;
+    report.used.push(used);
     // sha256 没有大小写语义，逐字节比会在上游换个大小写时误红。
     if (pin.expected.trim() === "") {
       report.unpinned.push(file);
@@ -204,7 +220,9 @@ async function findOrphans(root, report, pins) {
   const dir = join(root, "public", "assets");
   const info = await stat(dir).catch(() => null);
   if (info === null || !info.isDirectory()) return;
-  const referenced = new Set(pins.map((pin) => pin.name));
+  // 只有真正命中过的文件才算「被引用」。上游名一起算进去，是为了两份都在时
+  // 不把精确名报成孤儿；映射名则不无脑放行——它没被用上就是多余文件。
+  const referenced = new Set([...pins.map((pin) => pin.name), ...report.used]);
   const files = await listAssetFiles(dir);
   for (const name of files) {
     if (!referenced.has(name)) report.orphan.push("public/assets/" + name);
