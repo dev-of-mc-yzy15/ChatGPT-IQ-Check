@@ -16,7 +16,13 @@ export function urlFor(rel: string, base = import.meta.env.BASE_URL || "/"): str
 
 async function getJson<T>(rel: string, timeoutMs = 15000): Promise<T> {
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  // 只有定时器真的响过才认超时。用标志位而不是 res 的落地状态判断，
+  // 是因为非 2xx 也可能恰好在 abort 之后才返回，那种情况仍该报 HTTP。
+  let timedOut = false;
+  const timer = setTimeout(() => {
+    timedOut = true;
+    ctrl.abort();
+  }, timeoutMs);
   try {
     const res = await fetch(urlFor(rel), {
       headers: { accept: "application/json" },
@@ -24,6 +30,11 @@ async function getJson<T>(rel: string, timeoutMs = 15000): Promise<T> {
     });
     if (!res.ok) throw new Error(`加载 ${rel} 失败：HTTP ${res.status}`);
     return (await res.json()) as T;
+  } catch (error) {
+    // abort 抛的是英文 DOMException（"The operation was aborted."），不该漏给简体中文界面：
+    // 翻译成中文并带上毫秒，原始 error 挂 cause 留证。真实网络错误则原样冒泡，两者仍可区分。
+    if (timedOut) throw new Error(`加载 ${rel} 超时（${timeoutMs}ms）`, { cause: error });
+    throw error;
   } finally {
     clearTimeout(timer);
   }

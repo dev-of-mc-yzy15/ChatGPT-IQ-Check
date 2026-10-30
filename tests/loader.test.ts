@@ -3,12 +3,56 @@ import {
   loadAll,
   loadRadarBench,
   loadRound,
+  loadStatus,
   slotRadarBench,
   slotStatus,
   urlFor,
 } from "../src/data/loader";
+import type { StatusData } from "../src/types";
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.useRealTimers();
+  vi.unstubAllGlobals();
+});
+
+/** 走完整校验的最小合法 status.json，用来验证成功路径真的把 JSON 交回调用方。 */
+const legalStatus: StatusData = {
+  checked_at: "2026-10-24T00:00:00Z",
+  ok: true,
+  benchmark: "codexradar",
+  candidates_ok: 3,
+  candidates_total: 3,
+  binding_total: 3,
+  reused_count: 0,
+  missing_count: 0,
+  round_ok: true,
+  latest_graded_at: null,
+  min_latest: null,
+  stale_count: 0,
+  round_updated_at: null,
+  stale_days: null,
+  errors: [],
+};
+
+const okResponse = (payload: unknown) =>
+  ({ ok: true, status: 200, json: async () => payload }) as Response;
+
+/** 一直挂到 signal abort，再按真实 fetch 的姿势 reject signal.reason。 */
+function hangingFetch() {
+  return vi.fn(
+    (_input: RequestInfo | URL, init?: RequestInit) =>
+      new Promise<Response>((_resolve, reject) => {
+        const signal = init?.signal;
+        if (!signal) {
+          reject(new Error("getJson 没把 signal 传给 fetch"));
+          return;
+        }
+        signal.addEventListener("abort", () => {
+          reject(signal.reason ?? new DOMException("The operation was aborted.", "AbortError"));
+        });
+      }),
+  );
+}
 
 describe("urlFor", () => {
   it("joins base and relative path", () => {
@@ -79,5 +123,140 @@ describe("slots", () => {
     expect(slots.radarBench.error).toMatch(/offline/);
     expect(slots.round.error).toMatch(/offline/);
     expect(slots.status.error).toMatch(/offline/);
+  });
+});
+
+/**
+ * getJson 是应用里唯一碰网络的地方，却一条专属用例都没有。
+ * 这里只经公开的 loadStatus 打进去，不为了好测去改 loader 的导出面。
+ */
+describe("getJson（经 loadStatus）", () => {
+  it("成功时解析 JSON 并原样交回", async () => {
+    const fetchMock = vi.fn((_input: RequestInfo | URL, _init?: RequestInit) =>
+      Promise.resolve(okResponse(legalStatus)),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(loadStatus()).resolves.toEqual(legalStatus);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe(urlFor("data/status.json"));
+    expect(init?.headers).toEqual({ accept: "application/json" });
+    expect(init?.signal).toBeInstanceOf(AbortSignal);
+  });
+
+  it("非 2xx 抛错并把状态码带进文案", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: false, status: 418 }) as Response));
+
+    const error = await loadStatus().catch((caught: unknown) => caught);
+
+    expect(error).toBeInstanceOf(Error);
+    expect((error as Error).message).toBe("加载 data/status.json 失败：HTTP 418");
+  });
+
+  it("超时抛中文文案并带毫秒，不把英文 DOMException 漏给界面", async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal("fetch", hangingFetch());
+
+    const pending = loadStatus();
+    const settled = expect(pending).rejects.toThrow();
+    await vi.advanceTimersByTimeAsync(15000);
+    await settled;
+
+    const error = await pending.catch((caught: unknown) => caught);
+    expect(error).toBeInstanceOf(Error);
+    expect((error as Error).message).toBe("加载 data/status.json 超时（15000ms）");
+    expect((error as Error).message).not.toMatch(/aborted/i);
+    // 原始 DOMException 没被丢掉，挂在 cause 上留证（跨 realm，只认 name/message）
+    const cause = (error as Error & { cause?: Error }).cause;
+    expect(cause?.name).toBe("AbortError");
+    expect(cause?.message).toMatch(/aborted/i);
+  });
+
+  it("真实网络错误原样冒泡，不被误判成超时", async () => {
+    const networkError = new TypeError("Failed to fetch");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        throw networkError;
+      }),
+    );
+
+    const error = await loadStatus().catch((caught: unknown) => caught);
+
+    expect(error).toBe(networkError);
+    expect((error as Error).message).not.toMatch(/超时/);
+  });
+
+  it("JSON 解析失败直接抛，不返回半截对象", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          ({
+            ok: true,
+            status: 200,
+            json: async () => {
+              throw new SyntaxError("Unexpected end of JSON input");
+            },
+          }) as unknown as Response,
+      ),
+    );
+
+    const error = await loadStatus().catch((caught: unknown) => caught);
+
+    expect(error).toBeInstanceOf(SyntaxError);
+    expect((error as Error).message).toMatch(/Unexpected end of JSON input/);
+  });
+
+  it("成功返回后不留 pending 定时器", async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal("fetch", vi.fn(async () => okResponse(legalStatus)));
+
+    await loadStatus();
+
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("超时收尾后同样不留 pending 定时器", async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal("fetch", hangingFetch());
+
+    const pending = loadStatus().catch(() => undefined);
+    await vi.advanceTimersByTimeAsync(15000);
+    await pending;
+
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("两次并发各持独立 signal，一次超时不牵连另一次", async () => {
+    vi.useFakeTimers();
+    const signals: AbortSignal[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+        const signal = init?.signal as AbortSignal;
+        signals.push(signal);
+        if (String(input).includes("radar-bench.json")) {
+          return new Promise<Response>((_resolve, reject) => {
+            signal.addEventListener("abort", () => reject(signal.reason));
+          });
+        }
+        return Promise.resolve(okResponse(legalStatus));
+      }),
+    );
+
+    const slow = loadRadarBench();
+    const slowSettled = expect(slow).rejects.toThrow(/超时/);
+    const fast = loadStatus();
+    const fastSettled = expect(fast).resolves.toEqual(legalStatus);
+    await vi.advanceTimersByTimeAsync(15000);
+    await Promise.all([slowSettled, fastSettled]);
+
+    expect(signals).toHaveLength(2);
+    expect(signals[0]).not.toBe(signals[1]);
+    expect(signals[0].aborted).toBe(true);
+    expect(signals[1].aborted).toBe(false);
   });
 });
