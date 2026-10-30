@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
+import { createElement } from "react";
+import { render, screen } from "@testing-library/react";
 import summaryRaw from "./fixtures/summary.sample.json";
+import { CandidateTable } from "../src/components/CandidateTable";
 import {
   DEGRADE_THRESHOLD,
   EFFORT_ORDER,
@@ -34,6 +37,13 @@ const hp = (
   coverage = 64,
   required_tasks = 64,
 ): HistoryPoint => ({ at, score, coverage, required_tasks, score_status: status });
+
+/**
+ * 同一 UTC 日的两个跨时区时刻：字面小时 10 < 23，带偏移之后真实时间却是 22:00Z > 09:00Z。
+ * 按原始 at 字符串比（localeCompare 实测返回 -1）会把更晚的排到更早，整列跨时区倒挂。
+ */
+const AT_REAL_EARLY = "2026-10-23T23:00:00+14:00"; // → 2026-10-23T09:00:00Z
+const AT_REAL_LATE = "2026-10-23T10:00:00-12:00"; // → 2026-10-23T22:00:00Z
 
 /**
  * 真实上游样本（CodexRadar summary 接口，截断到 3 点）。用它兜一层"只有合成数据才成立"的风险：
@@ -330,6 +340,28 @@ describe("topCandidates", () => {
     expect(topCandidates(rows, 1).map((r) => r.model)).toEqual(["new"]);
   });
 
+  // 同分 tie-break 也必须按毫秒，不是按 latest_graded_at 的字面串。
+  // App 用它选默认 6 条趋势曲线（App.tsx:130），排错就是默认选中的那几条错了。
+  it("breaks a score tie on real elapsed time across time zones, not on the literal string", () => {
+    const rows = [
+      mk({ model: "earlier", score: 100, latest_graded_at: AT_REAL_EARLY }),
+      mk({ model: "later", score: 100, latest_graded_at: AT_REAL_LATE }),
+    ];
+    expect(topCandidates(rows, 1).map((r) => r.model)).toEqual(["later"]);
+  });
+
+  it("sinks unparseable grading times on a tie and does not throw", () => {
+    const rows = [
+      mk({ model: "garbage", score: 100, latest_graded_at: "x" }),
+      mk({ model: "blank", score: 100, latest_graded_at: "" }),
+      mk({ model: "parsed", score: 100, latest_graded_at: AT_REAL_LATE }),
+    ];
+    expect(() => topCandidates(rows, 3)).not.toThrow();
+    expect(topCandidates(rows, 3).map((r) => r.model)[0]).toBe("parsed");
+    // 两个坏值的相对次序不承诺，但都必须落在可解析值之后。
+    expect(topCandidates(rows, 3).map((r) => r.model).slice(1).sort()).toEqual(["blank", "garbage"]);
+  });
+
   it("breaks a tie where both are null without throwing", () => {
     const rows = [mk({ model: "a", score: 50, latest_graded_at: null }), mk({ model: "b", score: 50, latest_graded_at: null })];
     expect(topCandidates(rows, 2).map((r) => r.model)).toEqual(["a", "b"]);
@@ -362,6 +394,33 @@ describe("sortCandidates", () => {
     const rows = [mk({ model: "b", latest_graded_at: null }), mk({ model: "a", latest_graded_at: "2026-10-01T00:00:00Z" })];
     expect(sortCandidates(rows, "latest_graded_at", "asc").map((r) => r.model)).toEqual(["a", "b"]);
     expect(sortCandidates(rows, "latest_graded_at", "desc").map((r) => r.model)).toEqual(["a", "b"]);
+  });
+
+  // 缺陷一：时间键原本走 av.localeCompare(String(bv), "en")，比的是字面串。
+  // 这对方括号里的两个时刻真实顺序与字典序相反，整列按「最近评分」排序会跨时区倒挂。
+  it("orders latest_graded_at ascending by real instant across time zones", () => {
+    const rows = [mk({ model: "later", latest_graded_at: AT_REAL_LATE }), mk({ model: "earlier", latest_graded_at: AT_REAL_EARLY })];
+    expect(sortCandidates(rows, "latest_graded_at", "asc").map((r) => r.model)).toEqual(["earlier", "later"]);
+  });
+
+  it("orders latest_graded_at descending by real instant across time zones", () => {
+    const rows = [mk({ model: "earlier", latest_graded_at: AT_REAL_EARLY }), mk({ model: "later", latest_graded_at: AT_REAL_LATE })];
+    expect(sortCandidates(rows, "latest_graded_at", "desc").map((r) => r.model)).toEqual(["later", "earlier"]);
+  });
+
+  // 坏日期与 null 同待遇：恒垫底、两个方向都不翻到前面、且不抛。
+  it("sinks unparseable grading times in both directions without throwing", () => {
+    const rows = [
+      mk({ model: "garbage", latest_graded_at: "x" }),
+      mk({ model: "blank", latest_graded_at: "" }),
+      mk({ model: "parsed", latest_graded_at: AT_REAL_LATE }),
+    ];
+    for (const dir of ["asc", "desc"] as const) {
+      expect(() => sortCandidates(rows, "latest_graded_at", dir)).not.toThrow();
+      const order = sortCandidates(rows, "latest_graded_at", dir).map((r) => r.model);
+      expect(order[0]).toBe("parsed");
+      expect(order.slice(1).sort()).toEqual(["blank", "garbage"]);
+    }
   });
 
   // 契约：模型名走自然序（numeric-aware）——数字段按数值比。gpt-6 必须排在 gpt-10 前面。
@@ -680,5 +739,28 @@ describe("roundMatrix", () => {
     expect(m.models).toEqual([]);
     expect(m.efforts).toEqual([]);
     expect(m.cells.size).toBe(0);
+  });
+});
+
+describe("CandidateTable 的 Δ 单元格：days 为 NaN 时不上屏", () => {
+  // computeDelta 对解不出的 at 会给出 NaN 的 days，这个 derive 侧行为已被上面的用例钉死、不改成 null。
+  // UI 侧原本只判 `days != null`——NaN != null 为真，于是单元格里写成了 "/ NaN 天"。
+  it("omits the day suffix instead of printing NaN", () => {
+    const bad = mk({ model: "A", history: [hp("not-a-date", 105), hp("2026-10-23T00:00:00Z", 100)] });
+    render(createElement(CandidateTable, { rows: [bad], selectedKeys: [], onToggle: () => {}, scoreMax: 150 }));
+    const cell = screen.getByText(/-5\.0/).closest("td") as HTMLElement;
+    expect(cell).not.toBeNull();
+    expect(cell.textContent).not.toContain("NaN");
+    // delta 本身照旧上屏，只是不再拼天数。
+    expect(cell).toHaveTextContent("▼ -5.0");
+  });
+
+  // 有限天数不能被这次收紧顺手删掉。
+  it("still prints the day suffix for a finite day count", () => {
+    // mk 的默认 history 是空数组（delta 为 null，单元格只剩破折号），这里必须自带两天数据。
+    const ok = mk({ model: "B", history: [hp("2026-10-22T00:00:00Z", 105), hp("2026-10-23T00:00:00Z", 100)] });
+    render(createElement(CandidateTable, { rows: [ok], selectedKeys: [], onToggle: () => {}, scoreMax: 150 }));
+    const cell = screen.getByText(/-5\.0/).closest("td") as HTMLElement;
+    expect(cell).toHaveTextContent("1 天");
   });
 });

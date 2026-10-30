@@ -123,7 +123,8 @@ export function CandidateTable({
                       <><span aria-hidden="true">{deltaMark(delta)}</span>{" "}</>
                     ) : null}
                     {fmtDelta(delta)}
-                    {days != null ? ` / ${days} 天` : ""}
+                    {/* days 是 NaN（at 解不出来）时 `NaN != null` 仍为真，只判 null 会往屏幕上写 "/ NaN 天"。 */}
+                    {days != null && Number.isFinite(days) ? ` / ${days} 天` : ""}
                   </td>
                 </tr>
               );

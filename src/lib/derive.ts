@@ -24,6 +24,13 @@ export function sortCandidates(rows: RadarCandidate[], key: SortKey, dir: "asc" 
       const order = effortRank(a.effort) - effortRank(b.effort);
       return dir === "asc" ? order : -order;
     }
+    // 时间键按毫秒比，不能落到下面的 localeCompare：混时区时字面串的字典序与真实时间相反
+    // （`"…10:00:00-12:00"` 是 22:00Z，`"…23:00:00+14:00"` 是 09:00Z，前者字典序反而更小），
+    // 整列会跨时区倒挂。坏值（解不出/空串）与 null 同待遇：恒垫底，不随方向翻到队首。
+    if (key === "latest_graded_at") {
+      // 方向交给 msOrder（坏值分支不吃方向，恒垫底），外面不要再包一层取反。
+      return msOrder(msOfNullable(a.latest_graded_at), msOfNullable(b.latest_graded_at), dir === "asc" ? 1 : -1);
+    }
     const av = a[key];
     const bv = b[key];
     if (av == null && bv == null) return 0;
@@ -87,10 +94,26 @@ function dayStartMs(ms: number): number {
   return d.getTime();
 }
 
+/** 可空时间戳的毫秒；null 与坏串一律回 null（比较时垫底），不让 `Date.parse("")` 的 NaN 漏下去。 */
+function msOfNullable(at: string | null): number | null {
+  return at == null ? null : msOf(at);
+}
+
 /** 解析时间戳毫秒；坏日期回 null，比较时一律垫底。 */
 function msOf(at: string): number | null {
   const ms = Date.parse(at);
   return Number.isFinite(ms) ? ms : null;
+}
+
+/**
+ * 毫秒次序，dir=1 升序、-1 降序。与 byTimeAsc 同一口径，只是把基准摊平成毫秒值好让排序键复用。
+ * 坏值（null）恒垫底：坏值分支**不乘 dir**，所以两个方向都不会被翻到队首——取反若写在外层，
+ * desc 一定把坏值翻上来，这一处分岔就是为它留的。
+ * 绝不返回 NaN：NaN 参与比较恒为假，会把 sort 的次序交给运气。
+ */
+function msOrder(am: number | null, bm: number | null, dir: 1 | -1 = 1): number {
+  if (am === null || bm === null) return am === bm ? 0 : am === null ? 1 : -1;
+  return (am - bm) * dir;
 }
 
 /**
@@ -99,10 +122,7 @@ function msOf(at: string): number | null {
  * 解不出来的坏日期垫到末尾，不因为 NaN 比较恒假就卡在队首。
  */
 function byTimeAsc(a: HistoryPoint, b: HistoryPoint): number {
-  const am = msOf(a.at);
-  const bm = msOf(b.at);
-  if (am === null || bm === null) return am === bm ? 0 : am === null ? 1 : -1;
-  return am - bm;
+  return msOrder(msOf(a.at), msOf(b.at));
 }
 
 /**
@@ -153,7 +173,8 @@ export function findDegradationPoints(
 export function topCandidates(rows: RadarCandidate[], n = 6): RadarCandidate[] {
   return [...rows]
     .filter((r) => r.score_status === "complete")
-    .sort((a, b) => b.score - a.score || (b.latest_graded_at ?? "").localeCompare(a.latest_graded_at ?? ""))
+    // 同分 tie-break 也必须按毫秒：App.tsx 用它挑默认趋势曲线，按字面串比会把更近期的判成更旧。
+    .sort((a, b) => b.score - a.score || msOrder(msOfNullable(a.latest_graded_at), msOfNullable(b.latest_graded_at), -1))
     .slice(0, n);
 }
 
