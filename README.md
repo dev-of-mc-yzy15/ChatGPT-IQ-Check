@@ -8,7 +8,7 @@
 > 分数是第三方基准测试分数，**不是心理学 IQ**，也不代表模型的通用能力。
 > 数据版权归 codexradar.com 所有。
 
-线上地址：<https://dev-of-mc-yzy15.github.io/ChatGPT-IQ-Check/>
+**部署后**地址（Pages 尚未启用）：<https://dev-of-mc-yzy15.github.io/ChatGPT-IQ-Check/>
 
 ---
 
@@ -94,8 +94,8 @@ npm run refresh -- --force  # 内容没变也强制重写（重置时间戳）
 行为要点：
 
 - 上游三个接口：`radar-bench-binding.json`（候选清单）、`api/radar-bench-score`（单候选分数，并发 4）、`degradation-codex-latest.json`（本轮明细）。
-- 失败重试 3 次、指数退避；单个候选失败时**回退到上一次已提交的数据**，不写坏数据。
-- 成功数低于 `max(30, 候选数 × 80%)` 时整体失败、退出码 1，不会覆盖已有 JSON。
+- 最多尝试 3 次（指数退避），仅网络错误与 429 / 5xx 重试，其余 4xx 立即失败；单个候选失败时**回退到上一次已提交的数据**，不写坏数据。
+- 成功数低于 `min(候选数, max(30, 候选数 × 80%))`（下限不超过候选总数）时整体失败、退出码 1，不会覆盖已有 JSON。
 - 写入是**原子的**（临时文件 + rename），不会出现半截 JSON。
 - **幂等**：忽略 `generated_at` / `checked_at` / `fetch_id` 后内容相同就不重写，避免 Actions 里产生空提交。
 
@@ -106,10 +106,11 @@ npm run refresh -- --force  # 内容没变也强制重写（重置时间戳）
 
 ## 部署（GitHub Pages）
 
-两个 workflow：
+三个 workflow：
 
 | 文件 | 触发 | 作用 |
 |---|---|---|
+| `.github/workflows/ci.yml` | `pull_request` 与手动 `workflow_dispatch` | `npm ci --ignore-scripts` + `npm audit --omit=dev --audit-level=high` + `npm test` + `npm run build`（build 含 `tsc -b`、`typecheck:scripts`）→ PR 闸门 |
 | `.github/workflows/refresh-data.yml` | 每天 UTC 00:30 + 手动 | 跑 `refresh.mjs`，有变化就提交 `public/data/`（带 `[skip ci]`），失败自动开 issue |
 | `.github/workflows/deploy.yml` | push 到 main、`refresh-data` 完成后、手动 | `npm ci` + `npm test` + `npm run build` → 上传产物 → 部署 Pages |
 
@@ -120,6 +121,9 @@ npm run refresh -- --force  # 内容没变也强制重写（重置时间戳）
 > 并且用 `conclusion == 'success'` 门控，刷新失败时不会把旧产物重新部署一遍。
 
 ### 首次启用（需手动操作一次）
+
+> **首次 push 之前上面这个地址打不开，是预期行为**：`origin/main` 目前只有一个 `Initial commit`，
+> 本地领先 50 多个尚未推送的 commit，Pages 也还没启用。先 push 到 main 并走完下面三步，地址才会有内容。
 
 1. 仓库 **Settings → Pages → Build and deployment → Source** 选 **GitHub Actions**。
 2. 确认 **Settings → Actions → General → Workflow permissions** 允许读写（workflow 内已声明最小权限）。
@@ -244,6 +248,8 @@ fixtures 在 `tests/fixtures/`，是从上游真实响应裁剪出的样本。
 ## 许可
 
 [AGPL-3.0-or-later](./LICENSE)，第三方数据与商标说明见 [NOTICE](./NOTICE)。
+
+源码仓库：<https://github.com/dev-of-mc-yzy15/ChatGPT-IQ-Check>
 
 `public/data/` 下的数据不在本项目 AGPL 再许可范围内，版权归 codexradar.com 所有；本项目仅展示并链接来源。
 本项目不保证数据准确性——分数受样本量、覆盖率、任务集版本影响。与 OpenAI 无关联。
