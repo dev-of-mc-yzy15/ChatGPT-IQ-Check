@@ -13,6 +13,7 @@
   "score_status": "complete",
   "graded_runs_count": 101,
   "source_counts": { "deepswe": 15, "pompeii": 16, "tb4": 14, "science": 19 },
+  "scoring_policy_version": "radar-bench-v2-last3-per-task-equal-weight-150",
   "source_scores": {
     "deepswe": { "score": 105, "coverage": 15, "required_tasks": 15, "graded_runs_count": 21 },
     "pompeii": { "score": 129.183554113511, "coverage": 16, "required_tasks": 16, "graded_runs_count": 22 },
@@ -21,17 +22,43 @@
   },
   "statistics": {
     "sample_count": 101,
+    "cost_basis": "official_standard_api_equivalent; no estimates or claimed cash charges",
     "metrics": {
-      "elapsed_ms": { "mean": 835906.3177022804, "total": 84426538.08793032 },
-      "api_equivalent_usd": { "mean": 3.5784834059405943, "total": 361.426824 }
+      "elapsed_ms": {
+        "total": 84426538.08793032,
+        "mean": 835906.3177022804,
+        "known_total": 84426538.08793032,
+        "known_samples": 101,
+        "missing_samples": 0,
+        "missing_reason": null
+      },
+      "api_equivalent_usd": {
+        "total": 361.426824,
+        "mean": 3.5784834059405943,
+        "known_total": 361.426824,
+        "known_samples": 101,
+        "missing_samples": 0,
+        "missing_reason": null
+      }
     }
   },
+  "statistics_state": "available",
   "detail_metrics": {
     "valid_grade_events": 101,
     "latest_graded_at": "2026-10-23T01:19:00.816645Z",
-    "as_of": "2026-10-23T17:01:10.589Z",
-    "graded_24h": 2,
-    "graded_48h": 2
+    "as_of": "2026-10-30T20:02:15.117Z",
+    "graded_24h": 0,
+    "graded_48h": 0,
+    "metrics": {
+      "total_tokens": { "known_total": 199535548, "known_samples": 101, "missing_samples": 0 },
+      "input_tokens": { "known_total": 197681486, "known_samples": 101, "missing_samples": 0 },
+      "output_tokens": { "known_total": 1854062, "known_samples": 101, "missing_samples": 0 },
+      "cache_tokens": { "known_total": 189787904, "known_samples": 101, "missing_samples": 0 },
+      "reasoning_tokens": { "known_total": 843663, "known_samples": 101, "missing_samples": 0 },
+      "cache_write_tokens": { "known_total": 0, "known_samples": 101, "missing_samples": 0 },
+      "turn_count": { "known_total": 101, "known_samples": 101, "missing_samples": 0 }
+    },
+    "metrics_state": "available"
   },
   "history": {
     "schema": "radar-bench-public-history-v1-150-daily",
@@ -48,5 +75,6 @@
       { "at": "2026-10-17T00:00:00.000Z", "score": 107.33495102837776, "coverage": 64, "required_tasks": 64, "score_status": "complete" },
       { "at": "2026-10-23T00:00:00.000Z", "score": 104.56151352837776, "coverage": 64, "required_tasks": 64, "score_status": "complete" }
     ]
-  }
+  },
+  "history_state": "available"
 }
