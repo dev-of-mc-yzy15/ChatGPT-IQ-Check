@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import type { RadarCandidate } from "../types";
-import { buildDailyGrid, findDegradationPoints, lastPerDay } from "../lib/derive";
+import { buildDailyGrid, deltaClass, deltaMark, findDegradationPoints, lastPerDay, MAX_TREND_SERIES } from "../lib/derive";
 import { fmtDateTime, fmtDelta, fmtEffort, fmtScore } from "../lib/format";
 import { ModelName } from "./ModelName";
 import { candidateKey } from "../../scripts/contract.mjs";
@@ -85,8 +85,8 @@ export function TrendChart({
   const xTicks = [...new Map(xTickTimes.map((t) => [fmtMonthDay(t), t])).values()];
 
   return (
-    <section className="card" aria-label="RadarBench 趋势">
-      <h2>RadarBench 趋势</h2>
+    <section className="card" aria-labelledby="trend-chart-heading">
+      <h2 id="trend-chart-heading">RadarBench 趋势</h2>
       <figure>
         <figcaption className="muted">
           日桶历史（UTC，显示为北京时间）。线在缺口处断开；空心点为 provisional；红点为降智信号（Δ ≤ -5 且覆盖率 ≥ 90%）。
@@ -100,7 +100,7 @@ export function TrendChart({
           style={{ height: "auto", display: "block" }}
         >
           <title>RadarBench 趋势</title>
-          <desc>最多 6 条候选曲线的日桶分数，0 到 {scoreMax}。</desc>
+          <desc>最多 {MAX_TREND_SERIES} 条候选曲线的日桶分数，0 到 {scoreMax}。</desc>
           {ticks.map((t) => (
             <g key={t}>
               <line x1={PAD.left} x2={W - PAD.right} y1={yOf(t, scoreMax)} y2={yOf(t, scoreMax)} stroke="var(--line)" />
@@ -195,7 +195,7 @@ export function TrendChart({
       </div>
       <details>
         <summary>查看数据表</summary>
-        <div className="table-wrap">
+        <div className="table-wrap" role="region" aria-label="曲线数据点（可横向滚动）" tabIndex={0}>
           <table>
             {/* 数据表保留全量行：图上看不见的序列，核对时仍要能查到原始点。 */}
             <caption className="muted">曲线数据点（含已隐藏序列）</caption>
@@ -208,7 +208,9 @@ export function TrendChart({
                     <td>{fmtDateTime(p.at)}</td>
                     <td><ModelName name={c.model} /> · {fmtEffort(c.effort)}</td>
                     <td>{fmtScore(p.score)}</td>
-                    <td className={delta != null && delta < 0 ? "down" : ""}>{fmtDelta(delta)}</td>
+                    <td className={deltaClass(delta)}>
+                      <span aria-hidden="true">{deltaMark(delta)}</span> {fmtDelta(delta)}
+                    </td>
                   </tr>
                 );
               }))}

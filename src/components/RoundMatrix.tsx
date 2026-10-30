@@ -39,8 +39,8 @@ export function RoundMatrix({
   );
   const unknownCostTasks = round.candidates.reduce((sum, c) => sum + (c.totals.cost_unknown_tasks || 0), 0);
   return (
-    <section className="card round-matrix" aria-label="本轮雷达">
-      <h2>本轮雷达</h2>
+    <section className="card round-matrix" aria-labelledby="round-matrix-heading">
+      <h2 id="round-matrix-heading">本轮雷达</h2>
       <p className="muted">
         {round.round.status === "completed" ? "本轮已完成" : `本轮状态：${round.round.status}`} ·{" "}
         {verifiedTasks}/{requiredTasks} 题已核验（{verifiedPct}%） · 本轮用时{" "}
@@ -52,7 +52,8 @@ export function RoundMatrix({
         {(scoreMax / 100).toFixed(2).replace(/0$/, "")} · 满分 {scoreMax} · 数据更新{" "}
         {fmtDateTime(round.round.updated_at)}
       </p>
-      <div className="table-wrap" style={{ overflowX: "auto" }}>
+      {/* 横向滚动容器要可聚焦（role=region + tabindex=0），否则键盘用户够不到溢出部分；overflow 交给 theme.css，不再内联。 */}
+      <div className="table-wrap" role="region" aria-label="分数矩阵（可横向滚动）" tabIndex={0}>
         <table style={{ minWidth: 560 }}>
           <caption className="muted">模型 × 推理档位，缺失档位显示 —</caption>
           <thead>
@@ -82,11 +83,12 @@ export function RoundMatrix({
                           aria-pressed={selectedKey === key}
                           onClick={() => onSelect(key)}
                         >
-                          {/* 可访问名走 sr-only 文本：aria-label 是纯文本，塞不进 lang；只有真实文本节点上的 lang 才让读屏换语音。 */}
+                          {/* 可访问名走 sr-only 文本：aria-label 是纯文本，塞不进 lang；只有真实文本节点上的 lang 才让读屏换语音。
+                              可见分数 aria-hidden：sr-only 里已经带了「N 分」，不屏蔽会被念两遍。 */}
                           <span className="sr-only">
                             <span lang="en">{model}</span> {fmtEffort(effort)} {fmtScore(cell.score)} 分
                           </span>
-                          {fmtScore(cell.score)}
+                          <span aria-hidden="true">{fmtScore(cell.score)}</span>
                         </button>
                       ) : (
                         <span className="muted">—</span>

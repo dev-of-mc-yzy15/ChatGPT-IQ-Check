@@ -65,8 +65,9 @@ describe("TrendChart", () => {
     // 散点数量与数据表行数一致（表里仍是原始行，供核对）
     expect(container.querySelectorAll("tbody tr")).toHaveLength(3);
     // Δ 列首行为空、后续为相邻两点差值：预先算好的差值表必须与逐点前缀算法同值。
+    // 符号跟在数字前：涨跌不再只靠颜色，色觉障碍用户也读得出方向。
     const deltaCells = [...container.querySelectorAll("tbody tr")].map((tr) => tr.lastElementChild?.textContent);
-    expect(deltaCells).toEqual(["—", "-2.0", "-8.0"]);
+    expect(deltaCells).toEqual(["— —", "▼ -2.0", "▼ -8.0"]);
   });
 
   it("renders empty state", () => {

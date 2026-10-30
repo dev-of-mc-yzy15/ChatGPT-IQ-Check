@@ -28,6 +28,8 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       const label = this.props.label ? `${this.props.label}渲染失败` : "页面渲染失败";
+      // 同一屏里可能同时存在几个边界，光叫「重试」语音用户分不清点哪个：可访问名带上自己的 label。
+      const retryName = this.props.label ? `重试${this.props.label}` : "重试页面";
       const detail = this.state.error instanceof Error
         ? this.state.error.message
         : String(this.state.error);
@@ -35,7 +37,11 @@ export class ErrorBoundary extends Component<Props, State> {
         <div className="card" role="alert">
           <strong>{label}</strong>
           <p className="muted">{detail}</p>
-          <button type="button" onClick={() => this.setState({ hasError: false, error: null })}>
+          <button
+            type="button"
+            aria-label={retryName}
+            onClick={() => this.setState({ hasError: false, error: null })}
+          >
             重试
           </button>
         </div>

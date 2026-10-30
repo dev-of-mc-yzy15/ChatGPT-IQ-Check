@@ -143,7 +143,9 @@ describe("RoundMatrix", () => {
     expect(marked).not.toBeNull();
     expect(marked).toHaveTextContent("A");
     // 可访问名仍要能读出档位和分数，不能被 lang 包裹弄丢。
-    expect(cell).toHaveAccessibleName(/A 低 10\.0 分/);
+    // 必须精确相等：可见分数已 aria-hidden，名字里只能出现一次，不能是「A 低 10.0 分 10.0」。
+    expect(cell).toHaveAccessibleName("A 低 10.0 分");
+    expect(cell).toHaveAccessibleName(/^(?!.*\d\.\d.*\d\.\d)/);
   });
 
   it("activates cells from the keyboard with Enter and Space", async () => {

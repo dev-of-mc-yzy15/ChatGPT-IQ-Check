@@ -111,6 +111,35 @@ describe("CandidateTable", () => {
     const cell = screen.getByText(/-5\.0/).closest("td");
     expect(cell).toHaveClass("down");
     expect(cell).toHaveTextContent("1 天");
+    // 方向符号是颜色之外的第二重编码，色觉障碍用户不靠红绿也读得出跌。
+    expect(cell).toHaveTextContent("▼ -5.0");
+  });
+
+  // 涨的一侧同样要有符号，而且必须是 .up 不是 .down。
+  it("renders a positive delta with the up class and an up arrow", () => {
+    const rising = mk({
+      history: [
+        { at: "2026-10-22T00:00:00Z", score: 100, coverage: 64, required_tasks: 64, score_status: "complete" },
+        { at: "2026-10-23T00:00:00Z", score: 103, coverage: 64, required_tasks: 64, score_status: "complete" },
+      ],
+    });
+    render(<CandidateTable rows={[rising]} selectedKeys={[]} onToggle={() => {}} scoreMax={150} />);
+    const cell = screen.getByText(/\+3\.0/).closest("td");
+    expect(cell).toHaveClass("up");
+    expect(cell).not.toHaveClass("down");
+    expect(cell).toHaveTextContent("▲ +3.0");
+  });
+
+  // 没有历史（delta 为 null）时不谎报方向：符号位与数字位都是破折号。
+  it("renders an em dash instead of an arrow when there is no history", () => {
+    const { container } = render(
+      <CandidateTable rows={[mk({ history: [] })]} selectedKeys={[]} onToggle={() => {}} scoreMax={150} />,
+    );
+    // 符号在 aria-hidden 的 span 里，getByText 拿不到拼接串，直接取最后一列。
+    const cell = container.querySelector("tbody tr td:last-child")!;
+    expect(cell).toHaveTextContent("— —");
+    expect(cell).not.toHaveClass("down");
+    expect(cell).not.toHaveClass("up");
   });
 });
 

@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { act, fireEvent, render, renderHook, screen } from "@testing-library/react";
+import { act, fireEvent, render, renderHook, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "../src/App";
 import { useTheme } from "../src/lib/useTheme";
+import type { StatusData } from "../src/types";
 
 vi.mock("../src/data/loader", () => {
   const ok = <T,>(data: T) => ({ data, error: null });
@@ -144,11 +145,69 @@ describe("App", () => {
 
     const retried = vi.mocked(slotStatus);
     const before = retried.mock.calls.length;
-    await userEvent.click(screen.getByRole("button", { name: "重试" }));
+    // 可访问名带槽名：同屏可能有多个「重试」，只喊「重试」定不到唯一一个。
+    await userEvent.click(screen.getByRole("button", { name: "重试数据状态" }));
     expect(retried.mock.calls.length).toBe(before + 1);
     // 重试后状态槽恢复：横幅（role=status）重新出现
     expect(await screen.findByRole("status")).toHaveTextContent(/数据检查于/);
     expect(screen.queryByText(/数据状态加载失败/)).toBeNull();
+  });
+
+  // 两次重试并发：先发后到的慢响应不许盖掉后发先到的结果（useSlot 的单调请求号）。
+  it("keeps the newest result when two retries overlap", async () => {
+    const { slotStatus } = await import("../src/data/loader");
+    const retried = vi.mocked(slotStatus);
+    retried.mockResolvedValueOnce({ data: null, error: "status.json 加载失败：HTTP 500" });
+    render(<App />);
+
+    await screen.findByText(/数据状态加载失败/);
+    const btn = screen.getByRole("button", { name: "重试数据状态" });
+    const callsBefore = retried.mock.calls.length;
+
+    const statusBase: StatusData = {
+      checked_at: "2026-10-24T00:00:00Z",
+      ok: true,
+      benchmark: "b",
+      candidates_ok: 1,
+      candidates_total: 1,
+      binding_total: 1,
+      reused_count: 0,
+      missing_count: 0,
+      round_ok: true,
+      latest_graded_at: "2026-10-23T00:00:00Z",
+      min_latest: "2026-10-23T00:00:00Z",
+      stale_count: 0,
+      round_updated_at: "2026-10-23T10:43:22Z",
+      stale_days: 0,
+      errors: [],
+    };
+    // 第一次点的结果故意慢 80ms，第二次点的结果立刻给：慢的必然后到。
+    retried.mockImplementationOnce(
+      () =>
+        new Promise((resolve) =>
+          setTimeout(() => resolve({ data: { ...statusBase, checked_at: "2026-10-20T00:00:00Z" }, error: null }), 80),
+        ),
+    );
+    retried.mockImplementationOnce(async () => ({
+      data: { ...statusBase, checked_at: "2026-10-24T12:00:00Z" },
+      error: null,
+    }));
+
+    // 必须包在同一个 act 里连点两次：retry 会把槽清成 loading，中间 flush 后按钮就被换掉了。
+    act(() => {
+      fireEvent.click(btn);
+      fireEvent.click(btn);
+    });
+    expect(retried.mock.calls.length).toBe(callsBefore + 2);
+
+    // 第二次的响应立即生效（12:00Z = 北京时间 20:00）。
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("2026-10-24 20:00"));
+    // 再等慢的那发落地：它必须被丢弃，画面不许退回 10-20。
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 150));
+    });
+    expect(screen.getByRole("status")).toHaveTextContent("2026-10-24 20:00");
+    expect(screen.getByRole("status")).not.toHaveTextContent("2026-10-20");
   });
 
   // P1-13：role=tab 必须真的绑到一个 role=tabpanel 的节点，而不是光有个 role。
@@ -191,6 +250,15 @@ describe("App", () => {
     fireEvent.keyDown(aboutTab, { key: "ArrowLeft" });
     expect(trendTab).toHaveAttribute("aria-selected", "true");
     expect(roundTab).toHaveAttribute("aria-selected", "false");
+
+    // Home / End 直取首尾（ARIA tabs 键盘约定），焦点同样跟着走。
+    fireEvent.keyDown(trendTab, { key: "End" });
+    expect(aboutTab).toHaveAttribute("aria-selected", "true");
+    expect(aboutTab).toHaveFocus();
+
+    fireEvent.keyDown(aboutTab, { key: "Home" });
+    expect(roundTab).toHaveAttribute("aria-selected", "true");
+    expect(roundTab).toHaveFocus();
   });
 
   // P1-14：页脚不能再吐原始 ISO，必须走 fmtDateTime。
@@ -210,6 +278,30 @@ describe("App", () => {
     const section = screen.getByRole("heading", { name: "关于" }).closest("section")!;
     expect(section).toHaveTextContent(/8 题基准测试/);
     expect(section).not.toHaveTextContent(/64 题/);
+  });
+
+  // AGPL-3.0 §13：与本程序网络交互的访问者必须拿得到 Corresponding Source。
+  // 关于面板与页脚各留一条入口，两条都得指向源码仓库，且都开新窗口。
+  it("links to the source repository from the about panel and the footer", async () => {
+    render(<App />);
+    await screen.findByRole("heading", { name: /降智雷达/ });
+    await userEvent.click(screen.getByRole("tab", { name: /关于/ }));
+
+    const repo = "https://github.com/dev-of-mc-yzy15/ChatGPT-IQ-Check";
+    const section = screen.getByRole("heading", { name: "关于" }).closest("section")!;
+    const inAbout = within(section).getByRole("link", { name: /源代码/ });
+    expect(inAbout).toHaveAttribute("href", repo);
+    expect(inAbout).toHaveAttribute("target", "_blank");
+    expect(inAbout).toHaveAttribute("rel", "noreferrer");
+
+    // 页脚常驻，任意 tab 都可见：不能只在「关于」里给一次。
+    const footer = document.querySelector("footer")!;
+    expect(within(footer).getByRole("link", { name: /源代码/ })).toHaveAttribute("href", repo);
+
+    // 全站不许出现别的源码地址，也不许只有一处入口。
+    const all = screen.getAllByRole("link", { name: /源代码/ });
+    expect(all.length).toBeGreaterThanOrEqual(2);
+    for (const link of all) expect(link).toHaveAttribute("href", repo);
   });
 });
 
@@ -242,7 +334,9 @@ describe("主题与 theme-color", () => {
   it("syncs meta[theme-color] with the active theme", async () => {
     render(<App />);
     await screen.findByRole("heading", { name: /降智雷达/ });
-    const toggle = screen.getByRole("button", { name: "切换主题" });
+    // WCAG 2.5.3：可访问名必须含可见文本（此处可见「深色」），只写「切换主题」喊不出来。
+    const toggle = screen.getByRole("button", { name: /切换主题：/ });
+    expect(toggle).toHaveAccessibleName(/切换主题：(深色|浅色)/);
 
     const light = document.documentElement.dataset.theme;
     expect(meta()?.getAttribute("content")).toBeTruthy();

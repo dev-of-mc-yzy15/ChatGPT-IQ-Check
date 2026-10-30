@@ -43,6 +43,23 @@ export function utcDayKey(at: string): string {
 
 export const DEGRADE_THRESHOLD = -5;
 export const MIN_COVERAGE_RATIO = 0.9;
+/** 趋势最多同时画几条曲线：默认选中、上限闸门、TrendControls 的默认 max 共用一个源，别再各自写 6。 */
+export const MAX_TREND_SERIES = 6;
+
+/**
+ * Δ 的方向符号——颜色之外的第二重编码，色觉障碍用户不靠红绿也能读出涨跌。
+ * null / 非有限值 / 0 都给破折号：没有方向可言。
+ */
+export function deltaMark(delta: number | null): "▼" | "▲" | "—" {
+  if (delta == null || !Number.isFinite(delta) || delta === 0) return "—";
+  return delta < 0 ? "▼" : "▲";
+}
+
+/** 与 deltaMark 配套的类名：跌了 .down，涨了 .up，没方向则不着色。 */
+export function deltaClass(delta: number | null): string {
+  if (delta == null || !Number.isFinite(delta) || delta === 0) return "";
+  return delta < 0 ? "down" : "up";
+}
 
 /**
  * 按 UTC 日去重，同一天只留最后一条（与 buildDailyGrid 的后写覆盖语义一致），

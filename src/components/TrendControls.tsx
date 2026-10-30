@@ -1,5 +1,6 @@
 import type { RadarCandidate } from "../types";
 import { fmtEffort, fmtScore } from "../lib/format";
+import { MAX_TREND_SERIES } from "../lib/derive";
 import { ModelName } from "./ModelName";
 import { candidateKey } from "../../scripts/contract.mjs";
 
@@ -7,7 +8,7 @@ export function TrendControls({
   rows,
   selectedKeys,
   onToggle,
-  max = 6,
+  max = MAX_TREND_SERIES,
 }: {
   rows: RadarCandidate[];
   selectedKeys: string[];
@@ -15,8 +16,8 @@ export function TrendControls({
   max?: number;
 }) {
   return (
-    <section className="card" aria-label="曲线选择">
-      <h2>曲线选择</h2>
+    <section className="card" aria-labelledby="trend-controls-heading">
+      <h2 id="trend-controls-heading">曲线选择</h2>
       <p className="muted">最多 {max} 条；当前 {selectedKeys.length} / {rows.length}</p>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
         {rows.map((r) => {

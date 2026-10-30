@@ -61,7 +61,7 @@ describe("ErrorBoundary", () => {
       </ErrorBoundary>,
     );
     expect(screen.getByRole("alert")).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: "重试" }));
+    await userEvent.click(screen.getByRole("button", { name: "重试块" }));
     expect(screen.getByRole("alert")).toBeInTheDocument();
   });
 });

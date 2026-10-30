@@ -20,8 +20,8 @@ export function RoundDetail({
   const byId = new Map(candidate.tasks.map((t) => [t.task_id, t]));
   const animation = candidate.animation;
   return (
-    <section className="card" aria-label="本轮详情">
-      <h2>
+    <section className="card" aria-labelledby="round-detail-heading">
+      <h2 id="round-detail-heading">
         <ModelName name={candidate.model} /> · {fmtEffort(candidate.effort)} · {fmtScore(candidate.score)}
       </h2>
       {round && (
@@ -35,7 +35,7 @@ export function RoundDetail({
         {fmtSeconds(candidate.totals.seconds)} · 已知成本 {fmtMoney(candidate.totals.cost_usd)}
         {candidate.totals.cost_unknown_tasks > 0 ? `（${candidate.totals.cost_unknown_tasks} 题成本未知）` : ""}
       </p>
-      <div className="table-wrap">
+      <div className="table-wrap" role="region" aria-label="逐题结果（可横向滚动）" tabIndex={0}>
         <table>
           <caption className="muted">{tasks.length} 题逐项结果</caption>
           <thead>

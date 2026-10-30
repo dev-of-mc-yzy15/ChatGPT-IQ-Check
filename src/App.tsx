@@ -8,7 +8,7 @@ import {
 } from "react";
 import { slotRadarBench, slotRound, slotStatus, type Slot } from "./data/loader";
 import type { StatusData } from "./types";
-import { topCandidates } from "./lib/derive";
+import { MAX_TREND_SERIES, topCandidates } from "./lib/derive";
 import { candidateKey } from "../scripts/contract.mjs";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { FreshnessBanner } from "./components/FreshnessBanner";
@@ -30,22 +30,29 @@ const TABS: readonly (readonly [Tab, string])[] = [
   ["about", "关于"],
 ];
 
-/** 一槽一状态：loading / 失败 / 成功互不影响，重试只重试自己。 */
+/**
+ * 一槽一状态：loading / 失败 / 成功互不影响，重试只重试自己。
+ * 单调请求号：只有最新一次请求的落点能写状态。连点重试会并发两个请求，
+ * 慢的先生后到，不挡住就会覆盖掉快的那个，画面回滚成旧数据。
+ */
 function useSlot<T>(load: () => Promise<Slot<T>>) {
   const [slot, setSlot] = useState<Slot<T>>({ data: null, error: null });
   const [loading, setLoading] = useState(true);
+  const seq = useRef(0);
 
   const run = useCallback(() => {
-    let alive = true;
+    const id = ++seq.current;
     setLoading(true);
     setSlot({ data: null, error: null });
     load().then((next) => {
-      if (!alive) return;
+      // 已经不是最新一发了：结果是过期的，直接丢掉。
+      if (seq.current !== id) return;
       setSlot(next);
       setLoading(false);
     });
     return () => {
-      alive = false;
+      // 卸载或重跑：让在途请求失效，避免卸载后回写。
+      seq.current++;
     };
   }, [load]);
 
@@ -68,7 +75,8 @@ function SlotFallback({
       <strong>{label}加载失败</strong>
       <p className="muted">{error}</p>
       <p className="muted">其余数据不受影响，可单独重试。</p>
-      <button type="button" onClick={onRetry}>
+      {/* 可访问名带上槽名：同屏可能出现好几个「重试」，只靠可见文本语音用户分不清要点哪个。 */}
+      <button type="button" aria-label={`重试${label}`} onClick={onRetry}>
         重试
       </button>
     </div>
@@ -93,13 +101,18 @@ export default function App() {
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-  // 左右方向键在 tablist 内环绕切换，焦点跟着走（ARIA tabs 键盘约定）。
+  // 方向键在 tablist 内环绕切换，焦点跟着走；Home/End 直取首尾（ARIA tabs 键盘约定）。
   const onTabKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
-    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+    const { key } = event;
+    if (key !== "ArrowLeft" && key !== "ArrowRight" && key !== "Home" && key !== "End") return;
     event.preventDefault();
     const index = TABS.findIndex(([key]) => key === tab);
-    const delta = event.key === "ArrowRight" ? 1 : -1;
-    const next = (index + delta + TABS.length) % TABS.length;
+    const next =
+      key === "Home"
+        ? 0
+        : key === "End"
+          ? TABS.length - 1
+          : (index + (key === "ArrowRight" ? 1 : -1) + TABS.length) % TABS.length;
     setTab(TABS[next][0]);
     tabRefs.current[next]?.focus();
   };
@@ -110,11 +123,11 @@ export default function App() {
   // 题数取数据里的 task_count（上游会随任务集轮换），文案不许写常量。
   const taskCount = roundData?.round.task_count ?? null;
 
-  // 趋势默认选中：等雷达数据到位后取一次前 6 名。
+  // 趋势默认选中：等雷达数据到位后取一次前 N 名。
   useEffect(() => {
     if (!bench) return;
     setSelectedKeys((prev) =>
-      prev.length > 0 ? prev : topCandidates(bench.candidates, 6).map((c) => candidateKey(c.model, c.effort)),
+      prev.length > 0 ? prev : topCandidates(bench.candidates, MAX_TREND_SERIES).map((c) => candidateKey(c.model, c.effort)),
     );
   }, [bench]);
 
@@ -130,7 +143,11 @@ export default function App() {
 
   const toggleKey = (key: string) =>
     setSelectedKeys((prev) =>
-      prev.includes(key) ? prev.filter((k) => k !== key) : prev.length >= 6 ? prev : [...prev, key],
+      prev.includes(key)
+        ? prev.filter((k) => k !== key)
+        : prev.length >= MAX_TREND_SERIES
+          ? prev
+          : [...prev, key],
     );
 
   return (
@@ -270,19 +287,33 @@ export default function App() {
               {bench && (
                 <p>
                   RadarBench 分数是{taskCount != null ? `${taskCount} 题` : ""}基准测试（
-                  {bench.benchmark}）的加权分数（0–{bench.score_max}），不是心理学 IQ。
+                  <span lang="en">{bench.benchmark}</span>）的加权分数（0–{bench.score_max}），不是心理学 IQ。
                 </p>
               )}
               <p>降智信号：相邻日桶分数下降 ≥ 5 分，且覆盖率 ≥ 90%、评分状态为 complete。</p>
               <p>本项目与 OpenAI 无关联；数据版权归原站所有。</p>
-              <p>源码许可：AGPL-3.0-or-later。</p>
+              {/* AGPL-3.0 §13：与本程序网络交互的访问者必须拿得到 Corresponding Source。 */}
+              <p>
+                源码许可以 AGPL-3.0-or-later 发布，
+                <a
+                  href="https://github.com/dev-of-mc-yzy15/ChatGPT-IQ-Check"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  源代码在此
+                </a>
+                。
+              </p>
             </section>
           )}
         </div>
 
         <footer className="muted" style={{ fontSize: 12 }}>
           数据检查于 {statusData ? fmtDateTime(statusData.checked_at) : "（未取到）"} · 北京时间（UTC+8）· 来源
-          codexradar.com · 非官方项目
+          codexradar.com · 非官方项目 ·{" "}
+          <a href="https://github.com/dev-of-mc-yzy15/ChatGPT-IQ-Check" target="_blank" rel="noreferrer">
+            源代码
+          </a>
         </footer>
       </main>
     </>

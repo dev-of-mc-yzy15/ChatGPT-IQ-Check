@@ -1,6 +1,6 @@
 import { Fragment, useMemo, useState } from "react";
 import type { RadarCandidate, ScoreStatus } from "../types";
-import { computeDelta, sortCandidates, type SortKey } from "../lib/derive";
+import { computeDelta, deltaClass, deltaMark, MAX_TREND_SERIES, sortCandidates, type SortKey } from "../lib/derive";
 import { fmtDateTime, fmtDelta, fmtEffort, fmtPercent, fmtScore } from "../lib/format";
 import { ModelName } from "./ModelName";
 import { candidateKey } from "../../scripts/contract.mjs";
@@ -49,15 +49,15 @@ export function CandidateTable({
   };
 
   return (
-    <section className="card" aria-label="RadarBench 候选">
-      <h2>RadarBench 候选</h2>
+    <section className="card" aria-labelledby="candidate-table-heading">
+      <h2 id="candidate-table-heading">RadarBench 候选</h2>
       <label className="muted">
         {/* label 已经提供可访问名，再挂 aria-label 读屏会念两遍。 */}
         搜索模型或档位 <input value={query} onChange={(e) => setQuery(e.target.value)} />
       </label>
-      <div className="table-wrap">
+      <div className="table-wrap" role="region" aria-label="候选表格（可横向滚动）" tabIndex={0}>
         <table style={{ minWidth: 760 }}>
-          <caption className="muted">最多选 6 条曲线；分数为 0–{scoreMax} 的基准测试分数</caption>
+          <caption className="muted">最多选 {MAX_TREND_SERIES} 条曲线；分数为 0–{scoreMax} 的基准测试分数</caption>
           <thead>
             <tr>
               <th scope="col">选择</th>
@@ -114,8 +114,9 @@ export function CandidateTable({
                   </td>
                   <td>{r.graded_runs_count}</td>
                   <td>{fmtDateTime(r.latest_graded_at)}</td>
-                  <td className={delta != null && delta < 0 ? "down" : ""}>
-                    {fmtDelta(delta)}
+                  {/* 只靠颜色编码涨跌，色觉障碍用户读不出方向：符号先上，颜色退化成冗余提示。 */}
+                  <td className={deltaClass(delta)}>
+                    <span aria-hidden="true">{deltaMark(delta)}</span> {fmtDelta(delta)}
                     {days != null ? ` / ${days} 天` : ""}
                   </td>
                 </tr>
