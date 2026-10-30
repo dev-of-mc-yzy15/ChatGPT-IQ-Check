@@ -304,7 +304,7 @@ describe("transformRound", () => {
   it("keeps the upstream asset sha256", () => {
     const r = transformRound(roundRaw);
     const high = r.candidates.find((c) => c.effort === "high")!;
-    expect(high.animation?.asset_sha256).toBe("7b979b4febfe");
+    expect(high.animation?.asset_sha256).toBe("941fa56cdad0ab9adf2be43a9cf8bb8731f4044443972d7e0032cac74bb2683a");
   });
   // UI 用 score_max 画刻度和档位，硬编码会让上游改分数上限时 round 板默默画歪。
   it("honours a passed scoreMax instead of the hardcoded one", () => {

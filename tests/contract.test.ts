@@ -31,6 +31,26 @@ describe("strictNumber", () => {
   it("keeps real zero", () => {
     expect(strictNumber(0, "x")).toBe(0);
   });
+  // Number(true) === 1、Number(false) === 0：布尔以前带着 1/0 一路流到落盘数据和 UI。
+  it("rejects booleans instead of coercing to 1/0", () => {
+    expect(() => strictNumber(true, "x")).toThrow(/number \(got boolean\)/);
+    expect(() => strictNumber(false, "x")).toThrow(/number \(got boolean\)/);
+  });
+  // Number([5]) === 5 会静默通过；Number([5, 6]) 只是碰巧 NaN 才被 finite 拦住。
+  it("rejects arrays and plain objects", () => {
+    expect(() => strictNumber([5], "x")).toThrow(/number \(got array\)/);
+    expect(() => strictNumber([5, 6], "x")).toThrow(/number \(got array\)/);
+    expect(() => strictNumber({}, "x")).toThrow(/number \(got object\)/);
+  });
+  it("rejects bigint and functions", () => {
+    expect(() => strictNumber(5n, "x")).toThrow(/number \(got bigint\)/);
+    expect(() => strictNumber(() => 5, "x")).toThrow(/number \(got function\)/);
+  });
+  // 守卫：上游确实有给数字字符串的字段，字符串兼容不能被一刀切掉。
+  it("still accepts a padded numeric string and a real number", () => {
+    expect(strictNumber(" 12 ", "x")).toBe(12);
+    expect(strictNumber(12, "x")).toBe(12);
+  });
 });
 
 describe("candidate keys", () => {
@@ -100,18 +120,42 @@ describe("双端契约一致", () => {
     expect(() => libValidateRadarBench(radar, { minCandidates: 30 })).toThrow(/too few candidates/);
   });
 
+  const roundEnvelope = (partial: unknown) => ({
+    schema_version: 1,
+    fetch_id: "fixture-fetch",
+    generated_at: "2026-10-24T00:00:00.000Z",
+    checked_at: "2026-10-24T00:00:00.000Z",
+    ...(partial as object),
+  });
+
   it("round shape 接受 score 为 null 的候选（一个任务都没打分）", () => {
     const emptyResults = { ...roundRaw, round: { ...roundRaw.round, results: { "gpt-6-astra|high": {} } } };
     const partial = transformRound(emptyResults);
     expect(partial.candidates[0].score).toBeNull();
-    const withEnvelope = {
-      schema_version: 1,
-      fetch_id: "fixture-fetch",
-      generated_at: "2026-10-24T00:00:00.000Z",
-      checked_at: "2026-10-24T00:00:00.000Z",
+    expect(() => assertRoundShape(roundEnvelope(partial))).not.toThrow();
+  });
+
+  // score 与 score_max 以前各校验各的、从不相比较：999/150 能整份过校验落盘，
+  // 前端进度条和环形图再按 999/150 画出去。
+  it("round shape 拒绝 score 超过 score_max 的候选", () => {
+    const partial = transformRound(roundRaw);
+    expect(partial.candidates[0].score).toBeGreaterThan(0);
+    const over = {
       ...partial,
+      candidates: [{ ...partial.candidates[0], score: 999, score_max: 150 }],
     };
-    expect(() => assertRoundShape(withEnvelope)).not.toThrow();
+    expect(() => assertRoundShape(roundEnvelope(over))).toThrow(/<= score_max 150/);
+  });
+
+  // 守卫：score 为 null 时 null > x 恒假，上限比较不能把「没打分」误判成越界。
+  it("round shape 在 score 为 null 时不受上限比较误伤", () => {
+    const emptyResults = { ...roundRaw, round: { ...roundRaw.round, results: { "gpt-6-astra|high": {} } } };
+    const partial = transformRound(emptyResults);
+    const nulled = {
+      ...partial,
+      candidates: [{ ...partial.candidates[0], score: null, score_max: 150 }],
+    };
+    expect(() => assertRoundShape(roundEnvelope(nulled))).not.toThrow();
   });
 });
 
@@ -129,11 +173,40 @@ describe("strictNumber optional", () => {
 describe("assertStatusShape 新分类字段", () => {
   const base = () => read("public/data/status.json");
 
-  it("accepts the shipped legacy status.json without the new keys", () => {
-    const status = base();
-    // 线上真实文件就是旧格式：严格必填会直接把现有数据打成坏数据。
-    expect(status.reused_count).toBeUndefined();
-    expect(() => assertStatusShape(status)).not.toThrow();
+  // 旧格式样本内联构造，不读仓库存量文件：status.json 会被管道重新抓取成新格式，
+  // 拿它当"旧格式"证据，数据一刷新这条就跟着变红。新增键在 assertStatusShape 里
+  // 全是 optional，旧格式必须永远合法。
+  const legacyStatus = () => ({
+    checked_at: "2026-10-24T00:00:00.000Z",
+    ok: true,
+    benchmark: "codexradar",
+    candidates_ok: 3,
+    candidates_total: 3,
+    round_ok: true,
+    latest_graded_at: null,
+    round_updated_at: null,
+    stale_days: 3,
+    errors: [],
+  });
+
+  it("accepts a legacy status.json without the new keys", () => {
+    const legacy = legacyStatus();
+    // 样本必须真的是旧格式：本轮新增键一个都不能混进来。
+    for (const key of [
+      "binding_total",
+      "reused_count",
+      "missing_count",
+      "stale_count",
+      "min_latest",
+    ]) {
+      expect(legacy).not.toHaveProperty(key);
+    }
+    expect(() => assertStatusShape(legacy)).not.toThrow();
+  });
+
+  it("accepts the shipped status.json", () => {
+    // 仓库现在发布的那份（新格式）同样要过，新旧两条路径都钉住。
+    expect(() => assertStatusShape(read("public/data/status.json"))).not.toThrow();
   });
 
   it("validates the new keys once they exist", () => {

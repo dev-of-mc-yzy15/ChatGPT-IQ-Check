@@ -41,8 +41,34 @@ export function parseCandidateKey(key) {
  * @returns {never}
  */
 function fail(path, expectation, value) {
-  const shown = value === "" ? '""' : JSON.stringify(value);
+  const shown = value === "" ? '""' : safeJson(value);
   throw new Error(path + ": expected " + expectation + ", got " + (shown ?? String(value)));
+}
+
+/**
+ * 错误现场序列化。bigint 会让 JSON.stringify 直接抛 TypeError，循环引用同理；
+ * 校验器不能因为"展示坏值"自己先炸掉，退回 String()。
+ * @param {unknown} value
+ * @returns {string | undefined}
+ */
+function safeJson(value) {
+  if (typeof value === "bigint") return String(value) + "n";
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * 入参类型名，供错误文案定位。typeof 对数组和普通对象都给 "object"，
+ * 光看 typeof 分不出是哪个，故显式点名数组。
+ * @param {unknown} value
+ * @returns {string}
+ */
+function describeType(value) {
+  if (Array.isArray(value)) return "array";
+  return typeof value;
 }
 
 /**
@@ -64,6 +90,12 @@ export function strictNumber(
   if (value == null || value === "") {
     if (nullable) return null;
     return fail(path, "number", value);
+  }
+  // 类型闸门。Number() 什么都硬转：true 变 1、false 变 0、[5] 变 5，转出来的数字
+  // 会一路流到落盘数据和 UI，只看 isFinite 拦不住。仅放行 number 与非空字符串
+  // （上游确有给数字字符串的字段）。
+  if (typeof value !== "number" && typeof value !== "string") {
+    return fail(path, "number (got " + describeType(value) + ")", value);
   }
   const n = Number(value);
   if (!Number.isFinite(n)) return fail(path, "finite number", value);
@@ -276,8 +308,14 @@ function assertRoundCandidate(candidate, index) {
   strictString(candidate.model, path + ".model");
   strictString(candidate.effort, path + ".effort");
   // 一个任务都没打分时 score 合法为 null，不能一刀切要求数字。
-  strictNumber(candidate.score, path + ".score", { nullable: true, min: 0 });
-  strictNumber(candidate.score_max, path + ".score_max", { min: 1 });
+  const score = strictNumber(candidate.score, path + ".score", { nullable: true, min: 0 });
+  const scoreMax = strictNumber(candidate.score_max, path + ".score_max", { min: 1 });
+  // 与雷达侧对齐：分数不得超过它自报的上限，否则前端照 999/150 把进度条和环形图
+  // 画出去。比较用上面规范化后的数字，别回头读原始字段（可能是字符串）。
+  // score 为 null 时 null > x 恒假，必须显式 != null 守卫，不能只靠比较。
+  if (score != null && scoreMax != null && score > scoreMax) {
+    fail(path + ".score", "<= score_max " + scoreMax, score);
+  }
   strictEnum(candidate.score_status, path + ".score_status", ROUND_SCORE_STATUS);
   strictNumber(candidate.scored_tasks, path + ".scored_tasks", { min: 0 });
   strictNumber(candidate.total_tasks, path + ".total_tasks", { min: 0 });
