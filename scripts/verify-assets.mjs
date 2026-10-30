@@ -70,9 +70,29 @@ function parseArgs(argv) {
   return { root, json };
 }
 
+/** 上游产物的扩展名；本地落盘时去掉那个 `.txt`，托管才会按 `text/html` 回。 */
+const UPSTREAM_SUFFIX = ".html.txt";
+const LOCAL_SUFFIX = ".html";
+
+/**
+ * 上游 basename → 本地 `public/assets/` 里的真实文件名。
+ *
+ * `src/lib/asset.ts` 的 `localAssetName` 是同规则副本（那条走 TS 构建，这条跑在 node 下
+ * 无法直接 import），改一处必须同步改另一处，两侧各有测试钉住。
+ * @param {string} name
+ * @returns {string}
+ */
+function localAssetName(name) {
+  return name.endsWith(UPSTREAM_SUFFIX) ? name.slice(0, -UPSTREAM_SUFFIX.length) + LOCAL_SUFFIX : name;
+}
+
 /**
  * 上游 `asset_url` 是站点根绝对路径（`/assets/x.html.txt`），也可能是完整 URL、
- * 带 query/fragment 的串。取 basename 后拼到本项目自己的 assets/ 下。
+ * 带 query/fragment 的串。取 basename、映射成本地文件名，再拼到本项目自己的 assets/ 下。
+ *
+ * 映射是必须的：`round.json` 是上游快照，里面记的永远是上游的 `.html.txt`；
+ * 本地按 `.html` 落盘才能让托管回 `text/html`、iframe 才敢用 `src`（见 lib/asset.ts）。
+ * 少了这一步，闸门会拿上游名字去比本地文件，34 条全部 missing。
  * @param {unknown} url
  * @returns {string | null}
  */
@@ -80,7 +100,7 @@ function assetName(url) {
   if (typeof url !== "string") return null;
   const path = url.split(/[?#]/)[0] ?? "";
   const name = path.split(BACKSLASH).join("/").split("/").filter(Boolean).pop();
-  return name ?? null;
+  return name === undefined ? null : localAssetName(name);
 }
 
 /**

@@ -19,8 +19,14 @@ import { fileURLToPath } from "node:url";
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const script = resolve(repoRoot, "scripts/verify-assets.mjs");
 
+/**
+ * `NAME` 是上游 `asset_url` 里的 basename，带 `.html.txt`——`round.json` 是上游快照，永远长这样。
+ * `LOCAL_NAME` 是它落在 `public/assets/` 的真实文件名（去掉 `.txt`，托管才会回 `text/html`）。
+ * 夹具必须照这个真实形状造：数据写上上游名、文件落本地名。少了任何一半都测不到那条映射。
+ */
 const NAME =
   "degradation-codex-205416a78068-6a72489e707c-gpt-6.1-sol-low-69d67bc51db3.html.txt";
+const LOCAL_NAME = NAME.slice(0, -".txt".length);
 const BODY = "<html><body>pelican</body></html>\n";
 
 const sha256 = (text: string) => createHash("sha256").update(text).digest("hex");
@@ -31,7 +37,7 @@ async function makeRepo(assetBody: string | null): Promise<string> {
   await mkdir(join(root, "public", "data"), { recursive: true });
   await mkdir(join(root, "public", "assets"), { recursive: true });
   if (assetBody !== null) {
-    await writeFile(join(root, "public", "assets", NAME), assetBody);
+    await writeFile(join(root, "public", "assets", LOCAL_NAME), assetBody);
   }
   return root;
 }
@@ -102,7 +108,7 @@ describe("verify-assets", () => {
     expect(r.code).toBe(1);
     // 必须点名是哪个文件，否则 CI 日志里只知道「有东西不符」，定位还得靠猜。
     expect(r.stdout).toContain("mismatch");
-    expect(r.stdout).toContain(NAME);
+    expect(r.stdout).toContain(LOCAL_NAME);
     // 期望值与实际值都要打出来，才够人肉复核。
     expect(r.stdout).toContain(sha256(BODY));
     expect(r.stdout).toContain(sha256(`${BODY} `));
@@ -116,7 +122,7 @@ describe("verify-assets", () => {
 
     expect(r.code).toBe(1);
     expect(r.stdout).toContain("missing");
-    expect(r.stdout).toContain(NAME);
+    expect(r.stdout).toContain(LOCAL_NAME);
   });
 
   it("asset_sha256 为 null 即 unpinned 并退出 1", async () => {
@@ -128,19 +134,19 @@ describe("verify-assets", () => {
 
     expect(r.code).toBe(1);
     expect(r.stdout).toContain("unpinned");
-    expect(r.stdout).toContain(NAME);
+    expect(r.stdout).toContain(LOCAL_NAME);
   });
 
   it("数据未引用的多余文件只在孤儿段报告，不判失败", async () => {
     const root = await repo();
     await writeRound(root, [{ asset_url: `/assets/${NAME}`, asset_sha256: sha256(BODY) }]);
-    await writeFile(join(root, "public", "assets", "degradation-stray.html.txt"), "stray");
+    await writeFile(join(root, "public", "assets", "degradation-stray.html"), "stray");
 
     const r = run(root);
 
     expect(r.code).toBe(0);
     expect(r.stdout).toContain("orphan");
-    expect(r.stdout).toContain("degradation-stray.html.txt");
+    expect(r.stdout).toContain("degradation-stray.html");
     expect(r.stdout).toContain("ok=1 missing=0 mismatch=0 unpinned=0 orphan=1");
   });
 
@@ -156,6 +162,38 @@ describe("verify-assets", () => {
     // Node 的 MODULE_NOT_FOUND 栈里也带 "assets" 字样，会假绿。
     expect(r.stdout + r.stderr).toContain("不存在");
     expect(r.stdout + r.stderr).toContain("assets");
+  });
+
+  it("上游 .html.txt 映射到本地 .html 文件校验", async () => {
+    // 这是当前约定的核心：round.json 是上游快照、asset_url 永远是 .html.txt，
+    // 而本地按 .html 落盘才能让托管回 text/html（iframe 要 src 加载）。
+    // 少了这条映射，闸门会拿上游名找本地文件，34 条全部假 missing。
+    const root = await repo();
+    await writeRound(root, [{ asset_url: `/assets/${NAME}`, asset_sha256: sha256(BODY) }]);
+
+    const r = run(root);
+
+    expect(r.code).toBe(0);
+    // 命中项必须指向真实存在的那个文件，否则按输出去修会找不到。
+    expect(r.stdout).toContain(`ok        public/assets/${LOCAL_NAME}`);
+    // 映射后的名字才算命中：`.txt` 没去干净的话这里会落成 missing。
+    expect(r.stdout).toContain("missing=0");
+    expect(r.stdout).toContain("mismatch=0");
+    // 多余的非预期后缀不应被造出来。
+    expect(r.stdout).not.toContain(".html.txt");
+  });
+
+  it("上游本来就不带 .txt 时原样使用，不被改写成 .html", async () => {
+    // 反向保护：只有末尾 .html.txt 才映射。上游哪天换命名（比如已经是 .html），
+    // 无脑截断会把名字改坏。
+    const root = await repo();
+    const plain = NAME.slice(0, -".txt".length);
+    await writeRound(root, [{ asset_url: `/assets/${plain}`, asset_sha256: sha256(BODY) }]);
+
+    const r = run(root);
+
+    expect(r.code).toBe(0);
+    expect(r.stdout).toContain(`ok        public/assets/${plain}`);
   });
 
   it("哈希比较不分大小写", async () => {
