@@ -40,6 +40,10 @@
       }
     }
   ],
+  "candidates": [
+    { "model": "gpt-6-astra", "effort": "high" },
+    { "model": "gpt-6-astra", "effort": "low" }
+  ],
   "tasks": [
     {
       "id": "local-reasoning:candy-cross-shape",
@@ -316,7 +320,8 @@
           "bytes": 19605,
           "sha256": "941fa56cdad0ab9adf2be43a9cf8bb8731f4044443972d7e0032cac74bb2683a",
           "download": "gpt-6-astra-high-pelican.html"
-        }
+        },
+        "asset_sha256": "941fa56cdad0ab9adf2be43a9cf8bb8731f4044443972d7e0032cac74bb2683a"
       }
     },
     "totals": {

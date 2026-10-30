@@ -13,6 +13,8 @@ Fields kept although they look redundant, and why:
 - `round.sample.json` `judge.criteria` (4 rows) and `scoring_policy` — the upstream scorer's own rubric and weighting. They are data, not documentation: the criteria `max` bounds (25/25/30/20) have to stay consistent with `judge.scores`, and `scoring_policy.total_max` with `score_max`.
 - `round.sample.json` `round.totals` — upstream per-candidate completion counters (`items_expected` / `items_scored` / `complete`). Kept because downstream has to be able to tell a fully scored candidate from a partial one.
 - `animation_task.content_sha256` — full 64-hex digest (later trimmed to `d1d1d34e` in an earlier revision, which is the same value truncated).
+- `round.sample.json` `candidates` — mirrors the two `round.results` keys so the candidate set is readable without walking `results`; `transformRound` reads `results`, not this array, so the two must be edited together.
+- `round.sample.json` animation-level `asset_sha256` — same digest as `asset.sha256`, under the field name `RoundAnimation` uses after the transform. It is what `grep -c asset_sha256 tests/fixtures/round.sample.json` counts against the number of animation objects.
 
 ## `asset.sha256` must stay
 
