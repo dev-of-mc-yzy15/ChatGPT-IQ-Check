@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>鹈鹕骑自行车</title>
+  <style>
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; display: grid; place-items: center;
+      overflow: hidden; background: #dff6f6;
+      font-family: system-ui, -apple-system, "Noto Sans SC", sans-serif;
+    }
+    .scene { width: min(100vw, 1100px); aspect-ratio: 16 / 10; position: relative; }
+    svg { width: 100%; height: 100%; display: block; }
+    .title { position: absolute; left: 7%; top: 7%; color: #174d57; letter-spacing: .08em; }
+    .title h1 { margin: 0; font-size: clamp(20px, 3.2vw, 38px); font-weight: 800; }
+    .title p { margin: .35em 0 0; font-size: clamp(10px, 1.2vw, 14px); opacity: .7; }
+    .bob { animation: bob 1.2s ease-in-out infinite; transform-origin: 50% 80%; }
+    .wheel { transform-box: fill-box; transform-origin: center; animation: spin 1.2s linear infinite; }
+    .pedal { transform-box: fill-box; transform-origin: center; animation: spin 1.2s linear infinite; }
+    .leg { transform-box: fill-box; transform-origin: 0 0; animation: pedal 1.2s ease-in-out infinite; }
+    .leg.back { animation-delay: -.6s; }
+    .wing { transform-box: fill-box; transform-origin: 70% 20%; animation: flap 1.2s ease-in-out infinite; }
+    .cloud { animation: drift 18s linear infinite; }
+    .cloud.slow { animation-duration: 27s; animation-delay: -10s; }
+    .grass { animation: sway 2s ease-in-out infinite alternate; transform-origin: bottom; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+    @keyframes pedal { 0%,100% { transform: rotate(25deg); } 50% { transform: rotate(-28deg); } }
+    @keyframes flap { 0%,100% { transform: rotate(5deg); } 50% { transform: rotate(-13deg); } }
+    @keyframes drift { from { transform: translateX(-30px); } to { transform: translateX(70px); } }
+    @keyframes sway { from { transform: rotate(-4deg); } to { transform: rotate(5deg); } }
+  </style>
+</head>
+<body>
+  <main class="scene" aria-label="一只鹈鹕骑着自行车沿海边前进的动画">
+    <div class="title"><h1>海风单车日</h1><p>pelican on the move</p></div>
+    <svg viewBox="0 0 1100 690" role="img" aria-labelledby="desc">
+      <title id="desc">鹈鹕骑自行车的二维动画</title>
+      <defs>
+        <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#a9e8ee"/><stop offset="1" stop-color="#effbdc"/></linearGradient>
+        <linearGradient id="sea" x2="0" y2="1"><stop stop-color="#68cdd0"/><stop offset="1" stop-color="#2e9cac"/></linearGradient>
+        <filter id="shadow"><feGaussianBlur stdDeviation="8"/></filter>
+      </defs>
+      <rect width="1100" height="690" fill="url(#sky)"/>
+      <circle cx="880" cy="150" r="73" fill="#ffd66b" opacity=".9"/>
+      <g class="cloud" fill="#fff" opacity=".72">
+        <path d="M90 195c-24 0-43-15-43-34s18-34 41-34c9-25 34-42 63-42 34 0 61 25 65 57 5-3 11-4 17-4 23 0 41 16 41 36s-18 21-41 21H90z"/>
+      </g>
+      <g class="cloud slow" fill="#fff" opacity=".55" transform="translate(680 48) scale(.7)">
+        <path d="M90 195c-24 0-43-15-43-34s18-34 41-34c9-25 34-42 63-42 34 0 61 25 65 57 5-3 11-4 17-4 23 0 41 16 41 36s-18 21-41 21H90z"/>
+      </g>
+      <path d="M0 405 Q150 365 300 405T600 405T900 405T1200 405V690H0Z" fill="url(#sea)"/>
+      <path d="M0 443 Q110 420 220 443T440 443T660 443T880 443T1100 443" fill="none" stroke="#b8f0e6" stroke-width="7" opacity=".75"/>
+      <path d="M0 510 Q140 480 280 510T560 510T840 510T1120 510" fill="none" stroke="#8be1d7" stroke-width="5" opacity=".6"/>
+      <ellipse cx="550" cy="580" rx="295" ry="25" fill="#206e79" opacity=".24" filter="url(#shadow)"/>
+      <g class="grass" fill="none" stroke="#398e74" stroke-width="5" stroke-linecap="round">
+        <path d="M125 585q-8-39-27-59M125 585q7-39 25-61M125 585q-1-45 2-72"/>
+        <path d="M965 590q-8-39-27-59M965 590q7-39 25-61M965 590q-1-45 2-72"/>
+      </g>
+      <g class="bob">
+        <!-- bicycle -->
+        <g fill="none" stroke="#173f50" stroke-width="8" stroke-linejoin="round">
+          <g class="wheel" stroke="#f6fbeb" stroke-width="7"><circle cx="385" cy="532" r="75"/><path d="M385 457v150M310 532h150M332 479l106 106M438 479L332 585" stroke="#8cced0" stroke-width="3"/></g>
+          <g class="wheel" stroke="#f6fbeb" stroke-width="7"><circle cx="760" cy="532" r="75"/><path d="M760 457v150M685 532h150M707 479l106 106M813 479L707 585" stroke="#8cced0" stroke-width="3"/></g>
+          <path d="M385 532h198l-64-112 116 112h125L635 399l-52 133M583 420h-28"/>
+          <path d="M582 532l-24-48M558 484h-32M635 399l-22-25M613 374h-31"/>
+        </g>
+        <circle class="pedal" cx="583" cy="532" r="16" fill="none" stroke="#f7bf57" stroke-width="6"/>
+        <g class="leg" fill="none" stroke="#e68f52" stroke-width="12" stroke-linecap="round"><path d="M583 532l-34 31"/><path d="M549 563l-12 0"/></g>
+        <g class="leg back" fill="none" stroke="#e68f52" stroke-width="12" stroke-linecap="round"><path d="M583 532l35-29"/><path d="M618 503l13 0"/></g>
+        <!-- pelican body and head -->
+        <path d="M525 352c-26-47-12-101 43-120 58-21 113 14 117 70 4 53-34 91-83 94-31 3-59-14-77-44z" fill="#f7f4e8" stroke="#173f50" stroke-width="7"/>
+        <ellipse cx="590" cy="323" rx="65" ry="50" fill="#fffdf2" stroke="#173f50" stroke-width="7"/>
+        <path class="wing" d="M560 350q-69 19-74 84 43 14 91-20 31-22 28-58" fill="#d9eee3" stroke="#173f50" stroke-width="7"/>
+        <path d="M640 274q37-23 77-7l-22 24q-30 23-61 10z" fill="#e9955d" stroke="#173f50" stroke-width="7"/>
+        <circle cx="641" cy="254" r="7" fill="#173f50"/>
+        <path d="M632 238q-20-39-6-61 25 11 26 49" fill="#efaf58" stroke="#173f50" stroke-width="7"/>
+        <path d="M655 235q14-38 36-42 8 28-20 53" fill="#efaf58" stroke="#173f50" stroke-width="7"/>
+        <path d="M615 303q-18 13-35 7" fill="none" stroke="#e9955d" stroke-width="6" stroke-linecap="round"/>
+        <!-- handlebar grip --> <circle cx="581" cy="374" r="7" fill="#e9955d"/>
+      </g>
+      <path d="M70 625H1030" stroke="#d4a267" stroke-width="15" stroke-linecap="round" opacity=".7"/>
+    </svg>
+  </main>
+</body>
+</html>

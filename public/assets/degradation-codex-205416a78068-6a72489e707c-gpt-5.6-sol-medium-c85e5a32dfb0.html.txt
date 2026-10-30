@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>鹈鹕的单车旅行</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #20343a;
+      --cream: #fff4d8;
+      --orange: #ef7b45;
+      --coral: #e75d49;
+      --teal: #1e7e83;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { height: 100%; }
+
+    body {
+      margin: 0;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background: #d9f3f2;
+      font-family: ui-rounded, "Nunito", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    .scene {
+      width: 100vw;
+      height: 100vh;
+      min-height: 420px;
+      display: block;
+    }
+
+    .wheel, .pedal { transform-box: fill-box; transform-origin: center; }
+    .wheel { animation: spin 1.05s linear infinite; }
+    .pedal { animation: spin 1.05s linear infinite; }
+    .rider { animation: bob .525s ease-in-out infinite alternate; }
+    .wing { transform-box: fill-box; transform-origin: 30% 18%; animation: wing .525s ease-in-out infinite alternate; }
+    .tail { transform-box: fill-box; transform-origin: 80% 50%; animation: tail .7s ease-in-out infinite alternate; }
+    .leg-a { transform-box: fill-box; transform-origin: 50% 10%; animation: legA 1.05s ease-in-out infinite; }
+    .leg-b { transform-box: fill-box; transform-origin: 50% 10%; animation: legB 1.05s ease-in-out infinite; }
+    .clouds-near { animation: drift 18s linear infinite; }
+    .clouds-far { animation: drift 31s linear infinite; }
+    .road-marks { animation: road 1.05s linear infinite; }
+    .grass { animation: road 2.5s linear infinite; }
+    .scarf-tip { transform-box: fill-box; transform-origin: left center; animation: scarf .7s ease-in-out infinite alternate; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes bob { to { transform: translateY(-5px) rotate(-.5deg); } }
+    @keyframes wing { to { transform: rotate(-7deg) translateY(-2px); } }
+    @keyframes tail { to { transform: rotate(6deg); } }
+    @keyframes legA { 0%, 100% { transform: rotate(17deg); } 50% { transform: rotate(-18deg); } }
+    @keyframes legB { 0%, 100% { transform: rotate(-18deg); } 50% { transform: rotate(17deg); } }
+    @keyframes drift { to { transform: translateX(-960px); } }
+    @keyframes road { to { transform: translateX(-180px); } }
+    @keyframes scarf { to { transform: rotate(8deg) scaleX(.92); } }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-play-state: paused !important; }
+    }
+  </style>
+</head>
+<body>
+  <svg class="scene" viewBox="0 0 1200 700" role="img" aria-labelledby="title desc" preserveAspectRatio="xMidYMid slice">
+    <title id="title">鹈鹕骑自行车的二维动画</title>
+    <desc id="desc">一只戴着红围巾的鹈鹕骑着绿色自行车，车轮旋转，云朵、草地和道路向后移动。</desc>
+
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#9edee4" />
+        <stop offset="1" stop-color="#e5f8ee" />
+      </linearGradient>
+      <linearGradient id="road" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#617277" />
+        <stop offset="1" stop-color="#3d4e53" />
+      </linearGradient>
+      <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur stdDeviation="8" />
+      </filter>
+      <g id="cloud">
+        <path d="M15 42C2 42-2 23 12 18c4-19 31-22 40-6 16-9 36 1 35 18 17 1 18 25 1 25H17C6 55 3 45 15 42Z" fill="#fff" opacity=".82" />
+      </g>
+      <g id="tuft" stroke="#3d9366" stroke-width="5" stroke-linecap="round">
+        <path d="M0 22Q2 7 4 1M4 22Q13 9 15 4M3 22Q-5 10-7 6" />
+      </g>
+    </defs>
+
+    <rect width="1200" height="700" fill="url(#sky)" />
+    <circle cx="1005" cy="120" r="58" fill="#ffe89d" opacity=".88" />
+    <circle cx="1005" cy="120" r="78" fill="none" stroke="#ffe89d" stroke-width="5" opacity=".28" />
+
+    <g class="clouds-far" opacity=".6">
+      <use href="#cloud" x="150" y="90" transform="scale(.7)" />
+      <use href="#cloud" x="760" y="185" transform="scale(.55)" />
+      <use href="#cloud" x="1250" y="90" transform="scale(.7)" />
+      <use href="#cloud" x="1860" y="185" transform="scale(.55)" />
+    </g>
+    <g class="clouds-near">
+      <use href="#cloud" x="390" y="105" />
+      <use href="#cloud" x="1110" y="60" transform="scale(.85)" />
+      <use href="#cloud" x="1350" y="105" />
+      <use href="#cloud" x="2070" y="60" transform="scale(.85)" />
+    </g>
+
+    <path d="M0 420Q140 350 290 405T590 390T885 398T1200 370V545H0Z" fill="#8fc99b" />
+    <path d="M0 455Q180 405 335 452T660 440T975 448T1200 420V550H0Z" fill="#62aa78" />
+    <rect y="505" width="1200" height="195" fill="url(#road)" />
+    <path d="M0 517H1200" stroke="#eaf3d7" stroke-width="10" />
+    <g class="grass">
+      <use href="#tuft" x="80" y="485" /><use href="#tuft" x="265" y="489" />
+      <use href="#tuft" x="465" y="486" /><use href="#tuft" x="705" y="490" />
+      <use href="#tuft" x="900" y="485" /><use href="#tuft" x="1085" y="489" />
+      <use href="#tuft" x="1265" y="489" />
+    </g>
+    <g class="road-marks" stroke="#f8e8a8" stroke-width="9" stroke-linecap="round" opacity=".9">
+      <path d="M-80 625h92m88 0h92m88 0h92m88 0h92m88 0h92m88 0h92m88 0h92m88 0h92m88 0h92m88 0h92" />
+    </g>
+
+    <ellipse cx="602" cy="619" rx="310" ry="25" fill="#1d3034" opacity=".22" filter="url(#shadow)" />
+
+    <!-- 自行车 -->
+    <g stroke-linecap="round" stroke-linejoin="round">
+      <g class="wheel">
+        <circle cx="385" cy="545" r="112" fill="#f7fbef" fill-opacity=".12" stroke="#20343a" stroke-width="12" />
+        <circle cx="385" cy="545" r="96" fill="none" stroke="#d3e4dc" stroke-width="3" />
+        <g stroke="#92a7a4" stroke-width="3">
+          <path d="M385 449v192M289 545h192M317 477l136 136M453 477L317 613" />
+        </g>
+        <circle cx="385" cy="545" r="10" fill="#20343a" />
+      </g>
+      <g class="wheel">
+        <circle cx="823" cy="545" r="112" fill="#f7fbef" fill-opacity=".12" stroke="#20343a" stroke-width="12" />
+        <circle cx="823" cy="545" r="96" fill="none" stroke="#d3e4dc" stroke-width="3" />
+        <g stroke="#92a7a4" stroke-width="3">
+          <path d="M823 449v192M727 545h192M755 477l136 136M891 477L755 613" />
+        </g>
+        <circle cx="823" cy="545" r="10" fill="#20343a" />
+      </g>
+
+      <g fill="none" stroke="#1e7e83" stroke-width="15">
+        <path d="M385 545l142-16 83-137 53 153H385l105-153h120" />
+        <path d="M663 545l160 0-68-190" />
+      </g>
+      <path d="M735 355h72" fill="none" stroke="#20343a" stroke-width="12" />
+      <path d="M467 386h62" fill="none" stroke="#20343a" stroke-width="15" />
+      <circle cx="663" cy="545" r="25" fill="#f4b942" stroke="#20343a" stroke-width="7" />
+      <g class="pedal">
+        <path d="M663 545l44 22M663 545l-44-22" stroke="#20343a" stroke-width="8" />
+        <path d="M697 572h28M601 518h28" stroke="#20343a" stroke-width="8" />
+      </g>
+      <path d="M610 392l46-5" stroke="#20343a" stroke-width="15" />
+    </g>
+
+    <!-- 骑车的鹈鹕 -->
+    <g class="rider">
+      <g class="leg-b" fill="none" stroke="#e8a54d" stroke-width="19" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M571 403Q603 455 625 507L615 525" />
+      </g>
+      <g class="leg-a" fill="none" stroke="#f1b75d" stroke-width="21" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M618 406Q657 460 692 505L705 524" />
+      </g>
+
+      <g class="tail">
+        <path d="M471 331q-76 15-107-17 49-16 107-13Z" fill="#dce8d7" stroke="#20343a" stroke-width="6" />
+        <path d="M469 317q-72-7-91-42 57-2 104 19Z" fill="#f7f0dc" stroke="#20343a" stroke-width="6" />
+      </g>
+
+      <path d="M472 267Q431 316 463 382q33 62 119 42 72-17 60-100-10-70-83-83-55-10-87 26Z" fill="#f7f0dc" stroke="#20343a" stroke-width="7" />
+      <path d="M494 387q58 42 131 4-10 32-54 39-49 8-77-43Z" fill="#d5e1d1" opacity=".9" />
+
+      <g class="wing">
+        <path d="M505 292q-45 53-5 101 43 42 101-4-70-8-96-97Z" fill="#e4ead9" stroke="#20343a" stroke-width="7" />
+        <path d="M509 337q32 21 75 20M518 359q29 20 64 18" fill="none" stroke="#a8bcae" stroke-width="5" />
+      </g>
+
+      <path d="M555 262q-13-65 20-101 24-27 76-13 50 14 57 66 5 43-34 76-32 27-79 15Z" fill="#fff8e8" stroke="#20343a" stroke-width="7" />
+      <path d="M574 181q8-33 42-40 37-7 67 22-61-21-109 18Z" fill="#eef1da" />
+      <circle cx="644" cy="184" r="13" fill="#20343a" />
+      <circle cx="648" cy="180" r="4" fill="white" />
+
+      <!-- 鹈鹕标志性的长嘴和喉囊 -->
+      <path d="M674 202q91 4 170 32-69 10-155 6Z" fill="#f1b75d" stroke="#20343a" stroke-width="7" />
+      <path d="M686 239q65 2 150-3-61 76-142 44-17-7-8-41Z" fill="#ef8b58" stroke="#20343a" stroke-width="7" />
+      <path d="M710 254q52 7 99-5-46 35-96 14Z" fill="#f7a869" opacity=".7" />
+
+      <!-- 围巾 -->
+      <path d="M549 245q65 29 131 4" fill="none" stroke="#e75d49" stroke-width="18" />
+      <g class="scarf-tip">
+        <path d="M559 251q-57 12-102-19l-53 20q60 40 155 25Z" fill="#e75d49" stroke="#20343a" stroke-width="6" />
+        <path d="M432 242l-9 29M458 235l-7 38" stroke="#ffc06f" stroke-width="5" />
+      </g>
+
+      <!-- 翅尖握住车把 -->
+      <path d="M588 342q56 16 108 18 48 2 75 27" fill="none" stroke="#f7f0dc" stroke-width="28" stroke-linecap="round" />
+      <path d="M588 342q56 16 108 18 48 2 75 27" fill="none" stroke="#20343a" stroke-width="7" stroke-linecap="round" />
+      <path d="M761 382q12 4 20 15" fill="none" stroke="#e8a54d" stroke-width="13" stroke-linecap="round" />
+    </g>
+
+    <g transform="translate(74 88)">
+      <text x="0" y="0" fill="#20343a" font-size="31" font-weight="800" letter-spacing="3">鹈鹕的单车旅行</text>
+      <path d="M2 18h224" stroke="#ef7b45" stroke-width="7" stroke-linecap="round" />
+      <text x="2" y="51" fill="#315b60" font-size="16" font-weight="600" letter-spacing="2">迎着风，慢慢骑</text>
+    </g>
+  </svg>
+</body>
+</html>

@@ -221,13 +221,17 @@ npm run refresh -- --force  # 内容没变也强制重写（重置时间戳）
 }
 ```
 
-### 动画资产：已记录，尚未渲染
+### 动画资产：已本地化并渲染
 
-`asset_url` / `asset_sha256` 目前只是被记下来，界面还没有播放动画的地方。要接线得先补齐三件事：
+上游给每个候选都配了一段降智动画——自包含 HTML（内联脚本，形如 `/assets/degradation-….html.txt`）。这些产物**不是本项目的代码**：版权归 codexradar.com，见 [NOTICE](./NOTICE)。
 
-- `public/assets/` **还不存在**：产物必须先下载进去，不要在浏览器里直接 iframe 上游地址。
-- 下载后先比对 `asset_sha256`，不匹配就当这次抓取失败，别把错文件当资产。
-- 路径经 `urlFor()` 解析（Pages 的 base 是 `/ChatGPT-IQ-Check/`）；iframe 用 `sandbox="allow-scripts"`，**不要**再加 `allow-same-origin`——同源会让 sandbox 的约束基本失效。
+- 34 个产物已逐个比对上游 `asset_sha256` 后落在 `public/assets/`，随站点一起发布。**不在浏览器里直接 iframe 上游地址**：上游给的是站点根绝对路径，与 Pages 的 base `/ChatGPT-IQ-Check/` 冲突，直连必然 34/34 全 404。
+- 路径由 `src/lib/asset.ts` 的 `assetUrl()` 剥成 basename，再经 `urlFor()` 拼上 base；上游路径前缀一律丢掉。
+- 详情页用 `<details>` 折叠，**展开时才取回并注入**，34 个候选不会一起抢首屏带宽。
+- 落盘后缀是 `.html.txt`，静态托管按扩展名回 `text/plain`——iframe 直接给 `src` 只会显示源码。所以先 `fetch` 取回文本、再走 `srcDoc`，由浏览器强制按 HTML 解析（产物自包含：内联脚本 + 绝对 URL 字体，无存储 API、无 `top`/`parent` 依赖，适合沙箱）。
+- iframe 用 `sandbox="allow-scripts"`，**不要**再加 `allow-same-origin`——动画靠内联 `<script>` 跑，而一旦同源，sandbox 的隔离基本失效。
+- 接新批次时：先下载，逐个比对 `asset_sha256`；不等就重抓，仍不等就记进失败清单，别把错文件硬塞进目录。文件名保持上游 basename。
+- 详情页同时显示校验和的前 8 位（`<code>` 可选中复制，悬停看全文），方便人肉核对产物与数据是否对得上。
 
 ## 降智信号判定
 
@@ -251,5 +255,5 @@ fixtures 在 `tests/fixtures/`，是从上游真实响应裁剪出的样本。
 
 源码仓库：<https://github.com/dev-of-mc-yzy15/ChatGPT-IQ-Check>
 
-`public/data/` 下的数据不在本项目 AGPL 再许可范围内，版权归 codexradar.com 所有；本项目仅展示并链接来源。
+`public/data/` 下的数据与 `public/assets/` 下的动画产物均不在本项目 AGPL 再许可范围内，版权归 codexradar.com 所有；本项目仅展示并链接来源。
 本项目不保证数据准确性——分数受样本量、覆盖率、任务集版本影响。与 OpenAI 无关联。

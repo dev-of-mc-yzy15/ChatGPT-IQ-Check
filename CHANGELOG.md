@@ -54,6 +54,7 @@
 - 48h 与 7d 两级新鲜度告警分级，顺带收口主题切换与错误边界（`05b92d2`）。
 - 修回被误塞进 JSX 属性区的注释（`ThemeToggle.tsx`；`78634ab`）。
 - 时间戳、`asset.sha256`、分数上限等 round 侧静默漂移收口（`13707fd`、`24685d8`、`eee61a9`）。
+- 上游降智动画资产落地并渲染：34 个产物按 `asset_sha256` 逐个校验后存入 `public/assets/`，`assetUrl()` 剥掉上游根绝对前缀再经 `urlFor()` 拼 base，详情页折叠、展开才取回并经 `srcDoc` 注入（`.html.txt` 的 `text/plain` 不会渲染为 HTML），`sandbox="allow-scripts"` 且不含 `allow-same-origin`，旁边显示校验和前 8 位（`src/lib/asset.ts`、`RoundDetail.tsx`、`public/assets/`）。
 
 ### 测试与工程
 
@@ -70,8 +71,6 @@
 
 ## 已知问题
 
-- **上游动画资产接入即 404。** 上游 `asset_url` 是站点根绝对路径（形如 `/assets/degradation-….html.txt`），而 `public/assets/` 目录并不存在，直接渲染会 34/34 全部打空。接线前必须先下载产物落进 `public/assets/`、按 `asset_sha256` 校验、经 `urlFor()` 解析（Pages 的 base 是 `/ChatGPT-IQ-Check/`），iframe 用 `sandbox="allow-scripts"` 且不要加 `allow-same-origin`。出处：`docs/quality-remediation/REMEDIATION-PLAN-REVIEWED.md` §5、README「动画资产：已记录，尚未渲染」。
-- **`asset_sha256` 尚无 UI 消费方。** 该字段已随 `eee61a9` 落进类型、契约与转换层，`round.json` 里也有真实值，但界面还没有播放动画的位置，校验和目前只是被记下来。
 - **`npm audit` 在本机镜像下不可用。** 当前 registry 为 `https://registry.npmmirror.com/`，其未实现该 API，实测返回 `404 [NOT_IMPLEMENTED] /-/npm/v1/security/* not implemented yet`。需显式打公网：`npm audit --registry=https://registry.npmjs.org/`（实跑结果为 0 漏洞）。
 - **上游 round 数据本身仍陈旧。** 移交前虽已重抓一次（`813e6d0`，`checked_at` 刷新至 2026-10-30），但那只是刷新了检查时间：`round_updated_at` 仍停在 `2026-10-24T14:30:39Z`（约 6.2 天），`min_latest` 是 `2026-10-21T02:39:21Z`（约 9 天），`stale_count` 为 **28/34**。上游迟迟不发新的评分轮次，改代码解决不了，得等上游或把刷新频率与告警阈值一起重估。
 - **`derive` 三处缺陷在测试里已标注待修，代码尚未跟进。** `lastPerDay` 末尾用字符串字典序排序（`a.at < b.at`）而非 `Date.parse` 比较，混合时区会倒挂并漏报降智；`buildDailyGrid` 同日取值依赖数组位置，且 1970 坏点没有跨度上限；`Math.min(...spread)` 在 6 条曲线各带一个 1970 坏点时抛 `RangeError`。出处：`6ca9920` 的 commit message 与 `tests/derive.test.ts`。

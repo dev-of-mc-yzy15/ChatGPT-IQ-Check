@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>鹈鹕骑自行车</title>
+  <style>
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #dff4f2; }
+    svg { display: block; width: min(100vw, 1100px); height: auto; }
+    .wheel, .pedals { transform-box: fill-box; transform-origin: center; animation: spin 1.2s linear infinite; }
+    .rider { animation: bob .6s ease-in-out infinite alternate; }
+    .wing { transform-box: fill-box; transform-origin: 80% 25%; animation: flap .6s ease-in-out infinite alternate; }
+    .cloud-a { animation: drift 16s linear infinite; }
+    .cloud-b { animation: drift 21s linear infinite; }
+    .road-lines { animation: road 1.2s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes bob { to { transform: translateY(4px); } }
+    @keyframes flap { to { transform: rotate(-11deg); } }
+    @keyframes drift { to { transform: translateX(-90px); } }
+    @keyframes road { to { transform: translateX(-130px); } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; } }
+  </style>
+</head>
+<body>
+  <svg viewBox="0 0 1100 650" role="img" aria-labelledby="title desc" xmlns="http://www.w3.org/2000/svg">
+    <title id="title">鹈鹕骑自行车的二维动画</title>
+    <desc id="desc">一只戴着蓝色头盔的鹈鹕骑着红色自行车，车轮和踏板转动，云朵与路面向后移动。</desc>
+    <defs>
+      <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#a9dfee"/><stop offset="1" stop-color="#ecf9ed"/></linearGradient>
+      <pattern id="spokes" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M50 0v100M0 50h100M15 15l70 70M85 15 15 85" stroke="#8bafba" stroke-width="2"/></pattern>
+    </defs>
+    <rect width="1100" height="650" fill="url(#sky)"/>
+    <circle cx="890" cy="115" r="58" fill="#ffe19a"/>
+    <g fill="#fff" opacity=".9">
+      <g class="cloud-a"><ellipse cx="260" cy="125" rx="82" ry="24"/><circle cx="227" cy="106" r="27"/><circle cx="275" cy="102" r="35"/></g>
+      <g class="cloud-b"><ellipse cx="790" cy="185" rx="70" ry="20"/><circle cx="766" cy="170" r="24"/><circle cx="806" cy="166" r="29"/></g>
+    </g>
+    <path d="M0 455q180-80 360 0t370-12q190-82 370 2v205H0Z" fill="#a9d5b2"/>
+    <path d="M0 501q230-58 470 0t630-10v159H0Z" fill="#86bf9c"/>
+    <path d="M0 520h1100v130H0Z" fill="#5d777d"/>
+    <path d="M0 520h1100" stroke="#f5e8c9" stroke-width="7"/>
+    <g class="road-lines" stroke="#f6e5ad" stroke-width="8" stroke-linecap="round"><path d="M-80 585h68m62 0h68m62 0h68m62 0h68m62 0h68m62 0h68m62 0h68m62 0h68m62 0h68m62 0h68m62 0h68"/></g>
+    <ellipse cx="550" cy="527" rx="310" ry="22" fill="#28474b" opacity=".17"/>
+
+    <!-- Wheels and bicycle frame -->
+    <g class="wheel"><circle cx="330" cy="471" r="105" fill="#e9f6f1" stroke="#243d4b" stroke-width="15"/><circle cx="330" cy="471" r="87" fill="url(#spokes)" stroke="#96b7bd" stroke-width="3"/><circle cx="330" cy="471" r="11" fill="#243d4b"/></g>
+    <g class="wheel"><circle cx="780" cy="471" r="105" fill="#e9f6f1" stroke="#243d4b" stroke-width="15"/><circle cx="780" cy="471" r="87" fill="url(#spokes)" stroke="#96b7bd" stroke-width="3"/><circle cx="780" cy="471" r="11" fill="#243d4b"/></g>
+    <g fill="none" stroke="#e4564c" stroke-width="15" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M330 471 440 326 563 471 330 471 492 351 563 471 698 335 780 471"/>
+    </g>
+    <path d="m698 335-17-45h-39m56 45 38-7" fill="none" stroke="#293f4a" stroke-width="13" stroke-linecap="round"/>
+    <path d="M404 320h77" stroke="#293f4a" stroke-width="15" stroke-linecap="round"/>
+    <circle cx="563" cy="471" r="22" fill="#f1bd59" stroke="#293f4a" stroke-width="6"/>
+    <g class="pedals" stroke="#293f4a" stroke-width="9" stroke-linecap="round"><path d="M563 438v66M544 438h38m-38 66h38"/></g>
+
+    <!-- Pelican -->
+    <g class="rider">
+      <path d="M440 327q-58-31-79 18 15 60 104 29Z" fill="#f0f4e8" stroke="#45606a" stroke-width="5"/>
+      <path d="M436 338q-10 62 39 72l74 25" fill="none" stroke="#e0a75b" stroke-width="18" stroke-linecap="round"/>
+      <path d="m548 435 18 30" fill="none" stroke="#e0a75b" stroke-width="18" stroke-linecap="round"/>
+      <path d="M458 340q30 54 104 55l44-72-67-60-72 9Z" fill="#f8f6ea" stroke="#45606a" stroke-width="5"/>
+      <g class="wing"><path d="M489 309q-22 12-7 39 27 32 84 15l-6-57q-38-23-71 3Z" fill="#e5e9de" stroke="#45606a" stroke-width="5"/><path d="M496 341q35 25 65 11" fill="none" stroke="#bcc8c0" stroke-width="4" stroke-linecap="round"/></g>
+      <path d="M540 303q54-11 104 31l49 10" fill="none" stroke="#e0a75b" stroke-width="16" stroke-linecap="round"/>
+      <path d="m689 344 20-7" fill="none" stroke="#e0a75b" stroke-width="15" stroke-linecap="round"/>
+      <path d="M489 278q-38-31-28-92 6-64 57-80 63-19 91 44 17 39-3 98l-56 65Z" fill="#faf8e9" stroke="#45606a" stroke-width="5"/>
+      <path d="M574 200q63 12 171 47-54 19-164 12Z" fill="#f5c15e" stroke="#8f623e" stroke-width="5" stroke-linejoin="round"/>
+      <path d="M580 241q81 17 164 6-25 78-103 69-45-5-61-75Z" fill="#edaa72" stroke="#8f623e" stroke-width="5" stroke-linejoin="round"/>
+      <path d="M598 265q55 12 103-2" fill="none" stroke="#d58d63" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="559" cy="183" r="13" fill="#fff"/><circle cx="563" cy="185" r="6" fill="#263c48"/>
+      <path d="M466 167q8-80 84-79 48 0 65 66l-31 13q-54-30-118 0Z" fill="#4289a8" stroke="#2f6176" stroke-width="5"/>
+      <path d="M464 163q80-29 145 1" fill="none" stroke="#2f6176" stroke-width="10" stroke-linecap="round"/>
+      <path d="M482 95q-10 13-8 34" fill="none" stroke="#77b4cb" stroke-width="5" stroke-linecap="round"/>
+    </g>
+    <g fill="#fff" opacity=".85"><circle cx="90" cy="479" r="5"/><circle cx="127" cy="466" r="3"/><circle cx="997" cy="476" r="5"/></g>
+  </svg>
+</body>
+</html>
