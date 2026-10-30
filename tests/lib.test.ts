@@ -149,6 +149,22 @@ describe("transformSummary 的静默归零", () => {
   });
 });
 
+describe("round 身份串", () => {
+  // A-5 回归：key 用 split("|") 切，model 自带管道符时 effort 会被切错。
+  it("parses a model containing a pipe without losing the effort", () => {
+    const round = transformRound({
+      round: {
+        id: "r",
+        results: { "odd|model|high": { t1: { status: "ok", reward: 1 } } },
+      },
+      tasks: [{ id: "t1", weight: 1 }],
+      taskset: { task_count: 1 },
+    });
+    expect(round.candidates[0].model).toBe("odd|model");
+    expect(round.candidates[0].effort).toBe("high");
+  });
+});
+
 describe("mergeRadarBench + validateRadarBench", () => {
   it("merges summaries in binding order", () => {
     const b = transformBinding(bindingRaw);

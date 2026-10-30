@@ -1,6 +1,7 @@
 import type { RadarCandidate } from "../types";
 import { fmtEffort, fmtScore } from "../lib/format";
 import { ModelName } from "./ModelName";
+import { candidateKey } from "../../scripts/contract.mjs";
 
 export function TrendControls({
   rows,
@@ -19,7 +20,7 @@ export function TrendControls({
       <p className="muted">最多 {max} 条；当前 {selectedKeys.length} / {rows.length}</p>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
         {rows.map((r) => {
-          const key = r.model + "|" + r.effort;
+          const key = candidateKey(r.model, r.effort);
           const checked = selectedKeys.includes(key);
           const disabled = !checked && selectedKeys.length >= max;
           return (

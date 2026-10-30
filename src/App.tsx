@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { loadAll } from "./data/loader";
 import type { RadarBenchData, RoundData, StatusData } from "./types";
 import { topCandidates } from "./lib/derive";
+import { candidateKey } from "../scripts/contract.mjs";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { FreshnessBanner } from "./components/FreshnessBanner";
 import { RoundDetail } from "./components/RoundDetail";
@@ -30,9 +31,7 @@ export default function App() {
       .then((loaded) => {
         setData(loaded);
         setSelectedKeys(
-          topCandidates(loaded.radarBench.candidates, 6).map(
-            (c) => c.model + "|" + c.effort,
-          ),
+          topCandidates(loaded.radarBench.candidates, 6).map((c) => candidateKey(c.model, c.effort)),
         );
       })
       .catch((e) => setError(String(e?.message ?? e)));
@@ -41,17 +40,13 @@ export default function App() {
   const selectedCandidate = useMemo(() => {
     if (!data || !selectedRound) return null;
     return (
-      data.round.candidates.find(
-        (c) => c.model + "|" + c.effort === selectedRound,
-      ) ?? null
+      data.round.candidates.find((c) => candidateKey(c.model, c.effort) === selectedRound) ?? null
     );
   }, [data, selectedRound]);
 
   const trendCandidates = useMemo(() => {
     if (!data) return [];
-    return data.radarBench.candidates.filter((c) =>
-      selectedKeys.includes(c.model + "|" + c.effort),
-    );
+    return data.radarBench.candidates.filter((c) => selectedKeys.includes(candidateKey(c.model, c.effort)));
   }, [data, selectedKeys]);
 
   return (

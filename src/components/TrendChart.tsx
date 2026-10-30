@@ -2,6 +2,7 @@ import type { RadarCandidate } from "../types";
 import { buildDailyGrid, computeDelta, findDegradationPoints } from "../lib/derive";
 import { fmtDateTime, fmtDelta, fmtEffort, fmtScore } from "../lib/format";
 import { ModelName } from "./ModelName";
+import { candidateKey } from "../../scripts/contract.mjs";
 
 const W = 860;
 const H = 340;
@@ -108,7 +109,7 @@ export function TrendChart({
             }));
             const degrade = findDegradationPoints(c.history);
             return (
-              <g key={c.model + "|" + c.effort}>
+              <g key={candidateKey(c.model, c.effort)}>
                 {segments.map((seg, j) => (
                   <polyline key={j} fill="none" stroke={color} strokeWidth={2}
                     points={seg.map((p) => `${p.x},${p.y}`).join(" ")} />
@@ -132,7 +133,7 @@ export function TrendChart({
       </figure>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 8 }}>
         {candidates.map((c, i) => (
-          <span key={c.model + "|" + c.effort} className="muted">
+          <span key={candidateKey(c.model, c.effort)} className="muted">
             <span style={{ display: "inline-block", width: 10, height: 10, background: COLORS[i % COLORS.length], borderRadius: 999 }} />{" "}
             <ModelName name={c.model} /> · {fmtEffort(c.effort)}
           </span>

@@ -1,4 +1,5 @@
 import type { HistoryPoint, RadarCandidate, RoundCandidate, RoundData } from "../types";
+import { candidateKey } from "../../scripts/contract.mjs";
 
 export const EFFORT_ORDER = ["low", "medium", "high", "xhigh", "max", "ultra"];
 export type SortKey = "model" | "effort" | "score" | "coverage" | "graded_runs_count" | "latest_graded_at";
@@ -74,6 +75,6 @@ export function roundMatrix(round: RoundData): {
 } {
   const models = [...new Set(round.candidates.map((c) => c.model))];
   const efforts = EFFORT_ORDER.filter((e) => round.candidates.some((c) => c.effort === e));
-  const cells = new Map(round.candidates.map((c) => [c.model + "|" + c.effort, c]));
+  const cells = new Map(round.candidates.map((c) => [candidateKey(c.model, c.effort), c]));
   return { models, efforts, cells };
 }

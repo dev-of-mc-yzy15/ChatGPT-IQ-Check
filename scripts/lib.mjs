@@ -2,6 +2,8 @@ import {
   assertMinCandidates,
   assertRadarBenchShape,
   assertRoundShape,
+  candidateKey,
+  parseCandidateKey,
   strictNumber,
   strictString,
 } from "./contract.mjs";
@@ -17,7 +19,7 @@ export function transformBinding(raw) {
     const model = String(item?.model ?? "").trim();
     const effort = String(item?.effort ?? "").trim();
     if (!model || !effort) continue;
-    const key = model + "|" + effort;
+    const key = candidateKey(model, effort);
     if (seen.has(key)) continue;
     seen.add(key);
     candidates.push({ model, effort });
@@ -108,9 +110,9 @@ export function transformSummary(raw) {
 
 export function mergeRadarBench({ binding, summaries, generatedAt, checkedAt, fetchId }) {
   const b = transformBinding(binding);
-  const byKey = new Map(summaries.map((s) => [s.model + "|" + s.effort, s]));
+  const byKey = new Map(summaries.map((s) => [candidateKey(s.model, s.effort), s]));
   const candidates = b.candidates.map((c) => {
-    const s = byKey.get(c.model + "|" + c.effort);
+    const s = byKey.get(candidateKey(c.model, c.effort));
     if (!s) throw new Error(`missing summary for ${c.model}|${c.effort}`);
     return s;
   });
@@ -190,7 +192,7 @@ export function transformRound(raw) {
   const results = raw?.round?.results ?? {};
   const animations = raw?.round?.animations ?? {};
   const candidates = Object.entries(results).map(([key, taskResults]) => {
-    const [model, effort] = key.split("|");
+    const { model, effort } = parseCandidateKey(key);
     const score = computeRoundScore(taskResults, tasks);
     const taskRows = tasks.map((t) => {
       const r = taskResults?.[t.id] ?? {};

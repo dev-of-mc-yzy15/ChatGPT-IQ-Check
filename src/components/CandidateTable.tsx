@@ -3,6 +3,7 @@ import type { RadarCandidate, ScoreStatus } from "../types";
 import { computeDelta, sortCandidates, type SortKey } from "../lib/derive";
 import { fmtDateTime, fmtDelta, fmtEffort, fmtPercent, fmtScore } from "../lib/format";
 import { ModelName } from "./ModelName";
+import { candidateKey } from "../../scripts/contract.mjs";
 
 const COLUMNS: { key: SortKey; label: string; defaultDir: "asc" | "desc" }[] = [
   { key: "model", label: "模型", defaultDir: "asc" },
@@ -87,7 +88,7 @@ export function CandidateTable({
               </tr>
             )}
             {visible.map((r) => {
-              const key = r.model + "|" + r.effort;
+              const key = candidateKey(r.model, r.effort);
               const { delta, days } = computeDelta(r.history);
               return (
                 <tr key={key}>

@@ -10,6 +10,7 @@ import {
   validateRadarBench,
   validateRound,
 } from "./lib.mjs";
+import { candidateKey } from "./contract.mjs";
 
 export const BINDING_URL = "https://codexradar.com/data/radar-bench-binding.json";
 export const SUMMARY_URL = "https://codexradar.com/api/radar-bench-score";
@@ -152,10 +153,10 @@ export async function refreshAll({
   const bindingRaw = await fetchJson(BINDING_URL, {}, fetchImpl);
   const binding = transformBinding(bindingRaw);
   const oldRadar = await readJsonIfExists(join(outDir, "radar-bench.json"));
-  const oldByKey = new Map((oldRadar?.candidates ?? []).map((c) => [c.model + "|" + c.effort, c]));
+  const oldByKey = new Map((oldRadar?.candidates ?? []).map((c) => [candidateKey(c.model, c.effort), c]));
 
   const results = await mapLimit(binding.candidates, 4, async (candidate) => {
-    const key = candidate.model + "|" + candidate.effort;
+    const key = candidateKey(candidate.model, candidate.effort);
     try {
       const raw = await fetchJson(
         summaryUrl(candidate.model, candidate.effort),

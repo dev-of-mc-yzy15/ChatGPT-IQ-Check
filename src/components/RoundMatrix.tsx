@@ -1,5 +1,5 @@
 import type { RoundData } from "../types";
-import { SCORE_MAX_FALLBACK } from "../../scripts/contract.mjs";
+import { candidateKey, SCORE_MAX_FALLBACK } from "../../scripts/contract.mjs";
 import { fmtDateTime, fmtEffort, fmtMoney, fmtScore, fmtSeconds } from "../lib/format";
 import { roundMatrix } from "../lib/derive";
 import { ModelName } from "./ModelName";
@@ -61,7 +61,7 @@ export function RoundMatrix({
               <tr key={model}>
                 <th scope="row"><ModelName name={model} /></th>
                 {efforts.map((effort) => {
-                  const key = model + "|" + effort;
+                  const key = candidateKey(model, effort);
                   const cell = cells.get(key);
                   const band =
                     cell?.score == null || !Number.isFinite(cell.score) ? undefined : scoreBand(cell.score, scoreMax);
