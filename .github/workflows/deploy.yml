@@ -12,6 +12,7 @@ on:
       - "package-lock.json"
       - "vite.config.ts"
       - "tsconfig.json"
+      - "tsconfig.scripts.json"
       - "public/data/**"
       - ".github/workflows/**"
   # refresh-data 用 GITHUB_TOKEN 推送（带 [skip ci]），不会触发上面的 push 事件，
@@ -35,28 +36,37 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          # workflow_run 下不钉 ref 会签出 main 的当前 HEAD，产物和触发事件对不上；
+          # 钉到触发那次 run 的 head_sha，普通 push/dispatch 才回落到 github.sha。
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "24"
           cache: npm
 
-      - run: npm ci
+      # 构建链不需要 postinstall：lockfile 里只有 fsevents 带 install script，
+      # 而它只在 darwin 上安装。--ignore-scripts 砍掉安装期的任意代码执行面。
+      - run: npm ci --ignore-scripts
       - run: npm test
       - run: npm run build
 
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: dist
+          retention-days: 1
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    # job 级 permissions 会整体覆盖工作流级，必须在这里自带 contents: read，
+    # 否则 job 里一旦加 checkout 就会因缺权限失败。
     permissions:
+      contents: read
       pages: write
       id-token: write
     environment:
@@ -64,4 +74,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

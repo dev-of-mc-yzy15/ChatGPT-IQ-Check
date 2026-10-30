@@ -19,17 +19,25 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "24"
           cache: npm
 
-      - run: npm ci
+      # 构建链不需要 postinstall：lockfile 里只有 fsevents 带 install script，
+      # 而它只在 darwin 上安装。--ignore-scripts 砍掉安装期的任意代码执行面。
+      - run: npm ci --ignore-scripts
+
+      # 本仓库默认 registry 是 npmmirror，它没实现 audit API（会返回 NOT_IMPLEMENTED），
+      # 所以这里显式指向官方 registry，否则这一步等于空跑。
+      - run: npm audit --omit=dev --audit-level=high --registry=https://registry.npmjs.org/
       - run: npm test
-      - run: npx tsc -b
-      - run: npm run typecheck:scripts
+      # build 里已经含 tsc -b 和 typecheck:scripts，不再单独重复一遍。
       - run: npm run build
+      # 构建后校验产物里没有回退到根绝对路径的引用，否则 Pages 子路径部署整页白屏。
+      # 必须在 build 之后：这一步读的是 dist/index.html，不是源码。
+      - run: npm run check:base
