@@ -29,7 +29,12 @@ export function sortCandidates(rows: RadarCandidate[], key: SortKey, dir: "asc" 
     if (av == null && bv == null) return 0;
     if (av == null) return 1;
     if (bv == null) return -1;
-    const cmp = typeof av === "string" ? av.localeCompare(String(bv), "en") : Number(av) - Number(bv);
+    const cmp =
+      key === "model"
+        ? MODEL_COLLATOR.compare(String(av), String(bv))
+        : typeof av === "string"
+          ? av.localeCompare(String(bv), "en")
+          : Number(av) - Number(bv);
     return dir === "asc" ? cmp : -cmp;
   });
 }
