@@ -262,7 +262,7 @@ npm run e2e
 
 - 只用 Chromium，单 worker；脚本自己 `npm run build` 后起 `vite preview`（端口 4321），跑完退出。前置构建过就置 `E2E_PREBUILT=1` 跳过构建，CI 走这条路。
 - preview 由 `tests/e2e/global-setup.ts` 以 detached 方式拉起，playwright 不跟踪它——受限令牌下收尾的 `taskkill` 会失败，交给 webServer 会一直吊着不退。已有同端口服务在跑时直接复用。
-- 覆盖：根路径重定向到子路径、脚本/样式逐个可达且 MIME 正确、缺失资源当前是 200 + `text/html`（SPA fallback 语义，改成真 404 时断言要同步改）、全程零 CSP 违规/零 console 错误、真实业务内容上屏且 `/data/` 恰 3 次。
+- 覆盖两个 spec：`base-path.spec.ts` 验根路径重定向到子路径、脚本/样式逐个可达且 MIME 正确、缺失资源当前是 200 + `text/html`（SPA fallback 语义，改成真 404 时断言要同步改）、全程零 CSP 违规/零 console 错误、真实业务内容上屏且 `/data/` 恰 3 次；`animation-csp.spec.ts` 点进详情展开折叠，按子 frame 的 `requestAnimationFrame` 调用计数判 iframe 内联脚本真的执行过（不是「iframe 出来了」），并同钉子文档与父文档零 CSP 违规/零 console 错误/零未捕获异常、`sandbox` 只有 `allow-scripts`、产物 `content-type` 必须 `text/html`——两类断言缺一不可：只留「零违规」会被「放宽了但漏别处」蒙过去，只留「脚本跑了」会被「父 CSP 压根没生效」蒙过去。
 - 首次跑要现装 chromium；CI 里已接在 `npm run build` 之后，装了系统依赖。
 
 ## 许可
