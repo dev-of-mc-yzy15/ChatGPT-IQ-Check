@@ -200,6 +200,18 @@ describe("format · 日期", () => {
   it("fmtDateTime 对 not-a-date 投降为破折号", () => {
     expect(fmtDateTime("not-a-date")).toBe(DASH);
   });
+
+  it("fmtDateTime 把纯日期串按 UTC 午夜解析（跨时区稳定）", () => {
+    // new Date("2026-07-15") 走 ECMAScript 的 date-only 分支，固定按 UTC 解释，
+    // 所以 +8 时区下稳定落在 08:00，不随本机时区漂移。
+    expect(fmtDateTime("2026-07-15")).toBe("2026-07-15 08:00");
+  });
+
+  it("fmtDateTime 对无时区后缀的 ISO 串按进程本地时区解释，只断形态", () => {
+    // 注意："2026-07-15T00:00:00" 没有 Z，按本地时区解析，
+    // 在 UTC 机器上和 +8 机器上钟点不同，因此这里只钉格式不钉钟点。
+    expect(fmtDateTime("2026-07-15T00:00:00")).toMatch(/^2026-07-15 \d{2}:\d{2}$/);
+  });
 });
 
 describe("format · 相对时间", () => {
