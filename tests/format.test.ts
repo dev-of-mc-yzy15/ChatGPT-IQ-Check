@@ -1,4 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
+import { createElement } from "react";
+import { renderToString } from "react-dom/server";
 import {
   fmtScore,
   fmtDelta,
@@ -180,6 +182,31 @@ describe("format · 位移取整的极端值边界", () => {
   });
 });
 
+describe("format · 位移取整在 1e19～1e21 档位不得漏成 NaN", () => {
+  // 位移取整最后要把 rounded 拼回 `e-${digits}`。rounded 自身一旦达到 1e21，
+  // String() 就给出 "1e+21"，拼成 "1e+21e-1" 是非法指数串，走不到 toFixed 就已是 NaN。
+  // 这个量级不是假想：derive 出来的分数本身没有上限。
+  it.each([1e19, 1e20, 1e21])("fmtScore(%s) 不出现 NaN", (n) => {
+    expect(fmtScore(n)).not.toMatch(/NaN/);
+  });
+
+  // fmtPercent 取 0 位小数，n*100 一旦到 1e21 就已是 String 指数形式，开头那条守卫先接住，
+  // 走不到这里的二次位移；这几条钉的是开头守卫，不是下面的 1e21 回落。
+  it.each([1e19, 1e20, 1e21])("fmtPercent(%s) 不出现 NaN", (n) => {
+    expect(fmtPercent(n)).not.toMatch(/NaN/);
+  });
+
+  // fmtMoney 取两位小数，1e19 位移两位正好顶到 1e21，是真正踩到二次位移的那条路径。
+  it.each([1e19, -1e19])("fmtMoney(%s) 不出现 NaN", (n) => {
+    expect(fmtMoney(n)).not.toMatch(/NaN/);
+  });
+
+  it("负方向在同一档位同样不出现 NaN", () => {
+    expect(fmtScore(-1e20)).not.toMatch(/NaN/);
+    expect(fmtPercent(-1e20)).not.toMatch(/NaN/);
+  });
+});
+
 describe("format · 计数分组形态", () => {
   it("fmtScore 对七位数 1234567 不做千分位分组", () => {
     expect(fmtScore(1234567)).toBe("1234567.0");
@@ -318,6 +345,35 @@ describe("format · 档位标签", () => {
 
   it("fmtEffort 对未知档位回退为大写原文", () => {
     expect(fmtEffort("unknown")).toBe("UNKNOWN");
+  });
+});
+
+describe("format · 落在原型链上的档位名", () => {
+  // EFFORT_LABELS 是对象字面量，`obj[key] ?? 兜底` 只拦得住 null/undefined，
+  // 拦不住继承来的 __proto__ / constructor / toString / hasOwnProperty：
+  // __proto__ 拿到 Object.prototype（对象），另外三个是函数。
+  // 对象进 JSX 直接让 renderToString 抛错、整块被 ErrorBoundary 吃掉；
+  // 函数只留一条 warning，单元格渲染成空。上游为「新加档位」留了 unknownEfforts 通道，
+  // 这些串是真会落进数据的。
+  const PROTO_KEYS = ["__proto__", "constructor", "toString", "hasOwnProperty"];
+
+  it.each(PROTO_KEYS)("fmtEffort(%s) 回退为大写原文，而不是原型的对象或函数", (key) => {
+    const out = fmtEffort(key);
+    expect(typeof out).toBe("string");
+    expect(out).toBe(key.toUpperCase());
+    expect(out).not.toBe(String(Object.prototype[key as keyof typeof Object.prototype]));
+  });
+
+  it("原型键的返回值经 React 真渲染不抛", () => {
+    for (const key of PROTO_KEYS) {
+      expect(() => renderToString(createElement("span", null, fmtEffort(key)))).not.toThrow();
+    }
+  });
+
+  it("原型键拼进 aria-label 时不会带出函数源码", () => {
+    for (const key of PROTO_KEYS) {
+      expect(fmtEffort(key)).not.toMatch(/native code/);
+    }
   });
 });
 

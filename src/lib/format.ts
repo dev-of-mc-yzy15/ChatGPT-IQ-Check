@@ -2,12 +2,17 @@ const DASH = "—";
 
 // 位移取整：先把小数点挪开再取整，别让 toFixed 直接吃掉 120.05 这类半格。
 // 取整走绝对值再补符号，与 toFixed 远离零的语义一致；舍成零的负数归一为正零。
-// String(n) 在 |n| >= 1e21 或 < 1e-6 时本身就是指数形式，拼出的是非法串，退回原值。
+// String(n) 在 |n| >= 1e21 或 < 1e-6 时本身就是指数形式，拼出的是非法串。
+// 前者在开头就退回原值；后者位移后仍是小数，交给下面照常取整。
+// 取整本身也可能把值顶到 1e21（1e20 挪一位就是），此时回落同样要按指数形式判断，
+// 否则拼出的 "1e+21e-1" 是非法串，结果直接是 NaN。
 const roundTo = (n: number, digits: number): number => {
   const shifted = Number(`${Math.abs(n)}e${digits}`);
   if (Number.isNaN(shifted)) return Math.abs(n) < 1 ? 0 : n;
   const rounded = Math.sign(n) * Math.round(shifted);
-  return Object.is(rounded, -0) ? 0 : Number(`${rounded}e-${digits}`);
+  if (Object.is(rounded, -0)) return 0;
+  if (Math.abs(rounded) >= 1e21) return rounded;
+  return Number(`${rounded}e-${digits}`);
 };
 
 export const fmtScore = (n: number | null | undefined): string =>
@@ -79,5 +84,15 @@ export const EFFORT_LABELS: Record<string, string> = {
   ultra: "极限",
 };
 
+// EFFORT_LABELS 是对象字面量，`obj[key] ?? 兜底` 只拦得住 null/undefined，
+// 拦不住继承来的 __proto__ / constructor / toString / hasOwnProperty：
+// __proto__ 拿到的是 Object.prototype，另外三个是函数。对象进 JSX 就是
+// "Objects are not valid as a React child"，整块被 ErrorBoundary 吃掉；
+// 函数只留一条 warning，单元格渲染成空，拼进 aria-label 还是函数源码。
+// 只在自有属性命中时才用映射，其余一律走大写原文。
 export const fmtEffort = (effort: string | null | undefined): string =>
-  effort ? EFFORT_LABELS[effort] ?? effort.toUpperCase() : DASH;
+  effort
+    ? Object.hasOwn(EFFORT_LABELS, effort)
+      ? EFFORT_LABELS[effort]
+      : effort.toUpperCase()
+    : DASH;
