@@ -34,6 +34,24 @@ const EFFORT_LABELS: Record<string, string> = {
   ultra: "极限",
 };
 
+/** 上游产物扩展名；本地落盘去掉末尾 `.txt`，托管才会按 `text/html` 回。 */
+const UPSTREAM_SUFFIX = ".html.txt";
+const LOCAL_SUFFIX = ".html";
+
+/**
+ * 上游 `asset_url` 的 basename → `public/assets/` 里的真实文件名。
+ *
+ * 与 `src/lib/asset.ts` 的 `localAssetName()` 同一规则（只认末尾 `.html.txt`，其余原样返回）。
+ * 这里不 import 那个函数：该模块经 `../data/loader` 引到 `import.meta.env.BASE_URL`，
+ * 在 playwright 的 node 转译下要靠默认参数兜底；规则本身只有一行，抽出来复用即可。
+ * 规则基线由 `tests/asset.test.ts` 与 `tests/verify-assets.test.ts` 两侧各自钉住。
+ */
+function toLocalName(baseName: string): string {
+  return baseName.endsWith(UPSTREAM_SUFFIX)
+    ? baseName.slice(0, -UPSTREAM_SUFFIX.length) + LOCAL_SUFFIX
+    : baseName;
+}
+
 /**
  * 从真实数据挑一个「产物里有 rAF 驱动脚本」的候选。
  *
@@ -54,7 +72,7 @@ function pickAnimatedCandidate(): { model: string; effort: string; asset: string
     if (!url || !candidate.model || !candidate.effort) continue;
     const base = url.split(/[?#]/)[0].split("/").pop();
     if (!base) continue;
-    const local = base.endsWith(".html.txt") ? base.slice(0, -".txt".length) : base;
+    const local = toLocalName(base);
     if (!files.has(local)) continue;
     if (readFileSync(resolve(assetsDir, local), "utf8").includes("requestAnimationFrame")) {
       return { model: candidate.model, effort: candidate.effort, asset: local };
@@ -77,6 +95,23 @@ const META_CSP_NOISE = /frame-ancestors.? is ignored when delivered via a <meta>
  * `Failed to load resource` 的其它形态（404/被 CSP 拒）仍算红。
  */
 const NETWORK_NOISE = /net::ERR_NETWORK_CHANGED/;
+
+/**
+ * 产物自身的 SVG 缺陷（上游产物，不是本仓代码）：`gpt-6-astra-max` 那个产物在 draw() 里
+ * 用模板拼 `scarf-tail` / `scarf-fold` 的 `d`，负数变量后面紧跟下一个数字且中间没有分隔
+ * 空格——`q33 ${-9 - flutter}63 ${-2 - flutter}` 在 flutter 为正时会拼出 `q33 -963 -2`，
+ * SVG 解析器把 `-` 当分隔符，只数到 3 个数（q 需要 4 个），于是打 `Unexpected end of
+ * attribute`。只在 flutter（`Math.sin(t * 5.5) * 4`）把值推成负数时出现。
+ *
+ * 实测只有这 1 个产物触发：Chromium 按 SVG 的容错规则补零、照常渲染，几何仍然有效
+ * （已用 getTotalLength() 逐条验证该产物 108 条 path 全部可解析），没有渲染损坏；
+ * 但每次 setAttribute('d') 都打一条，一次加载累计 145 条，足以把 console 断言打红。
+ *
+ * 与 CSP、脚本执行、可达性都无关，视觉上只是围巾局部形状略失真。产物是上游生成的、
+ * `npm run refresh` 会整份覆盖，改本地文件还得同步 round.json 的 asset_sha256，所以放行；
+ * 只放过这一个错误形态，其余 `attribute d` 报错仍算红。
+ */
+const PRODUCT_NOISE = /<path> attribute d: Unexpected end of attribute/;
 
 /** 子 frame 的探针桶：`__raf` 由产物脚本触发，`__violations` 是 CSP 违规原文。 */
 type ProbeWindow = Window & { __raf?: number; __violations?: string[]; __isChild?: boolean };
@@ -202,7 +237,7 @@ test.describe("降智动画在沙箱 iframe 内可执行且无 CSP 违规", () =
     page.on("console", (msg) => {
       if (msg.type() !== "error") return;
       const text = msg.text();
-      if (META_CSP_NOISE.test(text) || NETWORK_NOISE.test(text)) return;
+      if (META_CSP_NOISE.test(text) || NETWORK_NOISE.test(text) || PRODUCT_NOISE.test(text)) return;
       consoleErrors.push(text);
     });
     page.on("pageerror", (error) => pageErrors.push(error.message));
@@ -330,5 +365,209 @@ test.describe("降智动画在沙箱 iframe 内可执行且无 CSP 违规", () =
     expect(res.status(), `${frame.url()} 必须可达`).toBe(200);
     const type = res.headers()["content-type"] ?? "";
     expect(type, `产物必须按 HTML 回，实际 ${type}`).toContain("text/html");
+  });
+});
+
+/* ───────────────────────────── 全量产物闸门 ──────────────────────────────── */
+
+/**
+ * 上面的用例只深验**一个**带 rAF 的候选：它能证明「这条路整体是通的」，但覆盖不到
+ * 34 个产物里的其余 33 个。缺口最明显的是纯 CSS 那 11 个——它们不含 `<script>`，
+ * rAF/交互判据对它们恒无意义，是不是 200、是不是被托管回 `text/plain`（iframe 里
+ * 只剩一屏源码）、内联样式有没有被打，此前全靠运气。
+ *
+ * 所以这里退一步做**面**上的补齐：每一个产物 URL 逐一断言 200、`text/html`、
+ * 内联进父页面后零 CSP 违规。带脚本的那几个「脚本真的跑起来」仍由上一条用例负责，
+ * 两条互补，不是替代。
+ */
+
+/** 数据里应有 34 个产物；上游真增减时这条守卫先红，不会静默少跑一批。 */
+const EXPECTED_ASSET_COUNT = 34;
+/** 每批同时挂多少 iframe。太小批次空转，太大时 Chromium 排队解码反而拖慢 load。 */
+const PROBE_BATCH_SIZE = 8;
+/** 承载探测 iframe 的容器 id：必须挂在真实页面上，父页面 CSP 才真的参与。 */
+const PROBE_HOST_ID = "asset-probe-host";
+
+/**
+ * 全量清单：`public/data/round.json` 里每个 `animation.asset_url` 都换算成本地路径。
+ *
+ * 不写死 34 条——上游换一批候选、增减产物，清单自动跟着变（条数由用例里的守卫显式卡住）。
+ * 换算与 `src/lib/asset.ts` 的 `assetUrl(localAssetName())` 同路：只取 basename、
+ * 去掉上游 `.txt`、拼到本站 `BASE_PATH` 的 `assets/` 下。
+ */
+function collectAssetPaths(): string[] {
+  const round = JSON.parse(readFileSync(resolve(repoRoot, "public/data/round.json"), "utf8")) as {
+    candidates?: { animation?: { asset_url?: string } }[];
+  };
+  const paths: string[] = [];
+  for (const candidate of round.candidates ?? []) {
+    const name = candidate.animation?.asset_url;
+    if (!name) continue;
+    const base = name.split(/[?#]/)[0].split("/").pop();
+    if (!base) continue;
+    paths.push(`${BASE_PATH}assets/${toLocalName(base)}`);
+  }
+  return paths;
+}
+
+/**
+ * 取出 `index.html` 的 CSP 原文并拆出字体相关的两条指令。
+ * 用 `default-src` 兜定位（页面只有一个 CSP meta，且它正是以 `default-src` 开头的那条）。
+ */
+function readCspDirectives(): { raw: string; styleSrc: string; fontSrc: string } {
+  const html = readFileSync(resolve(repoRoot, "index.html"), "utf8");
+  const raw = /http-equiv="Content-Security-Policy"[\s\S]{0,80}?content="([^"]*)"/.exec(html)?.[1] ?? "";
+  const directives = raw.split(";").map((part) => part.trim());
+  return {
+    raw,
+    styleSrc: directives.find((part) => part.startsWith("style-src")) ?? "",
+    fontSrc: directives.find((part) => part.startsWith("font-src")) ?? "",
+  };
+}
+
+test.describe("全部动画产物逐个可达且内联无 CSP 违规", () => {
+  test("每个产物都 200 + text/html + 零 CSP 违规，且字体放行仍在", async ({ page }) => {
+    // 34 个分 5 批跑，实测远低于 90s；上限给到 120s 是留冷启动与杀软扫描的余量。
+    test.setTimeout(120_000);
+
+    const urls = collectAssetPaths();
+    expect(
+      urls.length,
+      `必须从 round.json 的 candidates[].animation.asset_url 取到全部 ${EXPECTED_ASSET_COUNT} 个产物，实际 ${urls.length} 条` +
+        (urls.length === 0 ? "（一条都取不到：round.json 结构或 animation.asset_url 变了？）" : ""),
+    ).toBe(EXPECTED_ASSET_COUNT);
+
+    // ── 字体放行守卫 ──
+    // 34 个里恰好 1 个引 fonts.googleapis.com。子文档有自己的 policy container、不继承父 CSP，
+    // 但 index.html 那份策略仍是唯一权威定义：谁把这两段删了，将来换成同源承载或响应头承载时
+    // 字体会整片掉、且只在真浏览器里才看得出。所以放行名单与产物引用两侧一起钉死。
+    const csp = readCspDirectives();
+    expect(csp.raw, "index.html 必须仍有 Content-Security-Policy").not.toBe("");
+    expect(csp.styleSrc, `style-src 必须放行 https://fonts.googleapis.com，实际 "${csp.styleSrc}"`).toContain(
+      "https://fonts.googleapis.com",
+    );
+    expect(csp.fontSrc, `font-src 必须放行 https://fonts.gstatic.com，实际 "${csp.fontSrc}"`).toContain(
+      "https://fonts.gstatic.com",
+    );
+    const assetsDir = resolve(repoRoot, "public/assets");
+    const fontAssets = readdirSync(assetsDir).filter((file) =>
+      readFileSync(resolve(assetsDir, file), "utf8").includes("https://fonts.googleapis.com"),
+    );
+    expect(
+      fontAssets.length,
+      `引 Google Fonts 的产物数量变了（${fontAssets.join(", ") || "0 个"}），字体放行名单要重新对齐`,
+    ).toBe(1);
+    expect(urls, "引 Google Fonts 的那个产物必须也在遍历清单里").toContain(`${BASE_PATH}assets/${fontAssets[0]}`);
+
+    const consoleErrors: string[] = [];
+    const pageErrors: string[] = [];
+    page.on("console", (msg) => {
+      if (msg.type() !== "error") return;
+      const text = msg.text();
+      if (META_CSP_NOISE.test(text) || NETWORK_NOISE.test(text) || PRODUCT_NOISE.test(text)) return;
+      consoleErrors.push(text);
+    });
+    page.on("pageerror", (error) => pageErrors.push(error.message));
+
+    await installProbe(page);
+    await page.goto(BASE_PATH);
+    await expect(page.locator("#root")).toBeAttached();
+    await page.evaluate((id) => {
+      const host = document.createElement("div");
+      host.id = id;
+      host.style.cssText = "position:fixed;top:0;left:-400px;width:0;height:0;overflow:visible";
+      document.body.append(host);
+    }, PROBE_HOST_ID);
+    const host = page.locator(`#${PROBE_HOST_ID}`);
+
+    const problems: string[] = [];
+    for (let offset = 0; offset < urls.length; offset += PROBE_BATCH_SIZE) {
+      const batch = urls.slice(offset, offset + PROBE_BATCH_SIZE);
+
+      // 先单独打传输层：状态码与 content-type 和「渲染成不成」分开取证，
+      // 这样「被托管回 text/plain」和「文档根本没起来」不会混成一条含混信息。
+      await Promise.all(
+        batch.map(async (url) => {
+          const res = await page.request.get(url).catch((error: Error) => error);
+          if (res instanceof Error) {
+            problems.push(`${url} 请求失败：${res.message}`);
+            return;
+          }
+          if (res.status() !== 200) problems.push(`${url} 状态码 ${res.status()}（必须 200）`);
+          const type = res.headers()["content-type"] ?? "";
+          if (!type.includes("text/html")) {
+            problems.push(`${url} content-type 为 ${JSON.stringify(type)}（必须含 text/html，否则 iframe 里只剩源码）`);
+          }
+        }),
+      );
+
+      // 再挂 iframe：`sandbox="allow-scripts"` 与真实详情卡保持一致。
+      await page.evaluate(
+        ({ id, batch: urlsInBatch }) => {
+          const container = document.getElementById(id)!;
+          container.replaceChildren();
+          urlsInBatch.forEach((url, index) => {
+            const iframe = document.createElement("iframe");
+            iframe.setAttribute("sandbox", "allow-scripts");
+            iframe.setAttribute("data-probe-index", String(index));
+            iframe.style.cssText = "width:320px;height:180px";
+            iframe.setAttribute("src", url);
+            container.append(iframe);
+          });
+        },
+        { id: PROBE_HOST_ID, batch },
+      );
+
+      await Promise.all(
+        batch.map(async (url, index) => {
+          const iframe = host.locator(`iframe[data-probe-index="${index}"]`);
+          try {
+            await expect(iframe, `${url} 的 iframe 必须挂上`).toBeAttached({ timeout: 10_000 });
+            const frame = await (await iframe.elementHandle())?.contentFrame();
+            if (!frame) {
+              problems.push(`${url} 没加载出真实子文档`);
+              return;
+            }
+            await expect
+              .poll(() => frame.url(), { message: `${url} 子文档必须导航到真实地址`, timeout: 20_000 })
+              .toContain(`${BASE_PATH}assets/`);
+
+            const probe = await frame.evaluate(() => {
+              const w = window as ProbeWindow;
+              return {
+                isChild: w.__isChild === true,
+                contentType: document.contentType,
+                violations: w.__violations ?? [],
+              };
+            });
+            if (!probe.isChild) problems.push(`${url} 探针没落到子文档，违规收集不可信`);
+            // text/plain 被浏览器当源码渲染时，contentType 也会是 text/plain——
+            // 与上面的响应头断言互为交叉证据。
+            if (probe.contentType !== "text/html") {
+              problems.push(`${url} 子文档 contentType 为 ${JSON.stringify(probe.contentType)}（必须 text/html）`);
+            }
+            const violations = probe.violations.filter((item) => !META_CSP_NOISE.test(item));
+            if (violations.length > 0) problems.push(`${url} CSP 违规：${violations.join(" | ")}`);
+          } catch (error) {
+            problems.push(`${url} 渲染/取证失败：${(error as Error).message.split("\n")[0]}`);
+          }
+        }),
+      );
+
+      // 每批收掉，避免 34 个 iframe 同时挂着吃内存、掩盖后续批次的加载问题。
+      await page.evaluate((id) => document.getElementById(id)?.replaceChildren(), PROBE_HOST_ID);
+    }
+
+    expect(problems, `${problems.length} 项问题：\n${problems.join("\n")}`).toEqual([]);
+
+    const pageViolations = await page.evaluate(() => (window as ProbeWindow).__violations ?? []);
+    expect(pageViolations, `父文档 CSP 违规：${pageViolations.join(" | ")}`).toEqual([]);
+    expect(consoleErrors, `console 错误：${consoleErrors.join(" | ")}`).toEqual([]);
+    expect(pageErrors, `未捕获异常：${pageErrors.join(" | ")}`).toEqual([]);
+
+    test.info().annotations.push({
+      type: "产物覆盖",
+      description: `${urls.length} 个产物逐个断言 200 + text/html + 零 CSP 违规`,
+    });
   });
 });
