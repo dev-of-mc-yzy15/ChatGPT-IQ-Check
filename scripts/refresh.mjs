@@ -563,8 +563,12 @@ async function main() {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch((error) => {
+    // 用法错给一句原因就够、不必铺 stack（对齐 verify-assets 的输出）；其余是真失败，全量打。
+    if (error instanceof UsageError) {
+      console.error(error.message);
+      process.exit(2);
+    }
     console.error(error);
-    // 参数用错是用法问题（退 2），其余是运行失败（退 1），与 verify-assets.mjs 对齐。
-    process.exit(error instanceof UsageError ? 2 : 1);
+    process.exit(1);
   });
 }
