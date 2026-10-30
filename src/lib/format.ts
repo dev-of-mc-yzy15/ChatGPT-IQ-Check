@@ -1,23 +1,38 @@
 const DASH = "—";
 
-export const fmtScore = (n: number | null | undefined): string =>
-  n == null || !Number.isFinite(n) ? DASH : n.toFixed(1);
+// 位移取整：先把小数点挪开再取整，别让 toFixed 直接吃掉 120.05 这类半格。
+// 取整走绝对值再补符号，与 toFixed 远离零的语义一致；舍成零的负数归一为正零。
+// String(n) 在 |n| >= 1e21 或 < 1e-6 时本身就是指数形式，拼出的是非法串，退回原值。
+const roundTo = (n: number, digits: number): number => {
+  const shifted = Number(`${Math.abs(n)}e${digits}`);
+  if (Number.isNaN(shifted)) return Math.abs(n) < 1 ? 0 : n;
+  const rounded = Math.sign(n) * Math.round(shifted);
+  return Object.is(rounded, -0) ? 0 : Number(`${rounded}e-${digits}`);
+};
 
-export const fmtDelta = (n: number | null | undefined): string =>
-  n == null || !Number.isFinite(n) ? DASH : `${n > 0 ? "+" : ""}${n.toFixed(1)}`;
+export const fmtScore = (n: number | null | undefined): string =>
+  n == null || !Number.isFinite(n) ? DASH : roundTo(n, 1).toFixed(1);
+
+export const fmtDelta = (n: number | null | undefined): string => {
+  if (n == null || !Number.isFinite(n)) return DASH;
+  const rounded = roundTo(n, 1);
+  return `${rounded > 0 ? "+" : ""}${rounded.toFixed(1)}`;
+};
 
 export const fmtMoney = (n: number | null | undefined): string =>
-  n == null || !Number.isFinite(n) ? DASH : `$${n.toFixed(2)}`;
+  n == null || !Number.isFinite(n) ? DASH : `$${roundTo(n, 2).toFixed(2)}`;
 
 export const fmtPercent = (n: number | null | undefined): string =>
-  n == null || !Number.isFinite(n) ? DASH : `${Math.round(n * 100)}%`;
+  n == null || !Number.isFinite(n) ? DASH : `${roundTo(n * 100, 0)}%`;
 
 export function fmtSeconds(seconds: number | null | undefined): string {
   if (seconds == null || !Number.isFinite(seconds)) return DASH;
   const total = Math.round(seconds);
-  const minutes = Math.floor(total / 60);
-  const rest = total % 60;
-  return minutes > 0 ? `${minutes} 分 ${rest} 秒` : `${rest} 秒`;
+  const abs = Math.abs(total);
+  const minutes = Math.floor(abs / 60);
+  const rest = abs % 60;
+  const body = minutes > 0 ? `${minutes} 分 ${rest} 秒` : `${rest} 秒`;
+  return total < 0 ? `-${body}` : body;
 }
 
 // 每次调用都新建 Intl.DateTimeFormat 不便宜：列表里几百行就是几百次构造。

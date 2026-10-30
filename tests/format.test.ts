@@ -91,10 +91,18 @@ describe("format · 分数舍入", () => {
     expect(fmtScore(120.04)).toBe("120.0");
   });
 
-  it("fmtScore(120.05) 落到 120.0 —— 二进制近似让半个进位被吃掉", () => {
-    // BUG: 120.05 的 double 实为 120.049999999999997，toFixed(1) 并非直觉的 120.1。
-    // 现在按实现如实断言；将来若要修，这里就是语义变更点。
-    expect(fmtScore(120.05)).toBe("120.0");
+  it("fmtScore(120.05) 进位为 120.1 —— 指数位移绕开二进制近似", () => {
+    // 120.05 的 double 实为 120.049999999999997，裸 toFixed(1) 会吞掉半个进位。
+    // 实现改成按 10 的幂位移后再取整，半个小数的语义得以保住。
+    expect(fmtScore(120.05)).toBe("120.1");
+  });
+
+  it("fmtMoney(2.005) 进位为 $2.01 —— 两位小数同样不能交给裸 toFixed", () => {
+    expect(fmtMoney(2.005)).toBe("$2.01");
+  });
+
+  it("fmtDelta(0.04) 舍成零之后不再补正号", () => {
+    expect(fmtDelta(0.04)).toBe("0.0");
   });
 
   it("fmtDelta(0) 不带正号，负数保留负号", () => {
@@ -120,9 +128,14 @@ describe("format · 分数舍入", () => {
     expect(fmtPercent(1.205)).toBe("121%");
   });
 
-  it("fmtPercent(1.2005) 因子积 120.049999999999997 落到 120%", () => {
-    // BUG: 1.2005 * 100 = 120.049999999999997，半个百分位被吃掉，显示 120% 而非 121%。
+  it("fmtPercent(1.2005) 经位移取整仍为 120%", () => {
+    // 1.2005 * 100 = 120.049999999999997。0 位小数下结果与裸 Math.round 相同，
+    // 这里钉住的是「确实经由位移取整」而不是「结果凑巧相同」。
     expect(fmtPercent(1.2005)).toBe("120%");
+  });
+
+  it("fmtPercent(0.12345) 输出 12%", () => {
+    expect(fmtPercent(0.12345)).toBe("12%");
   });
 
   it("fmtMoney 保留两位小数（3.5785 → $3.58）", () => {
@@ -133,10 +146,37 @@ describe("format · 分数舍入", () => {
     expect(fmtMoney(0)).toBe("$0.00");
   });
 
-  it("fmtScore(-0.04) 输出负零 -0.0 而不是 0.0", () => {
-    // BUG: toFixed 保留 -0 的符号，UI 上 -0.0 略显别扭（fmtDelta 同病）。
-    expect(fmtScore(-0.04)).toBe("-0.0");
-    expect(fmtDelta(-0.04)).toBe("-0.0");
+  it("舍入到零的负数归一为正零，不再输出 -0.0", () => {
+    // toFixed 会把 -0 的符号原样带出来，UI 上 -0.0 读起来像仍有值。
+    // 只归一「舍入后为零」的情形，-0.5 这类真有半格的值仍要保留负号。
+    expect(fmtScore(-0.04)).toBe("0.0");
+    expect(fmtDelta(-0.04)).toBe("0.0");
+    expect(fmtMoney(-0.004)).toBe("$0.00");
+    expect(fmtPercent(-0.004)).toBe("0%");
+  });
+
+  it("负半格仍保留负号（-0.5 不得被归一成 0.0）", () => {
+    expect(fmtScore(-0.5)).toBe("-0.5");
+    expect(fmtDelta(-0.5)).toBe("-0.5");
+    expect(fmtMoney(-0.005)).toBe("$-0.01");
+  });
+});
+
+describe("format · 位移取整的极端值边界", () => {
+  // 位移取整要把数字拼成 "1e-21e1" 这样的指数串再解析。
+  // |n| >= 1e21 或 < 1e-6 时 String(n) 本身就是指数形式，拼接会拼出非法串，
+  // 守卫必须让这些值仍走 toFixed，不能漏成 NaN。
+  it("小到 String(n) 变成指数形式的量仍舍成零，而不是 NaN", () => {
+    expect(fmtScore(1e-21)).toBe("0.0");
+    expect(fmtScore(-1e-21)).toBe("0.0");
+    expect(fmtMoney(1e-21)).toBe("$0.00");
+    expect(fmtPercent(1e-21)).toBe("0%");
+    expect(fmtPercent(-1e-21)).toBe("0%");
+  });
+
+  it("大到 String(n) 变成指数形式的量按 toFixed 原有形态输出", () => {
+    expect(fmtScore(1e21)).toBe("1e+21");
+    expect(fmtScore(-1e308)).toBe("-1e+308");
   });
 });
 
@@ -166,16 +206,25 @@ describe("format · 计数分组形态", () => {
     expect(fmtSeconds(59.6)).toBe("1 分 0 秒");
   });
 
-  it("fmtSeconds 对负时长只输出负的秒余数，分钟位被丢掉", () => {
+  it("fmtSeconds 负时长保留分钟位（-90 → -1 分 30 秒）", () => {
     // BUG: 分支用的是 minutes > 0，负时长下 minutes 为负永远进不了「分」分支，
-    // 只剩 total % 60 这个负余数。-90 秒因此渲染成 "-30 秒"。
-    expect(fmtSeconds(-90)).toBe("-30 秒");
-    expect(fmtSeconds(-150)).toBe("-30 秒");
+    // 只剩 total % 60 这个负余数。-90 秒因此渲染成 "-30" 秒。
+    expect(fmtSeconds(-90)).toBe("-1 分 30 秒");
+    expect(fmtSeconds(-150)).toBe("-2 分 30 秒");
   });
 
-  it("fmtSeconds(-60) 输出 0 秒，整整一分钟显示成零", () => {
-    // BUG: -60 秒的 minutes 是 -1、rest 是 -0，落到 else 分支输出 "0 秒"。
-    expect(fmtSeconds(-60)).toBe("0 秒");
+  it("fmtSeconds(-60) 输出 -1 分 0 秒，整整一分钟不再显示成零", () => {
+    expect(fmtSeconds(-60)).toBe("-1 分 0 秒");
+  });
+
+  it("fmtSeconds(-0.4) 舍成负零后输出 0 秒，不带负号", () => {
+    expect(fmtSeconds(-0.4)).toBe("0 秒");
+  });
+
+  it("正数侧的 fmtSeconds 不受负时长改动影响", () => {
+    expect(fmtSeconds(30)).toBe("30 秒");
+    expect(fmtSeconds(60)).toBe("1 分 0 秒");
+    expect(fmtSeconds(90)).toBe("1 分 30 秒");
   });
 
   it("fmtSeconds 对个位负秒仍输出负秒", () => {
