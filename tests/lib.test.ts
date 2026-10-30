@@ -166,6 +166,16 @@ describe("computeRoundScore", () => {
 });
 
 describe("transformRound", () => {
+  // validateRound 校验的是落盘产物（带信封字段），transformRound 只产出内层，
+  // 信封由 refresh 补齐，所以这里补一个壳再验。
+  const withEnvelope = (r: ReturnType<typeof transformRound>) => ({
+    schema_version: 1 as const,
+    fetch_id: "fixture-fetch",
+    generated_at: "2026-10-24T00:00:00.000Z",
+    checked_at: "2026-10-24T00:00:00.000Z",
+    ...r,
+  });
+
   it("normalizes tasks, candidates, totals and animation", () => {
     const r = transformRound(roundRaw);
     expect(r.tasks).toHaveLength(7);
@@ -178,9 +188,9 @@ describe("transformRound", () => {
     expect(high.animation?.scores.pelican).toBe(24);
   });
   it("validates schema and task count", () => {
-    const r = { schema_version: 1, ...transformRound(roundRaw) };
+    const r = withEnvelope(transformRound(roundRaw));
     expect(() => validateRound(r, { minCandidates: 2 })).not.toThrow();
-    expect(() => validateRound({ ...r, tasks: [] }, { minCandidates: 2 })).toThrow(/no tasks/);
+    expect(() => validateRound({ ...r, tasks: [] }, { minCandidates: 2 })).toThrow(/round\.tasks/);
   });
   // 回归：上游任务集会轮换（7 → 8 题），不能硬编码数量。
   it("accepts a task set whose size differs from the fixture", () => {
@@ -195,7 +205,7 @@ describe("transformRound", () => {
     const r = transformRound(extra);
     expect(r.tasks).toHaveLength(8);
     expect(r.round.task_count).toBe(8);
-    expect(() => validateRound({ schema_version: 1, ...r }, { minCandidates: 2 })).not.toThrow();
+    expect(() => validateRound(withEnvelope(r), { minCandidates: 2 })).not.toThrow();
   });
   it("rejects a task list that disagrees with the declared task_count", () => {
     const mismatched = { ...roundRaw, taskset: { ...roundRaw.taskset, task_count: 9 } };

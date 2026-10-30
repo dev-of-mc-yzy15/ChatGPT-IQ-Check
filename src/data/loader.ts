@@ -1,4 +1,5 @@
 import type { RadarBenchData, RoundData, StatusData } from "../types";
+import { assertRadarBenchShape, assertRoundShape, assertStatusShape } from "../../scripts/contract.mjs";
 
 export function urlFor(rel: string, base = import.meta.env.BASE_URL || "/"): string {
   return base.endsWith("/") ? base + rel : base + "/" + rel;
@@ -19,16 +20,25 @@ async function getJson<T>(rel: string, timeoutMs = 15000): Promise<T> {
   }
 }
 
-export function validateRadarBench(data: RadarBenchData): void {
-  if (!data || data.schema_version !== 1 || !Array.isArray(data.candidates) || data.candidates.length === 0) {
-    throw new Error("radar-bench.json 结构异常");
+function guard<T>(label: string, assert: (data: T) => T, data: T): T {
+  try {
+    return assert(data);
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(`${label} 结构异常：${detail}`);
   }
 }
 
+export function validateRadarBench(data: RadarBenchData): void {
+  guard("radar-bench.json", assertRadarBenchShape, data);
+}
+
 export function validateRound(data: RoundData): void {
-  if (!data || data.schema_version !== 1 || !data.round || !Array.isArray(data.candidates) || data.candidates.length === 0) {
-    throw new Error("round.json 结构异常");
-  }
+  guard("round.json", assertRoundShape, data);
+}
+
+export function validateStatus(data: StatusData): void {
+  guard("status.json", assertStatusShape, data);
 }
 
 export async function loadRadarBench(): Promise<RadarBenchData> {
@@ -43,7 +53,11 @@ export async function loadRound(): Promise<RoundData> {
   return data;
 }
 
-export const loadStatus = () => getJson<StatusData>("data/status.json");
+export async function loadStatus(): Promise<StatusData> {
+  const data = await getJson<StatusData>("data/status.json");
+  validateStatus(data);
+  return data;
+}
 
 export async function loadAll(): Promise<{
   radarBench: RadarBenchData;

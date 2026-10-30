@@ -1,3 +1,5 @@
+import { assertMinCandidates, assertRadarBenchShape, assertRoundShape } from "./contract.mjs";
+
 export const SCORE_MAX = 150;
 export const ROUND_MULTIPLIER = 1.5;
 
@@ -109,20 +111,8 @@ export function mergeRadarBench({ binding, summaries, generatedAt, checkedAt, fe
 }
 
 export function validateRadarBench(data, { minCandidates = 30 } = {}) {
-  if (!data || data.schema_version !== 1) throw new Error("radar-bench: bad schema_version");
-  if (!Array.isArray(data.candidates) || data.candidates.length < minCandidates) {
-    throw new Error("radar-bench: too few candidates");
-  }
-  const seen = new Set();
-  for (const c of data.candidates) {
-    const key = c.model + "|" + c.effort;
-    if (seen.has(key)) throw new Error("radar-bench: duplicate candidate " + key);
-    seen.add(key);
-    if (!Number.isFinite(c.score) || c.score < 0 || c.score > 150) {
-      throw new Error("radar-bench: bad score for " + key);
-    }
-    if (!Array.isArray(c.history)) throw new Error("radar-bench: missing history for " + key);
-  }
+  assertRadarBenchShape(data);
+  assertMinCandidates(data, minCandidates, "radar-bench");
   return data;
 }
 
@@ -251,11 +241,7 @@ export function transformRound(raw) {
 }
 
 export function validateRound(data, { minCandidates = 30 } = {}) {
-  if (!data || data.schema_version !== 1) throw new Error("round: bad schema_version");
-  if (!data.round || !data.round.updated_at) throw new Error("round: missing updated_at");
-  if (!Array.isArray(data.tasks) || data.tasks.length === 0) throw new Error("round: no tasks");
-  if (!Array.isArray(data.candidates) || data.candidates.length < minCandidates) {
-    throw new Error("round: too few candidates");
-  }
+  assertRoundShape(data);
+  assertMinCandidates(data, minCandidates, "round");
   return data;
 }
