@@ -21,6 +21,16 @@ Gemfile.lock
 # These are AI-assistant working files, not part of the shipped project.
 docs/superpowers/
 .superpowers/
+!docs/superpowers/
+docs/superpowers/*
+!docs/superpowers/specs/
+!docs/superpowers/specs/**
+!docs/superpowers/plans/
+!docs/superpowers/plans/**
+
+# 本地工具产生的配置与反馈日志（仅本机有效，不入库）
+.claude/settings.local.json
+.pua-feedback.jsonl
 
 # Node / Vite
 node_modules/
