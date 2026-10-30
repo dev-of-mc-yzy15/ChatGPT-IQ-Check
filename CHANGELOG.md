@@ -55,6 +55,7 @@
 - 修回被误塞进 JSX 属性区的注释（`ThemeToggle.tsx`；`78634ab`）。
 - 时间戳、`asset.sha256`、分数上限等 round 侧静默漂移收口（`13707fd`、`24685d8`、`eee61a9`）。
 - 上游降智动画资产落地并渲染：34 个产物按 `asset_sha256` 逐个校验后存入 `public/assets/`，`assetUrl()` 剥掉上游根绝对前缀、按 `localAssetName()` 把上游的 `.html.txt` 映射成本地 `.html`（只改后缀，内容与 `asset_sha256` 不变）再经 `urlFor()` 拼 base，详情页折叠、展开才挂出 iframe，`sandbox="allow-scripts"` 且不含 `allow-same-origin`，旁边显示校验和前 8 位（`src/lib/asset.ts`、`RoundDetail.tsx`、`public/assets/`）。两条成因都在初始实现里踩实了：`.html.txt` 会被托管按扩展名回 `text/plain`，iframe 用 `src` 只会显示源码；而 `srcDoc` 生成的子文档继承父文档 CSP，`index.html` 的 `script-src` 只放行父页面自己那一个 hash，34 个产物里 23 个的内联 `<script>` 会被 `script-src-elem` 全部挡掉、只剩静帧——`src` 指向的真实 URL 子文档有自己的 policy container，不继承父 CSP，这才走得通。新增 `tests/e2e/animation-csp.spec.ts` 当常驻闸门（子 frame 内脚本真的执行过 + 子文档零 CSP 违规 + 产物按 `text/html` 回）。
+- `index.html` 的 CSP 补 `font-src 'self' data: https://fonts.gstatic.com`，`style-src` 放行 `https://fonts.googleapis.com`：缺 `font-src` 时字体回落到 `default-src 'self'`，产物里引外部 Google Fonts 的那部分会被拒。`script-src` 保持只放行父页面那一个 hash，没有为了让动画跑而引入 `'unsafe-inline'`。
 - `derive` 四处时间口径缺陷收口：`lastPerDay` 改按解析后的毫秒排序，不再拿 `at` 原始字符串比字典序（混时区会把跌算成涨并漏报降智）；`buildDailyGrid` 与 `lastPerDay` 共用 `latestPerUtcDay`，同日取值统一按毫秒取最新而非数组末位；`Math.min(...spread)` 改成单趟循环，六条曲线各带一个 1970 坏点也不再撑爆实参；网格跨度加 `MAX_GRID_DAYS`（1100 天）封顶，两万多空桶不再把横轴拉成一条线（`src/lib/derive.ts`、`TrendChart.tsx`；`5220254`、`2207ec2`）。对应 XFAIL 用例已同步转真断言（`tests/derive.test.ts`）。
 
 ### 测试与工程
@@ -82,4 +83,4 @@
 
 [AGPL-3.0-or-later](./LICENSE)，第三方数据与商标说明见 [NOTICE](./NOTICE)。
 
-`public/data/` 下的数据不在本项目 AGPL 再许可范围内，版权归 codexradar.com 所有。
+`public/data/` 下的数据与 `public/assets/` 下的动画产物均不在本项目 AGPL 再许可范围内，版权归 codexradar.com 所有。

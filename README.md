@@ -112,7 +112,7 @@ npm run refresh -- --force  # 内容没变也强制重写（重置时间戳）
 |---|---|---|
 | `.github/workflows/ci.yml` | `pull_request` 与手动 `workflow_dispatch` | `npm ci --ignore-scripts` + `npm audit --omit=dev --audit-level=high --registry=https://registry.npmjs.org/` + `npm test` + `npm run build`（build 含 `tsc -b`、`typecheck:scripts`）+ `npm run check:base` + `npm run verify:assets` + `npm run e2e`（真 Chromium，先 `npx playwright install --with-deps chromium`）→ PR 闸门 |
 | `.github/workflows/refresh-data.yml` | 每天 UTC 00:30 + 手动 | 跑 `refresh.mjs`，有变化就提交 `public/data/`（带 `[skip ci]`），失败自动开 issue |
-| `.github/workflows/deploy.yml` | push 到 main、`refresh-data` 完成后、手动 | `npm ci` + `npm test` + `npm run build` → 上传产物 → 部署 Pages |
+| `.github/workflows/deploy.yml` | push 到 main、`refresh-data` 完成后、手动 | `npm ci --ignore-scripts` + `npm test` + `npm run build` → 上传产物 → 部署 Pages |
 
 > **为什么 refresh 提交后还要靠 `workflow_run` 触发部署？**
 > 用 `GITHUB_TOKEN` 推送产生的 `push` 事件**不会**触发其他 workflow（GitHub 的防递归规则），
@@ -123,7 +123,7 @@ npm run refresh -- --force  # 内容没变也强制重写（重置时间戳）
 ### 首次启用（需手动操作一次）
 
 > **首次 push 之前上面这个地址打不开，是预期行为**：`origin/main` 目前只有一个 `Initial commit`，
-> 本地领先 50 多个尚未推送的 commit，Pages 也还没启用。先 push 到 main 并走完下面三步，地址才会有内容。
+> 本地领先 90 多个尚未推送的 commit，Pages 也还没启用。先 push 到 main 并走完下面三步，地址才会有内容。
 
 1. 仓库 **Settings → Pages → Build and deployment → Source** 选 **GitHub Actions**。
 2. 确认 **Settings → Actions → General → Workflow permissions** 允许读写（workflow 内已声明最小权限）。
@@ -231,6 +231,7 @@ npm run refresh -- --force  # 内容没变也强制重写（重置时间戳）
 - **产物必须按 `.html` 落盘，不能留 `.html.txt`。** 静态托管按扩展名回 `content-type`，`.html.txt` 只会拿到 `text/plain`，iframe 用 `src` 加载出来就是一屏源码，脚本自然也不跑。这条映射在 `assetUrl()` 与 `scripts/verify-assets.mjs` 里各有一份同规则的副本（两侧都有测试钉住），只认末尾的 `.html.txt`、其余名字原样返回，改一处必须同步改另一处。
 - **iframe 走 `src`，不走 `srcDoc`。** `srcDoc` 生成的子文档会继承父文档的 CSP，而 `index.html` 的 `script-src` 只放行父页面自己那一个 hash，34 个产物里 23 个靠内联 `<script>` 驱动交互，会被 `script-src-elem` 全部挡掉，线上只剩静帧。`src` 指向真实 URL 的子文档有自己的 policy container，不继承父 CSP，产物自己的脚本正常执行。产物本身自包含（内联脚本 + 绝对 URL 字体，无存储 API、无 `top`/`parent` 依赖），适合沙箱。
 - iframe 用 `sandbox="allow-scripts"`，**不要**再加 `allow-same-origin`——动画靠内联 `<script>` 跑，而一旦同源，sandbox 的隔离基本失效。
+- `index.html` 的 CSP 另有 `font-src 'self' data: https://fonts.gstatic.com`，并在 `style-src` 里放行 `https://fonts.googleapis.com`。少数产物仍引外部 Google Fonts；`src` 方案下子文档本不继承父 CSP，这两条是留给「万一退回 `srcDoc` 或将来产物内联进父页」时的兜底——`font-src` 缺省会落回 `default-src 'self'`，字体一律被拒。**`script-src` 不因此放宽**，仍是 `'self'` 加那一个 hash，没引入 `'unsafe-inline'`。
 - 接新批次时：先下载，逐个比对 `asset_sha256`；不等就重抓，仍不等就记进失败清单，别把错文件硬塞进目录。入库文件名按 `localAssetName()` 把上游 basename 末尾的 `.html.txt` 改成 `.html`，只动后缀、内容与哈希不动。
 - 详情页同时显示校验和的前 8 位（`<code>` 可选中复制，悬停看全文），方便人肉核对产物与数据是否对得上。
 
