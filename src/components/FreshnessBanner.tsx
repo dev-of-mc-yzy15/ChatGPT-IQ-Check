@@ -30,6 +30,10 @@ export function FreshnessBanner({
   const reuseErrors = Array.isArray(status.errors) ? status.errors : null;
   if (reuseErrors === null) warnings.push("复用记录缺失");
 
+  // ok / round_ok 以前是硬写 true 的死字段，现在写真值，横幅必须消费。
+  if (status.ok === false) warnings.push("最近一次刷新未全部成功");
+  if (status.round_ok === false) warnings.push("本轮数据未刷新成功");
+
   const warn = warnings.length > 0;
 
   return (

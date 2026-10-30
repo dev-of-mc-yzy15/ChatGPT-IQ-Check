@@ -90,3 +90,22 @@ describe("FreshnessBanner 未知态", () => {
     expect(screen.getByRole("status")).toHaveTextContent("复用记录缺失");
   });
 });
+
+describe("FreshnessBanner ok 消费", () => {
+  it("warns when the last refresh was not fully successful", () => {
+    renderBanner({ ok: false, errors: ["a: reused previous data"] });
+    expect(screen.getByRole("status")).toHaveTextContent("最近一次刷新未全部成功");
+  });
+
+  it("warns when the round data did not refresh", () => {
+    renderBanner({ round_ok: false });
+    expect(screen.getByRole("status")).toHaveTextContent("本轮数据未刷新成功");
+  });
+
+  it("stays quiet when both flags are true", () => {
+    renderBanner({ ok: true, round_ok: true });
+    const banner = screen.getByRole("status");
+    expect(banner).not.toHaveTextContent("最近一次刷新未全部成功");
+    expect(banner).not.toHaveTextContent("本轮数据未刷新成功");
+  });
+});

@@ -232,7 +232,9 @@ export async function refreshAll({
 
   const errors = results.map((r) => r.error).filter(Boolean);
   const freshCount = results.filter((r) => r.fresh).length;
-  const minimum = minRadarCandidates ?? Math.max(30, Math.ceil(binding.candidates.length * 0.8));
+  const total = binding.candidates.length;
+  // 上限别超过实际候选数：n=20 时 max(30, 16)=30 > 20，刷新会被永久判失败。
+  const minimum = minRadarCandidates ?? Math.max(1, Math.min(total, Math.max(30, Math.ceil(total * 0.8))));
   if (freshCount < minimum) {
     throw new Error(
       `only ${freshCount}/${binding.candidates.length} summaries succeeded (minimum ${minimum})`,
@@ -266,18 +268,21 @@ export async function refreshAll({
   validateRound(roundData, { minCandidates: minRoundCandidates ?? 30 });
 
   const latest = maxLatest(available.map((r) => r.summary));
-  const latestStale = staleDays(latest, now()) ?? 0;
-  const roundStale = staleDays(roundData.round.updated_at, now()) ?? 0;
+  // 时间解析失败是「未知」，不能落 0 冒充刚刷新过。
+  const knownStale = [staleDays(latest, now()), staleDays(roundData.round.updated_at, now())].filter(
+    (d) => d !== null,
+  );
   const status = {
     checked_at: stamp,
-    ok: true,
+    // ok 是真值：只要有一个候选复用旧数据或抓取失败，就不是 ok。
+    ok: errors.length === 0 && freshCount === total,
     benchmark: radarBench.benchmark,
     candidates_ok: freshCount,
-    candidates_total: binding.candidates.length,
-    round_ok: true,
+    candidates_total: total,
+    round_ok: round.candidates.length > 0,
     latest_graded_at: latest,
     round_updated_at: roundData.round.updated_at,
-    stale_days: Math.max(latestStale, roundStale),
+    stale_days: knownStale.length ? Math.max(...knownStale) : null,
     errors,
   };
 
@@ -299,9 +304,19 @@ export async function refreshAll({
     }
   }
 
+  let statusChanged = true;
+  if (!force) {
+    const oldStatus = await readJsonIfExists(join(outDir, "status.json"));
+    if (oldStatus && contentEqual(oldStatus, status)) {
+      status.checked_at = oldStatus.checked_at;
+      statusChanged = false;
+    }
+  }
+
   if (radarChanged) await writeJson(join(outDir, "radar-bench.json"), radarBench);
   if (roundChanged) await writeJson(join(outDir, "round.json"), roundData);
-  await writeJson(join(outDir, "status.json"), status);
+  // status 以前是无条件写，checked_at 每次都变，git diff 恒脏 → 每天一条空提交。
+  if (statusChanged) await writeJson(join(outDir, "status.json"), status);
   return { radarBench, round: roundData, status };
 }
 
