@@ -64,6 +64,9 @@ describe("TrendChart", () => {
     expect(titles.some((t) => t.includes("分数下降"))).toBe(true);
     // 散点数量与数据表行数一致（表里仍是原始行，供核对）
     expect(container.querySelectorAll("tbody tr")).toHaveLength(3);
+    // Δ 列首行为空、后续为相邻两点差值：预先算好的差值表必须与逐点前缀算法同值。
+    const deltaCells = [...container.querySelectorAll("tbody tr")].map((tr) => tr.lastElementChild?.textContent);
+    expect(deltaCells).toEqual(["—", "-2.0", "-8.0"]);
   });
 
   it("renders empty state", () => {

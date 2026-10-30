@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import type { RadarCandidate } from "../types";
-import { buildDailyGrid, computeDelta, findDegradationPoints, lastPerDay } from "../lib/derive";
+import { buildDailyGrid, findDegradationPoints, lastPerDay } from "../lib/derive";
 import { fmtDateTime, fmtDelta, fmtEffort, fmtScore } from "../lib/format";
 import { ModelName } from "./ModelName";
 import { candidateKey } from "../../scripts/contract.mjs";
@@ -52,6 +52,23 @@ export function TrendChart({
       else next.add(key);
       return next;
     });
+  // 数据表逐行算 Δ 时每次都要 history.slice(0, idx + 1)，是 O(n²)：先把每条序列的
+  // 逐点差值算一遍，行内只查表。公式与 computeDelta 的相邻两点差值保持一致。
+  const deltaByKey = useMemo(() => {
+    const map = new Map<string, (number | null)[]>();
+    for (const c of candidates) {
+      let prev: number | null = null;
+      map.set(
+        candidateKey(c.model, c.effort),
+        c.history.map((p) => {
+          const delta = prev == null ? null : Math.round((p.score - prev) * 10) / 10;
+          prev = p.score;
+          return delta;
+        }),
+      );
+    }
+    return map;
+  }, [candidates]);
   if (!candidates.length) {
     return <section className="card"><h2>RadarBench 趋势</h2><p className="muted">暂无可展示的曲线。</p></section>;
   }
@@ -185,7 +202,7 @@ export function TrendChart({
             <thead><tr><th scope="col">日期</th><th scope="col">候选</th><th scope="col">分数</th><th scope="col">Δ</th></tr></thead>
             <tbody>
               {candidates.flatMap((c) => c.history.map((p, idx) => {
-                const delta = computeDelta(c.history.slice(0, idx + 1)).delta;
+                const delta = deltaByKey.get(candidateKey(c.model, c.effort))?.[idx] ?? null;
                 return (
                   <tr key={c.model + c.effort + p.at}>
                     <td>{fmtDateTime(p.at)}</td>

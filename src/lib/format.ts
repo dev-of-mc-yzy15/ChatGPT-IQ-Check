@@ -20,19 +20,23 @@ export function fmtSeconds(seconds: number | null | undefined): string {
   return minutes > 0 ? `${minutes} 分 ${rest} 秒` : `${rest} 秒`;
 }
 
+// 每次调用都新建 Intl.DateTimeFormat 不便宜：列表里几百行就是几百次构造。
+// 模块级只建一次，参数与原先逐次传入的完全一致。
+const DATE_TIME_FORMAT = new Intl.DateTimeFormat("zh-CN", {
+  timeZone: "Asia/Shanghai",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+});
+
 export function fmtDateTime(iso: string | null | undefined): string {
   if (!iso) return DASH;
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return DASH;
-  const parts = new Intl.DateTimeFormat("zh-CN", {
-    timeZone: "Asia/Shanghai",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).formatToParts(date);
+  const parts = DATE_TIME_FORMAT.formatToParts(date);
   const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
   return `${get("year")}-${get("month")}-${get("day")} ${get("hour")}:${get("minute")}`;
 }

@@ -1,4 +1,4 @@
-import { readFile, writeFile, rename, mkdir, unlink } from "node:fs/promises";
+import { readFile, open, rename, mkdir, unlink } from "node:fs/promises";
 import { basename, dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { randomUUID } from "node:crypto";
@@ -159,7 +159,15 @@ async function writeJson(file, data) {
   await mkdir(dirname(file), { recursive: true });
   const tmp = `${file}.${process.pid}.${randomUUID()}.tmp`;
   try {
-    await writeFile(tmp, JSON.stringify(data, null, 2) + "\n");
+    // 只 rename 不 sync：进程或断电在这中间挂掉，目录项指向的可能是还没落盘的空文件。
+    // 显式 fsync 之后再 rename，rename 的原子性才真正等于「要么旧内容、要么完整新内容」。
+    const handle = await open(tmp, "w");
+    try {
+      await handle.writeFile(JSON.stringify(data, null, 2) + "\n");
+      await handle.sync();
+    } finally {
+      await handle.close();
+    }
     await rename(tmp, file);
   } catch (error) {
     await unlink(tmp).catch(() => {});

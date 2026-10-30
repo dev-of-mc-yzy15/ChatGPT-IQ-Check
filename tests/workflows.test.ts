@@ -12,7 +12,11 @@ describe("workflows", () => {
   it("refresh-data uses Node 24, no npm ci, and a timeout", () => {
     const wf = load("refresh-data.yml");
     expect(wf.jobs.refresh["timeout-minutes"]).toBe(10);
-    expect(wf.jobs.refresh.steps[1].with["node-version"]).toBe("24");
+    // 按 uses 找而不是按下标：中间插一个 step 就整条断言错位到别的对象上。
+    const setup = wf.jobs.refresh.steps.find((s: { uses?: string }) =>
+      s.uses?.startsWith("actions/setup-node"),
+    );
+    expect(setup?.with["node-version"]).toBe("24");
     expect(JSON.stringify(wf)).not.toContain("npm ci");
     expect(wf.permissions.contents).toBe("write");
   });
