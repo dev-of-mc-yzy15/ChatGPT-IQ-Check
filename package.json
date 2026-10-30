@@ -19,6 +19,7 @@
     "e2e": "playwright test",
     "refresh": "node scripts/refresh.mjs",
     "check:base": "node scripts/check-base.mjs",
+    "check:eol": "node scripts/check-eol.mjs",
     "verify:assets": "node scripts/verify-assets.mjs"
   },
   "dependencies": {

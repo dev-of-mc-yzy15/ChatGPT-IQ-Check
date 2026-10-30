@@ -42,6 +42,9 @@ jobs:
       # 必须在 build 之后：这一步读的是 dist/index.html，不是源码。
       - run: npm run check:base
 
+      # 换行闸门：.editorconfig 要求 insert_final_newline，编辑器漏补时这里会红。
+      - run: npm run check:eol
+
       # 资产哈希闸门：public/assets/ 里每个文件都得对得上 round.json 钉的 asset_sha256，
       # 否则线上 iframe 会 404 或渲染出别的内容。改过资产就必须重算并更新 asset_sha256。
       - run: npm run verify:assets

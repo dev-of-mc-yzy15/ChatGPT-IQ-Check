@@ -73,6 +73,20 @@ describe("workflows", () => {
     expect(check, "check:base 必须排在 build 之后").toBeGreaterThan(build);
   });
 
+  // 换行闸门：.editorconfig 要求 insert_final_newline。它读的是工作区文件，与 build 无
+  // 功能依赖；钉在 check:base 之后，是为了让构建类失败先报，别让它抢在前面。
+  it("ci runs check:eol after check:base", () => {
+    const wf = load("ci.yml");
+    const runs: string[] = wf.jobs.verify.steps
+      .map((s: { run?: string }) => s.run)
+      .filter(Boolean);
+    const base = runs.indexOf("npm run check:base");
+    const eol = runs.indexOf("npm run check:eol");
+    expect(base, "check:base 步骤必须还在").toBeGreaterThanOrEqual(0);
+    expect(eol, "check:eol 步骤必须进 CI").toBeGreaterThanOrEqual(0);
+    expect(eol, "check:eol 必须排在 check:base 之后").toBeGreaterThan(base);
+  });
+
   it("scripts are covered by the checkJs gate", () => {
     const cfg = JSON.parse(readFileSync(resolve(repoRoot, "tsconfig.scripts.json"), "utf8"));
     expect(cfg.compilerOptions.checkJs).toBe(true);
