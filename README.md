@@ -223,14 +223,15 @@ npm run refresh -- --force  # 内容没变也强制重写（重置时间戳）
 
 ### 动画资产：已本地化并渲染
 
-上游给每个候选都配了一段降智动画——自包含 HTML（内联脚本，形如 `/assets/degradation-….html.txt`）。这些产物**不是本项目的代码**：版权归 codexradar.com，见 [NOTICE](./NOTICE)。
+上游给每个候选都配了一段降智动画——自包含 HTML（内联脚本）。上游 `asset_url` 形如 `/assets/degradation-….html.txt`，本地落盘时去掉那个 `.txt` 变成 `.html`，内容与 `asset_sha256` 都不变，别把 `public/assets/` 里的真实文件名当成上游形状。这些产物**不是本项目的代码**：版权归 codexradar.com，见 [NOTICE](./NOTICE)。
 
 - 34 个产物已逐个比对上游 `asset_sha256` 后落在 `public/assets/`，随站点一起发布。**不在浏览器里直接 iframe 上游地址**：上游给的是站点根绝对路径，与 Pages 的 base `/ChatGPT-IQ-Check/` 冲突，直连必然 34/34 全 404。
-- 路径由 `src/lib/asset.ts` 的 `assetUrl()` 剥成 basename，再经 `urlFor()` 拼上 base；上游路径前缀一律丢掉。
-- 详情页用 `<details>` 折叠，**展开时才取回并注入**，34 个候选不会一起抢首屏带宽。
-- 落盘后缀是 `.html.txt`，静态托管按扩展名回 `text/plain`——iframe 直接给 `src` 只会显示源码。所以先 `fetch` 取回文本、再走 `srcDoc`，由浏览器强制按 HTML 解析（产物自包含：内联脚本 + 绝对 URL 字体，无存储 API、无 `top`/`parent` 依赖，适合沙箱）。
+- 路径由 `src/lib/asset.ts` 的 `assetUrl()` 剥成 basename、按 `localAssetName()` 把末尾 `.html.txt` 换成 `.html`，再经 `urlFor()` 拼上 base；上游路径前缀一律丢掉。
+- 详情页用 `<details>` 折叠，**展开时才挂出 iframe**（外加 `loading="lazy"`），34 个候选不会一起抢首屏带宽。
+- **产物必须按 `.html` 落盘，不能留 `.html.txt`。** 静态托管按扩展名回 `content-type`，`.html.txt` 只会拿到 `text/plain`，iframe 用 `src` 加载出来就是一屏源码，脚本自然也不跑。这条映射在 `assetUrl()` 与 `scripts/verify-assets.mjs` 里各有一份同规则的副本（两侧都有测试钉住），只认末尾的 `.html.txt`、其余名字原样返回，改一处必须同步改另一处。
+- **iframe 走 `src`，不走 `srcDoc`。** `srcDoc` 生成的子文档会继承父文档的 CSP，而 `index.html` 的 `script-src` 只放行父页面自己那一个 hash，34 个产物里 23 个靠内联 `<script>` 驱动交互，会被 `script-src-elem` 全部挡掉，线上只剩静帧。`src` 指向真实 URL 的子文档有自己的 policy container，不继承父 CSP，产物自己的脚本正常执行。产物本身自包含（内联脚本 + 绝对 URL 字体，无存储 API、无 `top`/`parent` 依赖），适合沙箱。
 - iframe 用 `sandbox="allow-scripts"`，**不要**再加 `allow-same-origin`——动画靠内联 `<script>` 跑，而一旦同源，sandbox 的隔离基本失效。
-- 接新批次时：先下载，逐个比对 `asset_sha256`；不等就重抓，仍不等就记进失败清单，别把错文件硬塞进目录。文件名保持上游 basename。
+- 接新批次时：先下载，逐个比对 `asset_sha256`；不等就重抓，仍不等就记进失败清单，别把错文件硬塞进目录。入库文件名按 `localAssetName()` 把上游 basename 末尾的 `.html.txt` 改成 `.html`，只动后缀、内容与哈希不动。
 - 详情页同时显示校验和的前 8 位（`<code>` 可选中复制，悬停看全文），方便人肉核对产物与数据是否对得上。
 
 ## 降智信号判定
@@ -248,6 +249,20 @@ npm run test:watch
 
 覆盖纯函数（排序 / Δ / 日桶 / 矩阵 / 格式化）、loader 的错误态、抓取脚本的转换与去重、以及主要组件的渲染与交互。
 fixtures 在 `tests/fixtures/`，是从上游真实响应裁剪出的样本。
+
+### 端到端测试
+
+上面的单测全跑在 jsdom 上：不放 CSP、不做 MIME 检查、不跑布局。子路径失效与 CSP 写歪造成的整页白屏，只有真浏览器能兜住，所以另有 Playwright 基线：
+
+```bash
+npx playwright install chromium   # 只需一次，二进制约 150 MB，不进 node_modules
+npm run e2e
+```
+
+- 只用 Chromium，单 worker；脚本自己 `npm run build` 后起 `vite preview`（端口 4321），跑完退出。前置构建过就置 `E2E_PREBUILT=1` 跳过构建，CI 走这条路。
+- preview 由 `tests/e2e/global-setup.ts` 以 detached 方式拉起，playwright 不跟踪它——受限令牌下收尾的 `taskkill` 会失败，交给 webServer 会一直吊着不退。已有同端口服务在跑时直接复用。
+- 覆盖：根路径重定向到子路径、脚本/样式逐个可达且 MIME 正确、缺失资源当前是 200 + `text/html`（SPA fallback 语义，改成真 404 时断言要同步改）、全程零 CSP 违规/零 console 错误、真实业务内容上屏且 `/data/` 恰 3 次。
+- 首次跑要现装 chromium；CI 里已接在 `npm run build` 之后，装了系统依赖。
 
 ## 许可
 
