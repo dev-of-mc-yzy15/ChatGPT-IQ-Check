@@ -36,6 +36,28 @@ class HttpError extends Error {
   }
 }
 
+/** 命令行用法错误：单独分类，好让 main 用不同的退出码收尾。 */
+class UsageError extends Error {}
+
+/**
+ * CLI 参数。只认 --force。
+ *
+ * 以前用 new Set(process.argv.slice(2)) 收集、未知参数静默忽略：`--forse` 会按非 force
+ * 跑，contentEqual 命中时连 checked_at 都不重写，用户以为强制刷新过了。未知参数一律直接红，
+ * 与 verify-assets.mjs 的做法一致。
+ * @param {string[]} argv
+ * @returns {{force: boolean}}
+ */
+export function parseArgs(argv) {
+  /** @type {{force: boolean}} */
+  const options = { force: false };
+  for (const arg of argv) {
+    if (arg === "--force") options.force = true;
+    else throw new UsageError(`未知参数：${arg}`);
+  }
+  return options;
+}
+
 /**
  * @param {string} url
  * @param {{tries?: number, timeoutMs?: number, headers?: Record<string, string>, deadline?: number}} [options]
@@ -194,6 +216,40 @@ function assertReusableSummary(old, binding) {
 }
 
 /**
+ * 旧 radar 的候选索引。
+ *
+ * readJsonIfExists 只保证「JSON 可解析」，形状一概不管：candidates 可能是对象、字符串，
+ * 元素也可能是 null。直接 .map 的话坏文件抛在 writeJson 之前 —— status.json 不重写、
+ * errors 里也没有记录，整轮刷新静默崩掉，正好和「旧数据坏了要降级、要记 errors、本轮照常
+ * 跑完」的设计相反。所以进表前先过形状关：整块不是数组就当空，坏元素单独跳过，原因一律
+ * 写进 errors。跳过而不是猜 —— 坏的绝不能被当成可用而走进 reused。
+ * @param {any} oldRadar readJsonIfExists 的返回值
+ * @param {string[]} errors
+ * @returns {Map<string, any>}
+ */
+function indexOldCandidates(oldRadar, errors) {
+  /** @type {Map<string, any>} */
+  const byKey = new Map();
+  // 不存在或整个文件不是对象时不必再报一次：readJsonIfExists 已经记过了。
+  if (!oldRadar || typeof oldRadar !== "object") return byKey;
+  if (!Array.isArray(oldRadar.candidates)) {
+    errors.push("radar-bench.json: 旧数据不可用（candidates 不是数组）");
+    return byKey;
+  }
+  // 局部断言一次：oldRadar 是 any，narrowing 传不到回调参数，直接写在回调上是隐式 any。
+  /** @type {any[]} */
+  const list = oldRadar.candidates;
+  list.forEach((candidate, index) => {
+    if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) {
+      errors.push(`radar-bench.json: 旧数据不可用（candidates[${index}] 不是对象）`);
+      return;
+    }
+    byKey.set(candidateKey(candidate.model, candidate.effort), candidate);
+  });
+  return byKey;
+}
+
+/**
  * @param {any} data
  * @returns {any}
  */
@@ -324,9 +380,7 @@ export async function refreshAll({
   /** @type {string[]} 旧数据自身损坏的告警，最终并入 status.errors */
   const loadErrors = [];
   const oldRadar = await readJsonIfExists(join(outDir, "radar-bench.json"), loadErrors);
-  const oldByKey = new Map(
-    /** @type {any[]} */ (oldRadar?.candidates ?? []).map((c) => [candidateKey(c.model, c.effort), c]),
-  );
+  const oldByKey = indexOldCandidates(oldRadar, loadErrors);
 
   const results = await mapLimit(binding.candidates, 4, async (/** @type {any} */ candidate) => {
     const key = candidateKey(candidate.model, candidate.effort);
@@ -491,8 +545,8 @@ export async function refreshAll({
 }
 
 async function main() {
-  const args = new Set(process.argv.slice(2));
-  const result = await refreshAll({ force: args.has("--force") });
+  const options = parseArgs(process.argv.slice(2));
+  const result = await refreshAll({ force: options.force });
   console.log(
     `wrote ${result.radarBench.candidates.length} candidates, ${result.round.candidates.length} round candidates`,
   );
@@ -510,6 +564,7 @@ async function main() {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch((error) => {
     console.error(error);
-    process.exit(1);
+    // 参数用错是用法问题（退 2），其余是运行失败（退 1），与 verify-assets.mjs 对齐。
+    process.exit(error instanceof UsageError ? 2 : 1);
   });
 }

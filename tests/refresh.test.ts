@@ -1,11 +1,22 @@
 import { describe, it, expect, vi } from "vitest";
+import { spawnSync } from "node:child_process";
 import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { summaryUrl, refreshAll, fetchJson, roundCandidateFloor } from "../scripts/refresh.mjs";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import {
+  summaryUrl,
+  refreshAll,
+  fetchJson,
+  roundCandidateFloor,
+  parseArgs,
+} from "../scripts/refresh.mjs";
 import bindingRaw from "./fixtures/binding.sample.json";
 import summaryRaw from "./fixtures/summary.sample.json";
 import roundRaw from "./fixtures/round.sample.json";
+
+const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const script = resolve(repoRoot, "scripts/refresh.mjs");
 
 function jsonResponse(body: unknown, status = 200) {
   return { ok: status >= 200 && status < 300, status, json: async () => body } as Response;
@@ -491,3 +502,138 @@ describe("fetchJson 总预算", () => {
   });
 });
 
+
+// 缺陷 1：readJsonIfExists 只保证「JSON 可解析」，不保证形状。旧实现直接
+// (oldRadar?.candidates ?? []).map(...)，于是 candidates 是对象/字符串、或元素是 null 时
+// 抛在写盘之前：status.json 不重写、errors 里也没有记录，整轮静默崩成红灯 —— 正好违反
+// refresh.mjs 里「旧数据坏了要降级、要记 errors、本轮照常跑完」的既有约定。
+describe("refreshAll 旧 radar 形状坏掉要降级", () => {
+  const mkFetch = (opts: { failFor?: string } = {}) =>
+    vi.fn(async (url: string) => {
+      if (url.includes("radar-bench-binding")) return jsonResponse(bindingRaw);
+      if (url.includes("radar-bench-score")) {
+        const u = new URL(url);
+        const model = u.searchParams.get("model") ?? "";
+        const effort = u.searchParams.get("effort") ?? "";
+        if (opts.failFor === model + "|" + effort) throw new Error("boom");
+        return jsonResponse({ ...summaryRaw, model, effort });
+      }
+      if (url.includes("degradation-codex-latest")) return jsonResponse(roundRaw);
+      throw new Error("unexpected url " + url);
+    });
+
+  const seed = (dir: string) =>
+    refreshAll({
+      fetchImpl: mkFetch() as unknown as typeof fetch,
+      outDir: dir,
+      now: () => new Date("2026-10-24T00:00:00Z"),
+      minRadarCandidates: 3,
+      minRoundCandidates: 2,
+    });
+
+  const cases: Array<[string, unknown]> = [
+    ["candidates 是对象", { candidates: {} }],
+    ["candidates 是字符串", { candidates: "x" }],
+    ["candidates 里只有 null", { candidates: [null] }],
+  ];
+
+  it.each(cases)("旧 radar 的 %s 时不抛，降级重抓并记 errors", async (_label, shape) => {
+    const dir = await mkdtemp(join(tmpdir(), "iq-refresh-"));
+    await seed(dir);
+    await writeFile(join(dir, "radar-bench.json"), JSON.stringify(shape), "utf8");
+
+    const result = await refreshAll({
+      fetchImpl: mkFetch() as unknown as typeof fetch,
+      outDir: dir,
+      now: () => new Date("2026-10-24T01:00:00Z"),
+      minRadarCandidates: 3,
+      minRoundCandidates: 2,
+    });
+
+    // 坏旧数据一个都不能被当成可用而走进 reused：全部落回重新抓取
+    expect(result.status.reused_count).toBe(0);
+    expect(result.status.missing_count).toBe(0);
+    expect(result.status.candidates_ok).toBe(3);
+    expect(result.status.ok).toBe(false);
+    // status.json 必须照常重写，且 errors 里点名坏文件
+    const onDisk = JSON.parse(await readFile(join(dir, "status.json"), "utf8"));
+    expect(onDisk.candidates_ok).toBe(3);
+    expect(onDisk.ok).toBe(false);
+    expect(
+      onDisk.errors.some((e: string) => e.includes("radar-bench.json: 旧数据不可用")),
+    ).toBe(true);
+  });
+
+  // 坏元素只淘汰自己，不能把整块旧数据一起判死。
+  it("null 混在好元素中间时，好的旧候选仍可复用", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "iq-refresh-"));
+    const seeded = await seed(dir);
+    const victim = seeded.radarBench.candidates[0];
+    const onDisk = JSON.parse(await readFile(join(dir, "radar-bench.json"), "utf8"));
+    onDisk.candidates.splice(1, 0, null);
+    await writeFile(join(dir, "radar-bench.json"), JSON.stringify(onDisk), "utf8");
+
+    const result = await refreshAll({
+      fetchImpl: mkFetch({ failFor: victim.model + "|" + victim.effort }) as unknown as typeof fetch,
+      outDir: dir,
+      now: () => new Date("2026-10-24T01:00:00Z"),
+      minRadarCandidates: 2,
+      minRoundCandidates: 2,
+    });
+
+    expect(result.status.reused_count).toBe(1);
+    expect(result.status.missing_count).toBe(0);
+    expect(result.status.errors.some((e) => String(e ?? "").includes("旧数据不可用"))).toBe(true);
+  });
+
+  // 降级后写回的必须是干净数据，否则坏形状会被下一轮固化。
+  it("坏形状降级后写回的 radar-bench.json 能被下一轮复用", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "iq-refresh-"));
+    await seed(dir);
+    await writeFile(join(dir, "radar-bench.json"), JSON.stringify({ candidates: "x" }), "utf8");
+    await refreshAll({
+      fetchImpl: mkFetch() as unknown as typeof fetch,
+      outDir: dir,
+      now: () => new Date("2026-10-24T01:00:00Z"),
+      minRadarCandidates: 3,
+      minRoundCandidates: 2,
+    });
+
+    const repaired = JSON.parse(await readFile(join(dir, "radar-bench.json"), "utf8"));
+    expect(Array.isArray(repaired.candidates)).toBe(true);
+    expect(repaired.candidates).toHaveLength(3);
+
+    const victim = repaired.candidates[0];
+    const next = await refreshAll({
+      fetchImpl: mkFetch({ failFor: victim.model + "|" + victim.effort }) as unknown as typeof fetch,
+      outDir: dir,
+      now: () => new Date("2026-10-24T02:00:00Z"),
+      minRadarCandidates: 2,
+      minRoundCandidates: 2,
+    });
+    expect(next.status.reused_count).toBe(1);
+  });
+});
+
+// 缺陷 2：main 以前用 new Set(process.argv.slice(2)) 只认 --force，未知参数静默忽略。
+// `node scripts/refresh.mjs --forse` 会按非 force 跑，contentEqual 命中时连 checked_at
+// 都不重写，用户以为强制刷新过了。对齐 verify-assets.mjs:68 —— 未知参数直接红、退 2。
+describe("refresh CLI 参数", () => {
+  it("未知参数抛错", () => {
+    expect(() => parseArgs(["--forse"])).toThrow(/未知参数/);
+  });
+
+  it("--force 与空参数仍正常", () => {
+    expect(parseArgs(["--force"])).toEqual({ force: true });
+    expect(parseArgs([])).toEqual({ force: false });
+  });
+
+  it("未知参数直接退出 2，且不进入抓取", () => {
+    const out = spawnSync(process.execPath, [script, "--forse"], {
+      cwd: repoRoot,
+      encoding: "utf8",
+    });
+    expect(out.status).toBe(2);
+    expect(out.stderr).toContain("未知参数");
+  });
+});
