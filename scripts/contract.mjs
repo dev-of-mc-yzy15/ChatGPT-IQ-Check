@@ -185,11 +185,17 @@ function assertStatistics(stats, path) {
 /**
  * @param {any} point
  * @param {string} path
+ * @param {number} scoreMax
  */
-function assertHistoryPoint(point, path) {
+function assertHistoryPoint(point, path, scoreMax) {
   if (!point || typeof point !== "object") fail(path, "object", point);
   strictIso(point.at, path + ".at");
-  strictNumber(point.score, path + ".score", { min: 0 });
+  const score = strictNumber(point.score, path + ".score", { min: 0 });
+  // 与候选级 score 同一句判法：历史点也不许超过文档级 score_max。
+  // 不卡的话前端照越界分值算 y，点被甩出绘图区、折线被 overflow 裁掉，delta 也跟着发虚。
+  // 与 round 侧一致，比较用上面规范化后的数字，别回头读原始字段（可能是字符串）。
+  // score != null 只是类型收窄（非 nullable 时 strictNumber 遇 null 已抛）。
+  if (score != null && score > scoreMax) fail(path + ".score", "<= score_max " + scoreMax, score);
   strictNumber(point.coverage, path + ".coverage", { min: 0 });
   strictNumber(point.required_tasks, path + ".required_tasks", { min: 0 });
   strictEnum(point.score_status, path + ".score_status", SCORE_STATUS);
@@ -229,10 +235,10 @@ function assertRadarCandidate(candidate, index, scoreMax) {
       { min: 0 },
     );
   }
-  // 缺失即空；给了 points 就逐点严校验。
+  // 缺失即空；给了 points 就逐点严校验。历史点与候选级 score 共用同一个 score_max。
   if (candidate.history != null) {
     strictArray(candidate.history, path + ".history").forEach((point, i) =>
-      assertHistoryPoint(point, path + ".history[" + i + "]"),
+      assertHistoryPoint(point, path + ".history[" + i + "]", scoreMax),
     );
   }
 }
