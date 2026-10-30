@@ -1,12 +1,17 @@
 {
-  "checked_at": "2026-10-24T14:23:40.707Z",
+  "checked_at": "2026-10-30T19:40:38.982Z",
   "ok": true,
   "benchmark": "radar-bench-final64-20261004",
   "candidates_ok": 34,
   "candidates_total": 34,
+  "binding_total": 34,
+  "reused_count": 0,
+  "missing_count": 0,
   "round_ok": true,
-  "latest_graded_at": "2026-10-24T14:22:36.128178Z",
-  "round_updated_at": "2026-10-23T18:35:45.331957+00:00",
-  "stale_days": 0,
+  "latest_graded_at": "2026-10-27T01:41:03.614093Z",
+  "min_latest": "2026-10-21T02:39:21.882159Z",
+  "stale_count": 28,
+  "round_updated_at": "2026-10-24T14:30:39.822736+00:00",
+  "stale_days": 6,
   "errors": []
 }

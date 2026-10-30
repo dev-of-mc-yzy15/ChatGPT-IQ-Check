@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "fetch_id": "08226a54-eec6-4a79-928b-e65ade651d04",
-  "generated_at": "2026-10-24T14:23:40.707Z",
-  "checked_at": "2026-10-24T14:23:40.707Z",
+  "fetch_id": "dda5747a-491c-4198-8fab-27c6d2073fae",
+  "generated_at": "2026-10-30T19:40:38.982Z",
+  "checked_at": "2026-10-30T19:40:38.982Z",
   "benchmark": "radar-bench-final64-20261004",
   "score_version": "radar-bench-v2-150",
   "score_max": 150,
@@ -2144,11 +2144,11 @@
     {
       "model": "gpt-6-luna",
       "effort": "low",
-      "score": 14.644531249999998,
+      "score": 13.27734375,
       "coverage": 64,
       "required_tasks": 64,
       "score_status": "complete",
-      "graded_runs_count": 96,
+      "graded_runs_count": 98,
       "source_scores": {
         "deepswe": {
           "score": 10,
@@ -2157,10 +2157,10 @@
           "graded_runs_count": 24
         },
         "pompeii": {
-          "score": 49.203125,
+          "score": 43.734375,
           "coverage": 16,
           "required_tasks": 16,
-          "graded_runs_count": 22
+          "graded_runs_count": 24
         },
         "tb4": {
           "score": 0,
@@ -2176,11 +2176,11 @@
         }
       },
       "statistics": {
-        "sample_count": 96,
-        "elapsed_ms_mean": 326308.2891864252,
-        "api_equivalent_usd_mean": 0.022360416666666664
+        "sample_count": 98,
+        "elapsed_ms_mean": 320467.24995058996,
+        "api_equivalent_usd_mean": 0.021960163265306126
       },
-      "latest_graded_at": "2026-10-22T02:17:23.907493Z",
+      "latest_graded_at": "2026-10-25T09:18:05.589784Z",
       "history": [
         {
           "at": "2026-10-10T00:00:00.000Z",
@@ -2265,17 +2265,24 @@
           "coverage": 64,
           "required_tasks": 64,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-10-25T00:00:00.000Z",
+          "score": 13.27734375,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6-luna",
       "effort": "medium",
-      "score": 26.515574497104335,
+      "score": 26.398386997104335,
       "coverage": 64,
       "required_tasks": 64,
       "score_status": "complete",
-      "graded_runs_count": 83,
+      "graded_runs_count": 85,
       "source_scores": {
         "deepswe": {
           "score": 40,
@@ -2284,16 +2291,16 @@
           "graded_runs_count": 22
         },
         "pompeii": {
-          "score": 63.87479798841734,
+          "score": 63.40604798841734,
           "coverage": 16,
           "required_tasks": 16,
-          "graded_runs_count": 18
+          "graded_runs_count": 19
         },
         "tb4": {
           "score": 5.357142857142857,
           "coverage": 14,
           "required_tasks": 14,
-          "graded_runs_count": 16
+          "graded_runs_count": 17
         },
         "science": {
           "score": 0,
@@ -2303,11 +2310,11 @@
         }
       },
       "statistics": {
-        "sample_count": 83,
-        "elapsed_ms_mean": 336800.44924752385,
-        "api_equivalent_usd_mean": 0.01734210843373494
+        "sample_count": 85,
+        "elapsed_ms_mean": 329958.17223057034,
+        "api_equivalent_usd_mean": 0.017019976470588234
       },
-      "latest_graded_at": "2026-10-24T10:46:23.186920Z",
+      "latest_graded_at": "2026-10-25T08:19:20.434526Z",
       "history": [
         {
           "at": "2026-10-10T00:00:00.000Z",
@@ -2378,6 +2385,13 @@
           "coverage": 64,
           "required_tasks": 64,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-10-25T00:00:00.000Z",
+          "score": 26.398386997104335,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
         }
       ]
     },
@@ -2388,13 +2402,13 @@
       "coverage": 64,
       "required_tasks": 64,
       "score_status": "complete",
-      "graded_runs_count": 88,
+      "graded_runs_count": 90,
       "source_scores": {
         "deepswe": {
           "score": 50,
           "coverage": 15,
           "required_tasks": 15,
-          "graded_runs_count": 22
+          "graded_runs_count": 23
         },
         "pompeii": {
           "score": 82.84238514753221,
@@ -2412,15 +2426,15 @@
           "score": 0,
           "coverage": 19,
           "required_tasks": 19,
-          "graded_runs_count": 24
+          "graded_runs_count": 25
         }
       },
       "statistics": {
-        "sample_count": 88,
-        "elapsed_ms_mean": 583136.5626645817,
-        "api_equivalent_usd_mean": 0.03963217045454545
+        "sample_count": 90,
+        "elapsed_ms_mean": 573062.2234617465,
+        "api_equivalent_usd_mean": 0.039054511111111107
       },
-      "latest_graded_at": "2026-10-24T10:39:16.596941Z",
+      "latest_graded_at": "2026-10-25T09:48:31.729607Z",
       "history": [
         {
           "at": "2026-10-10T00:00:00.000Z",
@@ -2512,6 +2526,13 @@
           "coverage": 64,
           "required_tasks": 64,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-10-25T00:00:00.000Z",
+          "score": 35.94497128688306,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
         }
       ]
     },
@@ -2522,7 +2543,7 @@
       "coverage": 64,
       "required_tasks": 64,
       "score_status": "complete",
-      "graded_runs_count": 86,
+      "graded_runs_count": 87,
       "source_scores": {
         "deepswe": {
           "score": 105,
@@ -2540,7 +2561,7 @@
           "score": 0,
           "coverage": 14,
           "required_tasks": 14,
-          "graded_runs_count": 20
+          "graded_runs_count": 21
         },
         "science": {
           "score": 0,
@@ -2550,11 +2571,11 @@
         }
       },
       "statistics": {
-        "sample_count": 86,
-        "elapsed_ms_mean": 1275707.9711241524,
-        "api_equivalent_usd_mean": 0.10936039534883721
+        "sample_count": 87,
+        "elapsed_ms_mean": 1269587.4748273462,
+        "api_equivalent_usd_mean": 0.1088768735632184
       },
-      "latest_graded_at": "2026-10-21T16:11:16.143347Z",
+      "latest_graded_at": "2026-10-25T09:52:45.075440Z",
       "history": [
         {
           "at": "2026-10-10T00:00:00.000Z",
@@ -2632,49 +2653,56 @@
           "coverage": 64,
           "required_tasks": 64,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-10-25T00:00:00.000Z",
+          "score": 47.549969561688314,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6-luna",
       "effort": "max",
-      "score": 50.004973707285274,
+      "score": 48.46614983242111,
       "coverage": 64,
       "required_tasks": 64,
       "score_status": "complete",
-      "graded_runs_count": 92,
+      "graded_runs_count": 127,
       "source_scores": {
         "deepswe": {
-          "score": 70,
+          "score": 65,
           "coverage": 15,
           "required_tasks": 15,
-          "graded_runs_count": 24
+          "graded_runs_count": 30
         },
         "pompeii": {
-          "score": 103.14489482914111,
+          "score": 101.67709932968444,
           "coverage": 16,
           "required_tasks": 16,
-          "graded_runs_count": 21
+          "graded_runs_count": 31
         },
         "tb4": {
           "score": 21.428571428571427,
           "coverage": 14,
           "required_tasks": 14,
-          "graded_runs_count": 16
+          "graded_runs_count": 27
         },
         "science": {
           "score": 10.526315789473683,
           "coverage": 19,
           "required_tasks": 19,
-          "graded_runs_count": 31
+          "graded_runs_count": 39
         }
       },
       "statistics": {
-        "sample_count": 92,
-        "elapsed_ms_mean": 1151416.3538607685,
-        "api_equivalent_usd_mean": 0.09565903260869564
+        "sample_count": 127,
+        "elapsed_ms_mean": 1295548.411488432,
+        "api_equivalent_usd_mean": 0.10925290551181102
       },
-      "latest_graded_at": "2026-10-24T14:22:36.128178Z",
+      "latest_graded_at": "2026-10-27T01:41:03.614093Z",
       "history": [
         {
           "at": "2026-10-10T00:00:00.000Z",
@@ -2770,6 +2798,27 @@
         {
           "at": "2026-10-24T00:00:00.000Z",
           "score": 50.004973707285274,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-25T00:00:00.000Z",
+          "score": 48.44333222376879,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-26T00:00:00.000Z",
+          "score": 48.46614983242111,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-27T00:00:00.000Z",
+          "score": 48.46614983242111,
           "coverage": 64,
           "required_tasks": 64,
           "score_status": "complete"
