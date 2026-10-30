@@ -10,7 +10,7 @@ import {
   validateRadarBench,
   validateRound,
 } from "./lib.mjs";
-import { candidateKey } from "./contract.mjs";
+import { assertRadarBenchShape, candidateKey } from "./contract.mjs";
 
 export const BINDING_URL = "https://codexradar.com/data/radar-bench-binding.json";
 export const SUMMARY_URL = "https://codexradar.com/api/radar-bench-score";
@@ -38,14 +38,30 @@ class HttpError extends Error {
 
 /**
  * @param {string} url
- * @param {{tries?: number, timeoutMs?: number, headers?: Record<string, string>}} [options]
+ * @param {{tries?: number, timeoutMs?: number, headers?: Record<string, string>, deadline?: number}} [options]
  * @param {typeof fetch} [fetchImpl]
  * @returns {Promise<any>}
  */
-export async function fetchJson(url, { tries = 3, timeoutMs = 20000, headers = {} } = {}, fetchImpl = fetch) {
+export async function fetchJson(
+  url,
+  { tries = 3, timeoutMs = 20000, headers = {}, deadline } = {},
+  fetchImpl = fetch,
+) {
   for (let i = 0; i < tries; i++) {
+    // 预算只有外部传 deadline 时才有：不传就是 Infinity，行为与加预算前逐字一致
+    // （fetchJson 是导出函数，已有用例直接调它，默认路径不能漂移）。
+    const budgetLeft = deadline === undefined ? Infinity : deadline - Date.now();
+    // 重试一律看总预算，而不是看"还剩几次"：整轮有硬上限，重试把落盘窗口挤没
+    // 就等于整轮白跑。首次即使已过线仍放行一次——拿到的是真实错误，比合成一个
+    // 预算错误更有信息量，而且不再往下重试，耗时仍然受控。
+    if (budgetLeft <= 0 && i > 0) {
+      throw new Error(`预算耗尽：${url} 已尝试 ${i} 次，不再重试`);
+    }
+    // 超时按剩余预算收窄，最后一次尝试不会白等满 20s 冲过线；
+    // 预算已经见底时留 1s 下限，避免 0/负数的 timeout 立刻 abort。
+    const attemptTimeout = Math.min(timeoutMs, Math.max(budgetLeft, 1000));
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+    const timer = setTimeout(() => ctrl.abort(), attemptTimeout);
     try {
       const res = await fetchImpl(url, {
         signal: ctrl.signal,
@@ -57,7 +73,10 @@ export async function fetchJson(url, { tries = 3, timeoutMs = 20000, headers = {
       const retryable =
         !(error instanceof HttpError) || error.status === 429 || error.status >= 500;
       if (!retryable || i === tries - 1) throw error;
-      await new Promise((r) => setTimeout(r, 2 ** i * 1000));
+      const backoff = 2 ** i * 1000;
+      // 退避同样不许睡过 deadline，否则终点前最后 2s 纯粹是空转。
+      const sleep = deadline === undefined ? backoff : Math.min(backoff, Math.max(0, deadline - Date.now()));
+      await new Promise((r) => setTimeout(r, sleep));
     } finally {
       clearTimeout(timer);
     }
@@ -138,6 +157,40 @@ async function readJsonIfExists(file, errors) {
     errors?.push(`${basename(file)}: 坏数据（${message}）`);
     return null;
   }
+}
+
+/**
+ * 形状探针用的固定时间戳：单候选文档只过一遍结构校验、不落盘，
+ * 时间戳本身不参与任何比较，读一次时钟是白花的。
+ */
+const SHAPE_PROBE_STAMP = "1970-01-01T00:00:00.000Z";
+
+/**
+ * 旧数据能不能原样复用。
+ *
+ * 复用是"抓不到就吐旧值"，可旧值当初落盘是否合法从没人回头看：文件可能被手改过，
+ * 也可能来自更早的契约版本。只过 JSON.parse 就复用，形状一旦坏掉就会永久固化 ——
+ * 每轮都"复用成功"、永远轮不到重新抓取修正，直到坏到过不了顶层校验，整轮刷新直接抛。
+ * 所以复用前用与新鲜数据同一把尺子（contract 里那套 assert*Shape）独立校验一次，
+ * 不再在 refresh.mjs 里另写一套形状判断。
+ * @param {any} old 旧 radar-bench.json 里的该候选对象
+ * @param {{benchmark: string, score_version: string, score_max: number, catalog_version: string, task_set_sha256: string}} binding 只借顶层字段凑文档骨架
+ * @returns {void}
+ */
+function assertReusableSummary(old, binding) {
+  assertRadarBenchShape({
+    schema_version: 1,
+    fetch_id: "reused-check",
+    generated_at: SHAPE_PROBE_STAMP,
+    checked_at: SHAPE_PROBE_STAMP,
+    benchmark: binding.benchmark,
+    score_version: binding.score_version,
+    score_max: binding.score_max,
+    catalog_version: binding.catalog_version,
+    task_set_sha256: binding.task_set_sha256,
+    // 只放这一个候选：校验失败时抛出的路径就是 candidates[0].xxx，够读到坏在哪。
+    candidates: [old],
+  });
 }
 
 /**
@@ -241,6 +294,8 @@ function staleDays(iso, now) {
  *   fetchImpl?: typeof fetch,
  *   outDir?: string,
  *   now?: () => Date,
+ *   nowMs?: () => number,
+ *   budgetMs?: number,
  *   force?: boolean,
  *   minRadarCandidates?: number,
  *   minRoundCandidates?: number,
@@ -250,11 +305,21 @@ export async function refreshAll({
   fetchImpl = fetch,
   outDir = DATA_DIR,
   now = () => new Date(),
+  nowMs = Date.now,
+  budgetMs = 7 * 60 * 1000,
   force = false,
   minRadarCandidates,
   minRoundCandidates,
 } = {}) {
-  const bindingRaw = await fetchJson(BINDING_URL, {}, fetchImpl);
+  // 整轮抓取有硬上限：spawn 侧 workflow 的 timeout-minutes 是 10，没有总时限时最坏
+  // 耗时 ≈ 34 候选 / 并发 4 × 单 URL 63s + binding 与 round 各 63s ≈ 11.6 分钟，
+  // job 会被砍在 writeJson 之前——跑满整轮却一个字都没落盘。留 3 分钟给校验与落盘。
+  //
+  // 时钟单独注入（nowMs）而不是复用上面的 now：now 服务于落盘时间戳、测试会把它钉在
+  // 任意日期，而 deadline 必须与 fetchJson 内部比较用的 Date.now() 同基准。
+  const deadline = nowMs() + budgetMs;
+
+  const bindingRaw = await fetchJson(BINDING_URL, { deadline }, fetchImpl);
   const binding = transformBinding(bindingRaw);
   /** @type {string[]} 旧数据自身损坏的告警，最终并入 status.errors */
   const loadErrors = [];
@@ -268,7 +333,7 @@ export async function refreshAll({
     try {
       const raw = await fetchJson(
         summaryUrl(candidate.model, candidate.effort),
-        { headers: { "x-radar-bench-selection": "user-selected-v1" } },
+        { headers: { "x-radar-bench-selection": "user-selected-v1" }, deadline },
         fetchImpl,
       );
       return { key, candidate, summary: transformSummary(raw), outcome: "fresh", error: null };
@@ -278,13 +343,27 @@ export async function refreshAll({
       // "复用旧数据"与"没有旧数据只能丢弃"是两种结局，混在一个 errors 里会让
       // candidates_ok/candidates_total 的文案说谎，这里用 outcome 分开。
       if (old) {
-        return {
-          key,
-          candidate,
-          summary: old,
-          outcome: "reused",
-          error: `reused: ${key}: ${message}`,
-        };
+        try {
+          assertReusableSummary(old, binding);
+          return {
+            key,
+            candidate,
+            summary: old,
+            outcome: "reused",
+            error: `reused: ${key}: ${message}`,
+          };
+        } catch (invalid) {
+          // 旧对象自己就不合法：宁可这轮丢掉、下轮重新抓，也不能把坏形状继续固化下去。
+          // 丢掉只是少一个候选，硬复用会把整轮拖进顶层校验失败。
+          const why = invalid instanceof Error ? invalid.message : String(invalid);
+          return {
+            key,
+            candidate,
+            summary: null,
+            outcome: "missing",
+            error: `missing: ${key}: 旧数据不可用（${why}）`,
+          };
+        }
       }
       return {
         key,
@@ -316,7 +395,7 @@ export async function refreshAll({
   const available = results.filter((r) => r.summary);
   const availableBinding = { ...bindingRaw, model_efforts: available.map((r) => r.candidate) };
 
-  const roundRaw = await fetchJson(ROUND_URL, {}, fetchImpl);
+  const roundRaw = await fetchJson(ROUND_URL, { deadline }, fetchImpl);
   // score_max 用 binding 已解析出来的值（含缺失时的 SCORE_MAX 兜底）：round 与 radar-bench
   // 必须同分母，否则上游改分数上限时 round 的刻度会按旧上限静默画错。
   const round = transformRound(roundRaw, { scoreMax: binding.score_max });

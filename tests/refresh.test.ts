@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { summaryUrl, refreshAll, roundCandidateFloor } from "../scripts/refresh.mjs";
+import { summaryUrl, refreshAll, fetchJson, roundCandidateFloor } from "../scripts/refresh.mjs";
 import bindingRaw from "./fixtures/binding.sample.json";
 import summaryRaw from "./fixtures/summary.sample.json";
 import roundRaw from "./fixtures/round.sample.json";
@@ -370,6 +370,124 @@ describe("refreshAll 旧数据降级与陈旧识别", () => {
     });
     expect(result.status.stale_count).toBe(3);
     expect(result.status.min_latest).toBeNull();
+  });
+
+  // 旧数据只经 JSON.parse 就被复用的话，形状一旦坏掉就是永久固化：
+  // 每轮"复用成功"、永远不会被重新抓取修正。抓取失败 + 旧数据形状坏必须走 missing。
+  it("drops a candidate whose previous data no longer matches the contract", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "iq-refresh-"));
+    const seeded = await seed(dir);
+    const victim = seeded.radarBench.candidates[0];
+
+    // 把落盘数据改坏：source_scores 契约要求对象表，这里写成数组
+    const onDisk = JSON.parse(await readFile(join(dir, "radar-bench.json"), "utf8"));
+    const broken = onDisk.candidates.find(
+      (c: any) => c.model === victim.model && c.effort === victim.effort,
+    );
+    broken.source_scores = [1, 2, 3];
+    await writeFile(join(dir, "radar-bench.json"), JSON.stringify(onDisk), "utf8");
+
+    const result = await refreshAll({
+      fetchImpl: mkFetch({ failFor: victim.model + "|" + victim.effort }) as unknown as typeof fetch,
+      outDir: dir,
+      now: () => new Date("2026-10-24T01:00:00Z"),
+      minRadarCandidates: 2,
+      minRoundCandidates: 2,
+    });
+
+    expect(result.status.missing_count).toBe(1);
+    expect(result.status.reused_count).toBe(0);
+    expect(result.status.ok).toBe(false);
+    // 坏对象不能进输出，必须被丢弃
+    expect(
+      result.radarBench.candidates.some(
+        (c: any) => c.model === victim.model && c.effort === victim.effort,
+      ),
+    ).toBe(false);
+    expect(result.status.errors.some((e) => String(e ?? "").startsWith("missing:"))).toBe(true);
+    expect(result.status.errors.some((e) => String(e ?? "").includes("旧数据不可用"))).toBe(true);
+  });
+});
+
+// 缺陷 2：单个 URL 最坏 63s × 34 候选 / 并发 4 ≈ 9.5 分钟，加 binding 与 round
+// 约 11.6 分钟，超出 workflow 的 timeout-minutes: 10 —— job 会被砍在写盘之前，整轮白跑。
+// 总预算由 deadline 兜底：预算没了就只保留一次真实尝试，不再重试。
+describe("fetchJson 总预算", () => {
+  it("stops after one attempt once the deadline has passed", async () => {
+    const fetchImpl = vi.fn(async () => {
+      throw new Error("boom");
+    });
+    // 约定：deadline 过期时仍放行一次真实尝试（拿真实错误比合成一个更有用），
+    // 但绝不进入第 2、3 次重试。
+    await expect(
+      fetchJson(
+        "https://example.test/x",
+        { deadline: Date.now() - 1000 },
+        fetchImpl as unknown as typeof fetch,
+      ),
+    ).rejects.toThrow(/预算耗尽/);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
+
+  // 守卫：不传 deadline 时行为必须与今天完全一致（3 次重试 + 退避）。
+  it("still retries three times when no deadline is given", async () => {
+    vi.useFakeTimers();
+    try {
+      const fetchImpl = vi.fn(async () => {
+        throw new Error("boom");
+      });
+      const settled = fetchJson(
+        "https://example.test/x",
+        {},
+        fetchImpl as unknown as typeof fetch,
+      ).catch((e: Error) => e);
+      // 用假时钟推进两次退避（2 ** 0 * 1000、2 ** 1 * 1000），不靠真实等待。
+      await vi.advanceTimersByTimeAsync(1000);
+      await vi.advanceTimersByTimeAsync(2000);
+      const error = await settled;
+      expect(error.message).toBe("boom");
+      expect(fetchImpl).toHaveBeenCalledTimes(3);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  // 预算耗尽后的候选必须走既有的 missing 分支，不另开路径。
+  it("drops candidates instead of retrying once the refresh budget is gone", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "iq-refresh-"));
+    const fetchImpl = vi.fn(async (url: string) => {
+      if (url.includes("radar-bench-binding")) return jsonResponse(bindingRaw);
+      if (url.includes("radar-bench-score")) {
+        const u = new URL(url);
+        const model = u.searchParams.get("model") ?? "";
+        const effort = u.searchParams.get("effort") ?? "";
+        if (model === "gpt-6-astra" && effort === "high") {
+          return jsonResponse({ ...summaryRaw, model, effort });
+        }
+        throw new Error("boom");
+      }
+      return jsonResponse(roundRaw);
+    });
+
+    const result = await refreshAll({
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+      outDir: dir,
+      now: () => new Date("2026-10-24T00:00:00Z"),
+      // 负预算 → deadline 必然落在过去；放行的那一次尝试里 1 个成功、2 个失败
+      budgetMs: -1,
+      minRadarCandidates: 1,
+      minRoundCandidates: 2,
+    });
+
+    expect(result.status.missing_count).toBe(2);
+    expect(result.status.reused_count).toBe(0);
+    expect(result.status.errors).toHaveLength(2);
+    expect(result.status.errors.every((e) => String(e ?? "").includes("预算耗尽"))).toBe(true);
+    // 3 个候选各只打 1 次；若还在重试就是 7 次（1 + 3 + 3）
+    const scoreCalls = fetchImpl.mock.calls.filter(([u]) =>
+      String(u).includes("radar-bench-score"),
+    );
+    expect(scoreCalls).toHaveLength(3);
   });
 });
 
