@@ -78,7 +78,7 @@ function main() {
   for (const violation of violations) {
     console.error(violation);
   }
-  console.error(`${violations.length} 个已跟踪文件末尾缺换行，补一个 \n 再提交`);
+  console.error(`${violations.length} 个已跟踪文件末尾缺换行，补一个 \\n 再提交`);
   process.exitCode = 1;
 }
 
