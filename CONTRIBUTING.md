@@ -71,7 +71,7 @@ npm run refresh
 
 ## 开 PR 前自查
 
-1. `npm test` 和 `npx tsc -b` 都本地跑过、都绿——不要指望 CI 替你发现。
+1. `npm test` 和 `npm run build` 都本地跑过、都绿——不要指望 CI 替你发现。
 2. 改的是数据格式的话，`public/data/*.json` 是 `npm run refresh` 生成的，不是手编的。
 3. 新交互/新动画在 `prefers-reduced-motion: reduce` 下试过一遍。
 4. 新增依赖说清理由；它能进 `dependencies` 还是只该进 `devDependencies`。

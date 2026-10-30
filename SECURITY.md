@@ -59,6 +59,14 @@ ChatGPT IQ Check（降智雷达）是 **[codexradar.com](https://codexradar.com/
 
   在镜像上直接跑 `npm audit` 只会拿到 `NOT_IMPLEMENTED`，误以为"没漏洞"。`--omit=dev` 是因为运行时依赖只有 `react` / `react-dom`，devDependencies 不进产物。
 
+### 改 workflow 时的规矩
+
+动 `.github/workflows/` 属于改安全边界，几条硬约束：
+
+- **所有 `uses:` 钉完整 commit SHA**，后面用注释写版本号（如 `@3d3c42e5… # v7.0.1`）。tag 可以移动，SHA 不能。
+- **权限只写在需要它的 job 上**，别提到 workflow 级；新加权限要在 PR 里说明为什么非它不可。
+- 能给 `read` 的绝不给 `write`；`refresh-data` 的 `contents: write` 是提交数据所必需，别顺手加到别处。
+
 ## 报告漏洞
 
 **不要直接开公开 issue。**
