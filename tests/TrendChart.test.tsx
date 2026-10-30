@@ -66,8 +66,9 @@ describe("TrendChart", () => {
     expect(container.querySelectorAll("tbody tr")).toHaveLength(3);
     // Δ 列首行为空、后续为相邻两点差值：预先算好的差值表必须与逐点前缀算法同值。
     // 符号跟在数字前：涨跌不再只靠颜色，色觉障碍用户也读得出方向。
+    // 首行没有可比的历史，符号位不该再叠一个破折号，只留 fmtDelta 的那一个。
     const deltaCells = [...container.querySelectorAll("tbody tr")].map((tr) => tr.lastElementChild?.textContent);
-    expect(deltaCells).toEqual(["— —", "▼ -2.0", "▼ -8.0"]);
+    expect(deltaCells).toEqual(["—", "▼ -2.0", "▼ -8.0"]);
   });
 
   it("renders empty state", () => {

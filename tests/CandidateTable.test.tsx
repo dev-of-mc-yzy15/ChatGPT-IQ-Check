@@ -130,14 +130,15 @@ describe("CandidateTable", () => {
     expect(cell).toHaveTextContent("▲ +3.0");
   });
 
-  // 没有历史（delta 为 null）时不谎报方向：符号位与数字位都是破折号。
+  // 没有历史（delta 为 null）时不谎报方向：整格只有一个破折号，符号位不再叠一个。
   it("renders an em dash instead of an arrow when there is no history", () => {
     const { container } = render(
       <CandidateTable rows={[mk({ history: [] })]} selectedKeys={[]} onToggle={() => {}} scoreMax={150} />,
     );
     // 符号在 aria-hidden 的 span 里，getByText 拿不到拼接串，直接取最后一列。
     const cell = container.querySelector("tbody tr td:last-child")!;
-    expect(cell).toHaveTextContent("— —");
+    // 锚定正则，不用子串匹配："— —" 里也含 "—"，toHaveTextContent("—") 对双破折号恒真，红不了。
+    expect(cell).toHaveTextContent(/^—$/);
     expect(cell).not.toHaveClass("down");
     expect(cell).not.toHaveClass("up");
   });

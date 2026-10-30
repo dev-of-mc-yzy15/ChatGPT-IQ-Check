@@ -116,7 +116,13 @@ export function CandidateTable({
                   <td>{fmtDateTime(r.latest_graded_at)}</td>
                   {/* 只靠颜色编码涨跌，色觉障碍用户读不出方向：符号先上，颜色退化成冗余提示。 */}
                   <td className={deltaClass(delta)}>
-                    <span aria-hidden="true">{deltaMark(delta)}</span> {fmtDelta(delta)}
+                    {/* 没有可比的历史时 fmtDelta 已经给破折号，符号位再补一个就成了「— —」。
+                        只在 delta 是有限数时渲染符号连同分隔空格；0 保留（— 0.0）：
+                        符号是「无方向」标记，而值是真的 0.0。空格跟着符号走，否则空值会多出前导空格。 */}
+                    {delta != null && Number.isFinite(delta) ? (
+                      <><span aria-hidden="true">{deltaMark(delta)}</span>{" "}</>
+                    ) : null}
+                    {fmtDelta(delta)}
                     {days != null ? ` / ${days} 天` : ""}
                   </td>
                 </tr>

@@ -217,7 +217,13 @@ export function TrendChart({
                     <td><ModelName name={c.model} /> · {fmtEffort(c.effort)}</td>
                     <td>{fmtScore(p.score)}</td>
                     <td className={deltaClass(delta)}>
-                      <span aria-hidden="true">{deltaMark(delta)}</span> {fmtDelta(delta)}
+                      {/* 首行没有可比的历史，fmtDelta 已经给破折号——符号位只在真有差值时补，
+                          否则叠成「— —」。空格跟着符号走，否则空值会多出前导空格。
+                          0 保留（— 0.0）：符号是「无方向」标记，值是真的 0.0。 */}
+                      {delta != null && Number.isFinite(delta) ? (
+                        <><span aria-hidden="true">{deltaMark(delta)}</span>{" "}</>
+                      ) : null}
+                      {fmtDelta(delta)}
                     </td>
                   </tr>
                 );
