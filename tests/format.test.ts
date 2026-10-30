@@ -165,6 +165,22 @@ describe("format · 计数分组形态", () => {
   it("fmtSeconds(59.6) 先取整进位为 1 分 0 秒", () => {
     expect(fmtSeconds(59.6)).toBe("1 分 0 秒");
   });
+
+  it("fmtSeconds 对负时长只输出负的秒余数，分钟位被丢掉", () => {
+    // BUG: 分支用的是 minutes > 0，负时长下 minutes 为负永远进不了「分」分支，
+    // 只剩 total % 60 这个负余数。-90 秒因此渲染成 "-30 秒"。
+    expect(fmtSeconds(-90)).toBe("-30 秒");
+    expect(fmtSeconds(-150)).toBe("-30 秒");
+  });
+
+  it("fmtSeconds(-60) 输出 0 秒，整整一分钟显示成零", () => {
+    // BUG: -60 秒的 minutes 是 -1、rest 是 -0，落到 else 分支输出 "0 秒"。
+    expect(fmtSeconds(-60)).toBe("0 秒");
+  });
+
+  it("fmtSeconds 对个位负秒仍输出负秒", () => {
+    expect(fmtSeconds(-30)).toBe("-30 秒");
+  });
 });
 
 describe("format · 日期", () => {
