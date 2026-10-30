@@ -271,6 +271,56 @@ function contentEqual(a, b) {
   return JSON.stringify(stripVolatile(a)) === JSON.stringify(stripVolatile(b));
 }
 
+// 易变字段的「能不能从旧文件抄回来」判据，刻意与 contract 同源：
+// strictIso = strictString（非空 string）再要 Date.parse 有穷（"" 解析成 NaN，自然拦得住），
+// strictString = 非空 string。两个判据不能合并，因为契约对它们的约束本来就不同。
+/**
+ * @param {unknown} value
+ * @returns {boolean}
+ */
+function isCarriableIso(value) {
+  return typeof value === "string" && value.trim() !== "" && Number.isFinite(Date.parse(value));
+}
+
+/**
+ * @param {unknown} value
+ * @returns {boolean}
+ */
+function isCarriableId(value) {
+  return typeof value === "string" && value.trim() !== "";
+}
+
+/** radar-bench 与 round 的易变字段完全同构（契约 :253-255 / :347-349 同款）。 */
+const VOLATILE_FIELDS = /** @type {Array<[string, (value: unknown) => boolean]>} */ ([
+  ["generated_at", isCarriableIso],
+  ["checked_at", isCarriableIso],
+  ["fetch_id", isCarriableId],
+]);
+
+const STATUS_VOLATILE_FIELDS = /** @type {Array<[string, (value: unknown) => boolean]>} */ ([
+  ["checked_at", isCarriableIso],
+]);
+
+/**
+ * 逐个字段判据通过才回填，不通过就保留本次新生成的值（新值一定合法，刚过完校验）。
+ * 返回「是否全部回填成功」，调用方用它决定这次算不算未变：
+ * contentEqual 比的是 stripVolatile 之后的对象，被 strip 的正是这几个字段，它们从不
+ * 参与相等判断。只要有一个字段没抄成，旧的不合法值就会留在盘上——而形状校验在回填
+ * 之前就跑完了，不重写就等于落盘契约非法数据、管道却报成功。所以回填不全是「算变」。
+ * @param {any} target 本次新生成的数据
+ * @param {any} old 盘上的旧数据
+ * @param {Array<[string, (value: unknown) => boolean]>} fields 字段名与对应判据
+ * @returns {boolean} 是否全部回填成功
+ */
+function carryVolatile(target, old, fields) {
+  let carried = true;
+  for (const [key, acceptable] of fields) {
+    if (acceptable(old[key])) target[key] = old[key];
+    else carried = false;
+  }
+  return carried;
+}
+
 /**
  * @param {string} file
  * @param {any} data
@@ -515,26 +565,20 @@ export async function refreshAll({
   let radarChanged = true;
   let roundChanged = true;
   if (!force) {
+    // 内容一致还不够，易变字段必须全部回填成功才算未变：没收全就得重写，
+    // 否则 contentEqual strip 掉的那几个字段会把不合法的旧值原样留在盘上。
     if (oldRadar && contentEqual(oldRadar, radarBench)) {
-      radarBench.generated_at = oldRadar.generated_at;
-      radarBench.checked_at = oldRadar.checked_at;
-      radarBench.fetch_id = oldRadar.fetch_id;
-      radarChanged = false;
+      radarChanged = !carryVolatile(radarBench, oldRadar, VOLATILE_FIELDS);
     }
     if (oldRound && contentEqual(oldRound, roundData)) {
-      roundData.generated_at = oldRound.generated_at;
-      roundData.checked_at = oldRound.checked_at;
-      roundData.fetch_id = oldRound.fetch_id;
-      roundChanged = false;
+      roundChanged = !carryVolatile(roundData, oldRound, VOLATILE_FIELDS);
     }
   }
 
   let statusChanged = true;
-  if (!force) {
-    if (oldStatus && contentEqual(oldStatus, status)) {
-      status.checked_at = oldStatus.checked_at;
-      statusChanged = false;
-    }
+  // 同上：status 只回填 checked_at，它抄不成时也必须重写。
+  if (!force && oldStatus && contentEqual(oldStatus, status)) {
+    statusChanged = !carryVolatile(status, oldStatus, STATUS_VOLATILE_FIELDS);
   }
 
   if (radarChanged) await writeJson(join(outDir, "radar-bench.json"), radarBench);

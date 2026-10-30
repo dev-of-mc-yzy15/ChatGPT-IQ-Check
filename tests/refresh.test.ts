@@ -11,6 +11,7 @@ import {
   roundCandidateFloor,
   parseArgs,
 } from "../scripts/refresh.mjs";
+import { assertRoundShape, assertStatusShape } from "../scripts/contract.mjs";
 import bindingRaw from "./fixtures/binding.sample.json";
 import summaryRaw from "./fixtures/summary.sample.json";
 import roundRaw from "./fixtures/round.sample.json";
@@ -635,5 +636,110 @@ describe("refresh CLI 参数", () => {
     });
     expect(out.status).toBe(2);
     expect(out.stderr).toContain("未知参数");
+  });
+});
+
+// 缺陷：contentEqual 比较的是 stripVolatile 之后的对象，而被 strip 掉的正是
+// generated_at / checked_at / fetch_id —— 这三个字段从不参与相等判断。旧文件里它们是
+// null / 对象 / "昨天" 时，相等照样命中，非法旧值被无条件抄进新数据；而形状校验在
+// 这之前就跑完了，于是落盘的是契约不合法的数据、管道却报成功（前端 loader 走同一份
+// 契约，详情页整块抛）。回填必须按 contract 同一套判据逐个过筛，不过筛就保留新值。
+describe("refreshAll 只回填合法的易变字段", () => {
+  const mkFetch = () =>
+    vi.fn(async (url: string) => {
+      if (url.includes("radar-bench-binding")) return jsonResponse(bindingRaw);
+      if (url.includes("radar-bench-score")) {
+        const u = new URL(url);
+        return jsonResponse({
+          ...summaryRaw,
+          model: u.searchParams.get("model") ?? "",
+          effort: u.searchParams.get("effort"),
+        });
+      }
+      if (url.includes("degradation-codex-latest")) return jsonResponse(roundRaw);
+      throw new Error("unexpected url " + url);
+    });
+
+  const first = () => new Date("2026-10-24T00:00:00Z");
+  // 第二轮换时刻：新 stamp 与旧值不同，「回填成功」和「保留新值」在落盘内容里可分辨。
+  const second = () => new Date("2026-10-24T00:30:00Z");
+
+  /** 跑一轮落盘 → 把指定文件的易变字段改坏 → 再跑一轮，返回落盘结果。 */
+  async function seedThenCorrupt(
+    fileName: "round.json" | "status.json",
+    mutate: (data: Record<string, any>) => void,
+  ) {
+    const dir = await mkdtemp(join(tmpdir(), "iq-refresh-"));
+    const opts = {
+      fetchImpl: mkFetch() as unknown as typeof fetch,
+      outDir: dir,
+      minRadarCandidates: 2,
+      minRoundCandidates: 2,
+    };
+    await refreshAll({ ...opts, now: first });
+    const file = join(dir, fileName);
+    const seeded = JSON.parse(await readFile(file, "utf8"));
+    mutate(seeded);
+    await writeFile(file, JSON.stringify(seeded, null, 2) + "\n");
+    await refreshAll({ ...opts, now: second });
+    return JSON.parse(await readFile(file, "utf8"));
+  }
+
+  const isIso = (v: unknown) => typeof v === "string" && Number.isFinite(Date.parse(v));
+
+  it("旧 round.generated_at 为 null：不回填，落盘是本次新生成的合法 ISO", async () => {
+    const onDisk = await seedThenCorrupt("round.json", (d) => {
+      d.generated_at = null;
+    });
+    expect(isIso(onDisk.generated_at)).toBe(true);
+    expect(onDisk.generated_at).toBe("2026-10-24T00:30:00.000Z");
+    expect(() => assertRoundShape(onDisk)).not.toThrow();
+  });
+
+  it("旧 round.fetch_id 是对象：不回填，落盘是本次新生成的字符串", async () => {
+    const onDisk = await seedThenCorrupt("round.json", (d) => {
+      d.fetch_id = { stale: true };
+    });
+    expect(typeof onDisk.fetch_id).toBe("string");
+    expect((onDisk.fetch_id as string).length).toBeGreaterThan(0);
+    expect(() => assertRoundShape(onDisk)).not.toThrow();
+  });
+
+  it("旧 round.checked_at 是「昨天」：不回填，落盘是本次新生成的合法 ISO", async () => {
+    const onDisk = await seedThenCorrupt("round.json", (d) => {
+      d.checked_at = "昨天";
+    });
+    expect(isIso(onDisk.checked_at)).toBe(true);
+    expect(onDisk.checked_at).toBe("2026-10-24T00:30:00.000Z");
+    expect(() => assertRoundShape(onDisk)).not.toThrow();
+  });
+
+  // 回归：三个字段都合法时照旧全部回填，且文件逐字节不变（说明真的没重写）。
+  it("三个易变字段都合法：仍然回填且不重写文件", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "iq-refresh-"));
+    const opts = {
+      fetchImpl: mkFetch() as unknown as typeof fetch,
+      outDir: dir,
+      minRadarCandidates: 2,
+      minRoundCandidates: 2,
+    };
+    await refreshAll({ ...opts, now: first });
+    const file = join(dir, "round.json");
+    const before = await readFile(file, "utf8");
+    await refreshAll({ ...opts, now: second });
+    const after = await readFile(file, "utf8");
+    expect(JSON.parse(after).checked_at).toBe(JSON.parse(before).checked_at);
+    expect(JSON.parse(after).generated_at).toBe(JSON.parse(before).generated_at);
+    expect(JSON.parse(after).fetch_id).toBe(JSON.parse(before).fetch_id);
+    expect(after).toBe(before);
+  });
+
+  it("旧 status.checked_at 为 null：不回填，落盘是本次新生成的合法 ISO", async () => {
+    const onDisk = await seedThenCorrupt("status.json", (d) => {
+      d.checked_at = null;
+    });
+    expect(isIso(onDisk.checked_at)).toBe(true);
+    expect(onDisk.checked_at).toBe("2026-10-24T00:30:00.000Z");
+    expect(() => assertStatusShape(onDisk)).not.toThrow();
   });
 });
