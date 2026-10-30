@@ -31,6 +31,15 @@ describe("workflows", () => {
     expect(wf.concurrency["cancel-in-progress"]).toBe(false);
   });
 
+  it("ci verifies every pull request without publish permissions", () => {
+    const wf = load("ci.yml");
+    expect(Object.keys(wf.on)).toContain("pull_request");
+    expect(wf.permissions.contents).toBe("read");
+    expect(wf.permissions.pages).toBeUndefined();
+    const runs = wf.jobs.verify.steps.map((s: { run?: string }) => s.run).filter(Boolean);
+    expect(runs).toEqual(expect.arrayContaining(["npm test", "npx tsc -b", "npm run build"]));
+  });
+
   it("deploy is reachable from both push and refresh-data completion", () => {
     const wf = load("deploy.yml");
     const triggers = Object.keys(wf.on);

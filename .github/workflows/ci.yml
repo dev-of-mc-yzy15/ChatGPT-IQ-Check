@@ -1,0 +1,34 @@
+name: ci
+
+# 整改的每个 P0 都要在合并前拿到红/绿证据，不能只在 main 上事后验。
+# 这里只跑测试/类型/构建，不发布；发布仍由 deploy.yml 单向负责。
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - run: npm ci
+      - run: npm test
+      - run: npx tsc -b
+      - run: npm run build
