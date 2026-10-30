@@ -214,20 +214,26 @@ describe("getJson（经 loadStatus）", () => {
     vi.useFakeTimers();
     vi.stubGlobal("fetch", vi.fn(async () => okResponse(legalStatus)));
 
+    // getTimerCount 是整个假时钟宇宙的绝对计数，全量跑会被别处残留污染。
+    // 改成基线增量：只问"本次调用有没有新增遗留定时器"，意图不变。
+    const baseline = vi.getTimerCount();
+
     await loadStatus();
 
-    expect(vi.getTimerCount()).toBe(0);
+    expect(vi.getTimerCount()).toBe(baseline);
   });
 
   it("超时收尾后同样不留 pending 定时器", async () => {
     vi.useFakeTimers();
     vi.stubGlobal("fetch", hangingFetch());
 
+    const baseline = vi.getTimerCount();
+
     const pending = loadStatus().catch(() => undefined);
     await vi.advanceTimersByTimeAsync(15000);
     await pending;
 
-    expect(vi.getTimerCount()).toBe(0);
+    expect(vi.getTimerCount()).toBe(baseline);
   });
 
   it("两次并发各持独立 signal，一次超时不牵连另一次", async () => {
