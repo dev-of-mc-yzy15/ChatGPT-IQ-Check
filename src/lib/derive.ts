@@ -31,16 +31,34 @@ export function computeDelta(history: HistoryPoint[]): { delta: number | null; d
 export const DEGRADE_THRESHOLD = -5;
 export const MIN_COVERAGE_RATIO = 0.9;
 
+/**
+ * 按 UTC 日去重，同一天只留最后一条（与 buildDailyGrid 的后写覆盖语义一致），
+ * 并按时间升序。折线、散点、降智红点必须共用这一条序列，否则点会飘在折线外。
+ */
+export function lastPerDay(history: HistoryPoint[]): HistoryPoint[] {
+  const byDay = new Map<string, HistoryPoint>();
+  for (const p of history) {
+    const day = p.at.slice(0, 10);
+    const seen = byDay.get(day);
+    // 取当天最晚的一条，不依赖上游给的数组顺序。
+    if (!seen || p.at > seen.at) byDay.set(day, p);
+  }
+  return [...byDay.values()].sort((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : 0));
+}
+
 export function findDegradationPoints(
   history: HistoryPoint[],
 ): { point: HistoryPoint; delta: number; days: number }[] {
   const out: { point: HistoryPoint; delta: number; days: number }[] = [];
-  for (let i = 1; i < history.length; i++) {
-    const current = history[i];
-    const previous = history[i - 1];
+  const series = lastPerDay(history);
+  for (let i = 1; i < series.length; i++) {
+    const current = series[i];
+    const previous = series[i - 1];
     const delta = current.score - previous.score;
     if (delta > DEGRADE_THRESHOLD) continue;
     if (current.score_status !== "complete") continue;
+    // required_tasks 为 0 时右边是 0，coverage < 0 恒假 —— 覆盖率闸门等于不存在。
+    if (!(current.required_tasks > 0) || !Number.isFinite(current.coverage)) continue;
     if (current.coverage < current.required_tasks * MIN_COVERAGE_RATIO) continue;
     const days = Math.round((new Date(current.at).getTime() - new Date(previous.at).getTime()) / 86400000);
     out.push({ point: current, delta: Math.round(delta * 10) / 10, days });

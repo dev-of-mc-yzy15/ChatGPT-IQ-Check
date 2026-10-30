@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  sortCandidates, computeDelta, findDegradationPoints, topCandidates, buildDailyGrid, roundMatrix,
+  sortCandidates, computeDelta, findDegradationPoints, topCandidates, buildDailyGrid, lastPerDay, roundMatrix,
 } from "../src/lib/derive";
 import type { HistoryPoint, RadarCandidate, RoundData } from "../src/types";
 
@@ -11,9 +11,13 @@ const mk = (o: Partial<RadarCandidate>): RadarCandidate => ({
   latest_graded_at: "2026-10-23T00:00:00Z", history: [], ...o,
 });
 
-const hp = (at: string, score: number, status: "complete" | "provisional" = "complete"): HistoryPoint => ({
-  at, score, coverage: 64, required_tasks: 64, score_status: status,
-});
+const hp = (
+  at: string,
+  score: number,
+  status: "complete" | "provisional" = "complete",
+  coverage = 64,
+  required_tasks = 64,
+): HistoryPoint => ({ at, score, coverage, required_tasks, score_status: status });
 
 describe("sortCandidates", () => {
   it("sorts by score desc and keeps nulls last", () => {
@@ -36,6 +40,52 @@ describe("computeDelta / findDegradationPoints", () => {
     expect(findDegradationPoints(h)).toHaveLength(1);
     const provisional = [hp("2026-10-17T00:00:00Z", 110), hp("2026-10-23T00:00:00Z", 100, "provisional")];
     expect(findDegradationPoints(provisional)).toHaveLength(0);
+  });
+
+  // P0-4：required_tasks 为 0 时右边是 0，coverage < 0 恒假，闸门曾经形同不存在
+  it("does not treat a zero required_tasks point as covered", () => {
+    const h = [hp("2026-10-17T00:00:00Z", 110), hp("2026-10-23T00:00:00Z", 100, "complete", 0, 0)];
+    expect(findDegradationPoints(h)).toHaveLength(0);
+  });
+
+  it("rejects a point whose coverage is not a number", () => {
+    const h = [hp("2026-10-17T00:00:00Z", 110), hp("2026-10-23T00:00:00Z", 100, "complete", Number.NaN, 64)];
+    expect(findDegradationPoints(h)).toHaveLength(0);
+  });
+
+  it("still marks a fully covered drop", () => {
+    const h = [hp("2026-10-17T00:00:00Z", 110), hp("2026-10-23T00:00:00Z", 100, "complete", 60, 64)];
+    expect(findDegradationPoints(h)).toHaveLength(1);
+  });
+
+  it("drops a point below the 90% coverage gate", () => {
+    const h = [hp("2026-10-17T00:00:00Z", 110), hp("2026-10-23T00:00:00Z", 100, "complete", 50, 64)];
+    expect(findDegradationPoints(h)).toHaveLength(0);
+  });
+
+  // P0-5：降智点曾按原始 history 相邻两行判断，同一天两次评分会被当成两天
+  it("compares day buckets, not raw adjacent rows", () => {
+    const h = [
+      hp("2026-10-17T00:00:00Z", 110),
+      hp("2026-10-23T08:00:00Z", 108),
+      hp("2026-10-23T09:00:00Z", 100),
+    ];
+    const found = findDegradationPoints(h);
+    expect(found).toHaveLength(1);
+    expect(found[0].point.at).toBe("2026-10-23T09:00:00Z");
+    expect(found[0].delta).toBe(-10);
+    expect(found[0].days).toBe(6);
+  });
+});
+
+describe("lastPerDay", () => {
+  it("keeps the last row of each day and sorts ascending", () => {
+    const rows = lastPerDay([
+      hp("2026-10-23T09:00:00Z", 100),
+      hp("2026-10-21T00:00:00Z", 105),
+      hp("2026-10-23T08:00:00Z", 108),
+    ]);
+    expect(rows.map((r) => r.at)).toEqual(["2026-10-21T00:00:00Z", "2026-10-23T09:00:00Z"]);
   });
 });
 

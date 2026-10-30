@@ -1,5 +1,5 @@
 import type { RadarCandidate } from "../types";
-import { buildDailyGrid, computeDelta, findDegradationPoints } from "../lib/derive";
+import { buildDailyGrid, computeDelta, findDegradationPoints, lastPerDay } from "../lib/derive";
 import { fmtDateTime, fmtDelta, fmtEffort, fmtScore } from "../lib/format";
 import { ModelName } from "./ModelName";
 import { candidateKey } from "../../scripts/contract.mjs";
@@ -98,11 +98,8 @@ export function TrendChart({
               }
             }
             if (current.length) segments.push(current);
-            // 折线走的是按天去重后的网格，散点也必须按同样规则取点，
-            // 否则同一天有多次评分时会出现「点飘在折线外」。
-            const lastPerDay = new Map<string, (typeof c.history)[number]>();
-            for (const p of c.history) lastPerDay.set(p.at.slice(0, 10), p);
-            const points = [...lastPerDay.values()].map((p) => ({
+            // 折线走按天去重后的网格，散点必须用同一条序列，否则同一天多次评分会出现「点飘在折线外」。
+            const points = lastPerDay(c.history).map((p) => ({
               p,
               x: xOf(new Date(p.at).getTime(), min, max),
               y: yOf(p.score, scoreMax),

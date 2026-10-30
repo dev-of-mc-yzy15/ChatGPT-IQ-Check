@@ -42,6 +42,30 @@ describe("TrendChart", () => {
     expect(screen.getByText(/0 到 300/)).toBeInTheDocument();
   });
 
+  // P0-5 回归：散点与红点都必须走按天去重后的序列，同一天多次评分只能留最晚一条。
+  it("draws one scatter point per day, using the last reading of the day", () => {
+    const c = mk({
+      history: [
+        { at: "2026-10-17T00:00:00Z", score: 110, coverage: 64, required_tasks: 64, score_status: "complete" },
+        { at: "2026-10-23T08:00:00Z", score: 108, coverage: 64, required_tasks: 64, score_status: "complete" },
+        { at: "2026-10-23T09:00:00Z", score: 100, coverage: 64, required_tasks: 64, score_status: "complete" },
+      ],
+    });
+    const { container } = render(<TrendChart candidates={[c]} scoreMax={150} />);
+    const circles = [...container.querySelectorAll("circle")];
+    const dots = circles.filter((el) => el.getAttribute("r") === "3");
+    const reds = circles.filter((el) => el.getAttribute("fill") === "var(--down)");
+    // 10-17 与 10-23 两天 → 两个散点，不是三个
+    expect(dots).toHaveLength(2);
+    // 红点只有一个，且落在 09:00 那一天的最后一条上
+    expect(reds).toHaveLength(1);
+    expect(reds[0].getAttribute("cx")).toBe(dots[1].getAttribute("cx"));
+    const titles = [...container.querySelectorAll("title")].map((t) => t.textContent ?? "");
+    expect(titles.some((t) => t.includes("分数下降"))).toBe(true);
+    // 散点数量与数据表行数一致（表里仍是原始行，供核对）
+    expect(container.querySelectorAll("tbody tr")).toHaveLength(3);
+  });
+
   it("renders empty state", () => {
     render(<TrendChart candidates={[]} scoreMax={150} />);
     expect(screen.getByText(/暂无可展示的曲线/)).toBeInTheDocument();
