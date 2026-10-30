@@ -118,8 +118,18 @@ export interface StatusData {
   benchmark: string;
   candidates_ok: number;
   candidates_total: number;
+  /** 上游声明的候选数，含被丢弃的；candidates_total 只数真正参与统计的。 */
+  binding_total: number;
+  /** 抓取失败、用旧数据兜底的候选数。 */
+  reused_count: number;
+  /** 抓取失败且无旧数据、被直接丢弃的候选数。 */
+  missing_count: number;
   round_ok: boolean;
   latest_graded_at: string | null;
+  /** 参与候选里最旧的评分时间，防止 1 个新鲜候选盖住一堆陈旧。 */
+  min_latest: string | null;
+  /** 评分时间超过 7 天（或时间未知）的候选数。 */
+  stale_count: number;
   round_updated_at: string | null;
   /** null = 上游没给，未知不等于 0。 */
   stale_days: number | null;

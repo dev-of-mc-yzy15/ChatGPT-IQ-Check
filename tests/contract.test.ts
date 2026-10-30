@@ -7,6 +7,7 @@ import {
   strictNumber,
   assertRadarBenchShape,
   assertRoundShape,
+  assertStatusShape,
 } from "../scripts/contract.mjs";
 import { validateRadarBench as loaderValidateRadarBench, validateRound as loaderValidateRound } from "../src/data/loader";
 import { validateRadarBench as libValidateRadarBench, validateRound as libValidateRound } from "../scripts/lib.mjs";
@@ -111,5 +112,40 @@ describe("双端契约一致", () => {
       ...partial,
     };
     expect(() => assertRoundShape(withEnvelope)).not.toThrow();
+  });
+});
+
+describe("strictNumber optional", () => {
+  it("lets a missing key through only when optional", () => {
+    expect(strictNumber(undefined, "x", { optional: true })).toBeUndefined();
+    expect(() => strictNumber(undefined, "x")).toThrow(/expected number/);
+  });
+  it("still validates the value when it is present", () => {
+    expect(() => strictNumber("nope", "x", { optional: true })).toThrow(/finite number/);
+    expect(() => strictNumber(-3, "x", { optional: true, min: 0 })).toThrow(/>= 0/);
+  });
+});
+
+describe("assertStatusShape 新分类字段", () => {
+  const base = () => read("public/data/status.json");
+
+  it("accepts the shipped legacy status.json without the new keys", () => {
+    const status = base();
+    // 线上真实文件就是旧格式：严格必填会直接把现有数据打成坏数据。
+    expect(status.reused_count).toBeUndefined();
+    expect(() => assertStatusShape(status)).not.toThrow();
+  });
+
+  it("validates the new keys once they exist", () => {
+    const status = { ...base(), reused_count: 2, missing_count: 0, stale_count: 1, binding_total: 34 };
+    expect(assertStatusShape(status).reused_count).toBe(2);
+    expect(() => assertStatusShape({ ...status, reused_count: -1 })).toThrow(/>= 0/);
+    expect(() => assertStatusShape({ ...status, binding_total: "nope" })).toThrow(/finite number/);
+  });
+
+  it("rejects a non-ISO min_latest but keeps null", () => {
+    const status = base();
+    expect(() => assertStatusShape({ ...status, min_latest: "yesterday" })).toThrow(/ISO timestamp/);
+    expect(assertStatusShape({ ...status, min_latest: null }).min_latest).toBeNull();
   });
 });

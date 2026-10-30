@@ -52,10 +52,15 @@ function fail(path, expectation, value) {
 /**
  * @param {unknown} value
  * @param {string} path
- * @param {{ nullable?: boolean, min?: number }} [options]
- * @returns {number | null}
+ * @param {{ nullable?: boolean, optional?: boolean, min?: number }} [options]
+ * @returns {number | null | undefined}
  */
-export function strictNumber(value, path, { nullable = false, min = /** @type {number | undefined} */ (undefined) } = {}) {
+export function strictNumber(
+  value,
+  path,
+  { nullable = false, optional = false, min = /** @type {number | undefined} */ (undefined) } = {},
+) {
+  if (value === undefined && optional) return undefined;
   if (value == null || value === "") {
     if (nullable) return null;
     return fail(path, "number", value);
@@ -85,10 +90,11 @@ export function strictString(value, path, { nullable = false } = {}) {
 /**
  * @param {unknown} value
  * @param {string} path
- * @param {{ nullable?: boolean }} [options]
- * @returns {string | null}
+ * @param {{ nullable?: boolean, optional?: boolean }} [options]
+ * @returns {string | null | undefined}
  */
-export function strictIso(value, path, { nullable = false } = {}) {
+export function strictIso(value, path, { nullable = false, optional = false } = {}) {
+  if (value === undefined && optional) return undefined;
   const s = strictString(value, path, { nullable });
   if (s == null) return null;
   if (!Number.isFinite(Date.parse(s))) return fail(path, "ISO timestamp", value);
@@ -344,6 +350,13 @@ export function assertStatusShape(data) {
   strictIso(data.round_updated_at, "status.round_updated_at", { nullable: true });
   // 时间缺失时 stale 未知，允许 null（前端按"未知即告警"处理）。
   strictNumber(data.stale_days, "status.stale_days", { nullable: true, min: 0 });
+  // 分类计数与最旧时间：本轮新增，旧 status.json 没有这些键。
+  // optional + 类型严格 —— 缺了放行（历史数据），写歪了照样打红。
+  strictNumber(data.binding_total, "status.binding_total", { optional: true, min: 0 });
+  strictNumber(data.reused_count, "status.reused_count", { optional: true, min: 0 });
+  strictNumber(data.missing_count, "status.missing_count", { optional: true, min: 0 });
+  strictIso(data.min_latest, "status.min_latest", { nullable: true, optional: true });
+  strictNumber(data.stale_count, "status.stale_count", { optional: true, min: 0 });
   strictArray(data.errors, "status.errors").forEach((error, i) =>
     strictString(error, "status.errors[" + i + "]"),
   );

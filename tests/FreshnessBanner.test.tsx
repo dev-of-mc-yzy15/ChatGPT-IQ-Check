@@ -11,8 +11,13 @@ const status: StatusData = {
   benchmark: "radar-bench-final64-20261004",
   candidates_ok: 34,
   candidates_total: 34,
+  binding_total: 34,
+  reused_count: 0,
+  missing_count: 0,
   round_ok: true,
   latest_graded_at: "2026-10-23T01:19:00Z",
+  min_latest: "2026-10-23T01:19:00Z",
+  stale_count: 0,
   round_updated_at: "2026-10-23T10:43:22Z",
   stale_days: 1,
   errors: [],
@@ -55,25 +60,61 @@ describe("FreshnessBanner", () => {
     expect(banner).not.toHaveTextContent("数据可能已过期");
   });
 
-  it("does not warn when stale_days is exactly 7", () => {
+  // 授权的断言语义变更（P1-17）：边界由 > 改 >=，恰好 7 天也必须告警。
+  it("warns when stale_days is exactly 7", () => {
     renderBanner({ stale_days: 7 });
-    expect(screen.getByRole("status")).not.toHaveTextContent("数据可能已过期");
+    expect(screen.getByRole("status")).toHaveTextContent("数据可能已过期（超过 7 天）");
   });
 
-  it("warns when stale_days is greater than 7", () => {
+  it("warns when stale_days is well past the 7 day limit", () => {
     renderBanner({ stale_days: 8 });
     expect(screen.getByRole("status")).toHaveTextContent("数据可能已过期（超过 7 天）");
   });
 
-  it("shows the reused-data line when errors are present", () => {
+  it("counts unprefixed errors as broken data files", () => {
     renderBanner({ errors: ["fetch failed", "timeout"] });
-    expect(screen.getByRole("status")).toHaveTextContent("部分候选复用旧数据：2 条");
+    expect(screen.getByRole("status")).toHaveTextContent("数据文件异常：2 项");
+  });
+
+  it("separates reused, dropped and corrupt outcomes by prefix", () => {
+    renderBanner({
+      errors: ["reused: A|high: timeout", "missing: B|low: 500", "status.json: 坏数据（x）"],
+    });
+    const banner = screen.getByRole("status");
+    expect(banner).toHaveTextContent("复用旧数据：1 条");
+    expect(banner).toHaveTextContent("候选被丢弃");
+    expect(banner).toHaveTextContent("数据文件异常：1 项");
+  });
+
+  it("falls back to the counters when no error line carries a prefix", () => {
+    // errors 被截断（一条前缀都没有）时，别静默成 0，用 status 的汇总数兜底。
+    renderBanner({ errors: ["truncated"], reused_count: 7, missing_count: 2 });
+    const banner = screen.getByRole("status");
+    expect(banner).toHaveTextContent("复用旧数据：7 条");
+    expect(banner).toHaveTextContent("候选被丢弃（无旧数据可复用）：2 条");
+  });
+
+  it("prefers error-line detail over the counters when both exist", () => {
+    renderBanner({ errors: ["reused: A|high: timeout"], reused_count: 7, missing_count: 2 });
+    const banner = screen.getByRole("status");
+    expect(banner).toHaveTextContent("复用旧数据：1 条");
+    expect(banner).not.toHaveTextContent("复用旧数据：7 条");
+    // missing 一条前缀都没有，回落到 missing_count=2
+    expect(banner).toHaveTextContent("候选被丢弃（无旧数据可复用）：2 条");
   });
 });
 
 describe("FreshnessBanner 未知态", () => {
   it("warns when stale_days is null instead of silently taking the fresh path", () => {
     renderBanner({ stale_days: null });
+    const banner = screen.getByRole("status");
+    expect(banner).toHaveTextContent("数据新鲜度未知");
+    expect(banner).not.toHaveTextContent("数据可能已过期");
+  });
+
+  // P1-17：NaN !== null，旧实现里 `NaN > 7` 恒 false，会静默走新鲜分支。
+  it("warns when stale_days is NaN instead of silently taking the fresh path", () => {
+    renderBanner({ stale_days: Number.NaN });
     const banner = screen.getByRole("status");
     expect(banner).toHaveTextContent("数据新鲜度未知");
     expect(banner).not.toHaveTextContent("数据可能已过期");
