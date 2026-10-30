@@ -87,6 +87,18 @@ export async function mapLimit(items, limit, fn) {
 }
 
 /**
+ * round 侧的候选下限。radar 侧早就不再把 30 钉死了（见 refreshAll 里的 minimum），
+ * round 却还在硬判 30 —— 上游一旦发得少就是永久失败。这里按同构思路收口：
+ * 上限仍是 30（今天 34 个候选时取值不变，行为不漂移），候选不足 30 时按实际数收，
+ * 且永远不低于 1，避免空数组把下限算成 0 反而全放过。
+ * @param {number} candidateCount
+ * @returns {number}
+ */
+export function roundCandidateFloor(candidateCount) {
+  return Math.max(1, Math.min(candidateCount, 30));
+}
+
+/**
  * @param {string} model
  * @param {string} effort
  * @returns {string}
@@ -305,7 +317,9 @@ export async function refreshAll({
   const availableBinding = { ...bindingRaw, model_efforts: available.map((r) => r.candidate) };
 
   const roundRaw = await fetchJson(ROUND_URL, {}, fetchImpl);
-  const round = transformRound(roundRaw);
+  // score_max 用 binding 已解析出来的值（含缺失时的 SCORE_MAX 兜底）：round 与 radar-bench
+  // 必须同分母，否则上游改分数上限时 round 的刻度会按旧上限静默画错。
+  const round = transformRound(roundRaw, { scoreMax: binding.score_max });
   const stamp = now().toISOString();
   const fetchId = randomUUID();
 
@@ -325,7 +339,11 @@ export async function refreshAll({
     checked_at: stamp,
     ...round,
   };
-  validateRound(roundData, { minCandidates: minRoundCandidates ?? 30 });
+  // 下限跟着实际候选数走：上游少于 30 个候选时不再被钉死的 30 判失败；
+  // minRoundCandidates 仍然是显式覆盖。
+  validateRound(roundData, {
+    minCandidates: minRoundCandidates ?? roundCandidateFloor(roundData.candidates.length),
+  });
 
   const summaries = available.map((r) => r.summary);
   const nowDate = now();

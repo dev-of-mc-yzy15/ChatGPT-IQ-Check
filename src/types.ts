@@ -72,6 +72,11 @@ export interface RoundAnimation {
   seconds: number | null;
   cost_usd: number | null;
   asset_url: string | null;
+  /**
+   * 上游替我们算好的动画资产校验和。可选是因为历史落盘数据没有这个字段，
+   * 转换层补上之后新数据就会有。
+   */
+  asset_sha256?: string | null;
 }
 
 export interface RoundCandidate {

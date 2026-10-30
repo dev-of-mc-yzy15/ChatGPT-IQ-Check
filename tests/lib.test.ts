@@ -157,6 +157,20 @@ describe("transformSummary 的静默归零", () => {
     expect(transformSummary(summaryRaw).statistics.elapsed_ms_mean).not.toBeUndefined();
   });
 
+  // 这个时间戳也会进前端的排序与格式化，原样透传等于把垃圾值放进 UI。
+  it("throws on an unparseable detail_metrics.latest_graded_at", () => {
+    const broken = {
+      ...summaryRaw,
+      detail_metrics: { ...summaryRaw.detail_metrics, latest_graded_at: "not-a-date" },
+    };
+    expect(() => transformSummary(broken)).toThrow(/summary\.detail_metrics\.latest_graded_at/);
+  });
+
+  // 没给就是真的没有评分时间，保持 null，不能被上面的严格校验误伤。
+  it("keeps latest_graded_at null when detail_metrics omits it", () => {
+    expect(transformSummary({ ...summaryRaw, detail_metrics: undefined }).latest_graded_at).toBeNull();
+  });
+
   it("accepts numeric strings without changing their value", () => {
     const s2 = transformSummary({ ...summaryRaw, coverage: "64" });
     expect(s2.coverage).toBe(64);
@@ -285,5 +299,20 @@ describe("transformRound", () => {
   it("rejects a task list that disagrees with the declared task_count", () => {
     const mismatched = { ...roundRaw, taskset: { ...roundRaw.taskset, task_count: 9 } };
     expect(() => transformRound(mismatched)).toThrow(/task_count 9 != tasks 7/);
+  });
+  // 后续要拿这个值校验下载下来的动画资产，转换层丢了就再也拿不回来。
+  it("keeps the upstream asset sha256", () => {
+    const r = transformRound(roundRaw);
+    const high = r.candidates.find((c) => c.effort === "high")!;
+    expect(high.animation?.asset_sha256).toBe("7b979b4febfe");
+  });
+  // UI 用 score_max 画刻度和档位，硬编码会让上游改分数上限时 round 板默默画歪。
+  it("honours a passed scoreMax instead of the hardcoded one", () => {
+    const r = transformRound(roundRaw, { scoreMax: 200 });
+    expect(r.candidates.map((c) => c.score_max)).toEqual([200, 200]);
+    expect(() => validateRound(withEnvelope(r), { minCandidates: 2 })).not.toThrow();
+  });
+  it("defaults scoreMax to 150 when the caller omits it", () => {
+    expect(transformRound(roundRaw).candidates.map((c) => c.score_max)).toEqual([150, 150]);
   });
 });

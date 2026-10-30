@@ -168,7 +168,12 @@ export function transformSummary(raw) {
             ? Number(apiEquivalentUsdMean)
             : null,
     },
-    latest_graded_at: raw.detail_metrics?.latest_graded_at ?? null,
+    // 这个时间戳同样会进 UI 的排序与格式化（sortCandidates），不能原样透传：
+    // 只有「没给」和「显式 null」才是 null，给了值就必须是能解析的 ISO，否则整条失败。
+    latest_graded_at:
+      raw.detail_metrics?.latest_graded_at == null
+        ? null
+        : iso(raw.detail_metrics.latest_graded_at, "summary.detail_metrics.latest_graded_at"),
     history,
   };
 }
@@ -251,9 +256,15 @@ export function computeRoundScore(results, tasks) {
 
 /**
  * @param {any} raw 上游 degradation-codex-latest.json
+ * @param {{scoreMax?: number}} [options] scoreMax 取 binding 解析出来的值，
+ *   与 radar-bench 同源；上游改分数上限时两个文档必须一起变，否则 round 的
+ *   进度条与刻度会按旧分母静默画歪。
  * @returns {RoundDoc}
  */
-export function transformRound(raw) {
+export function transformRound(raw, { scoreMax = SCORE_MAX } = {}) {
+  const resolvedScoreMax = /** @type {number} */ (
+    strictNumber(scoreMax, "round.score_max", { min: 1 })
+  );
   /** @type {any[]} */
   const tasks = Array.isArray(raw?.tasks)
     ? /** @type {any[]} */ (raw.tasks)
@@ -314,13 +325,15 @@ export function transformRound(raw) {
           seconds: finiteOrNull(a.seconds),
           cost_usd: finiteOrNull(a.cost?.usd),
           asset_url: a.asset?.url ?? null,
+          // 上游给了校验和就得留下来：后续下载动画后要拿它比对，转换层丢掉就再也拿不回来。
+          asset_sha256: a.asset?.sha256 ?? null,
         }
       : null;
     return {
       model,
       effort,
       score: score.score,
-      score_max: SCORE_MAX,
+      score_max: resolvedScoreMax,
       score_status: score.status,
       scored_tasks: score.scored_tasks,
       total_tasks: score.total_tasks,

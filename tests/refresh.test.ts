@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { summaryUrl, refreshAll } from "../scripts/refresh.mjs";
+import { summaryUrl, refreshAll, roundCandidateFloor } from "../scripts/refresh.mjs";
 import bindingRaw from "./fixtures/binding.sample.json";
 import summaryRaw from "./fixtures/summary.sample.json";
 import roundRaw from "./fixtures/round.sample.json";
@@ -175,6 +175,41 @@ describe("refreshAll 状态与空转", () => {
     });
     expect(result.status.candidates_total).toBe(2);
     expect(result.status.ok).toBe(true);
+  });
+
+  // 安全 R7 的 round 侧孪生问题：round 曾硬判 30，今天 34 个候选看不出病，
+  // 上游真发少了就是永久死锁。这里给 3 个候选且不传 minRoundCandidates。
+  it("accepts a round payload with fewer than 30 candidates", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "iq-refresh-"));
+    const small = JSON.parse(JSON.stringify(bindingRaw));
+    small.model_efforts = small.model_efforts.slice(0, 3);
+    const smallRound = JSON.parse(JSON.stringify(roundRaw));
+    smallRound.round.results = {
+      "gpt-6-astra|high": smallRound.round.results["gpt-6-astra|high"],
+      "gpt-6-astra|low": smallRound.round.results["gpt-6-astra|low"],
+      "gpt-6.1-sol|high": {},
+    };
+    const fetchImpl = vi.fn(async (url: string) => {
+      if (url.includes("radar-bench-binding")) return jsonResponse(small);
+      if (url.includes("radar-bench-score")) {
+        const u = new URL(url);
+        return jsonResponse({ ...summaryRaw, model: u.searchParams.get("model"), effort: u.searchParams.get("effort") });
+      }
+      return jsonResponse(smallRound);
+    });
+    const result = await refreshAll({
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+      outDir: dir,
+      now: () => new Date("2026-10-24T00:00:00Z"),
+    });
+    expect(result.round.candidates).toHaveLength(3);
+  });
+
+  it("clamps the round floor to the candidate count but never to 0", () => {
+    expect(roundCandidateFloor(3)).toBe(3);
+    expect(roundCandidateFloor(34)).toBe(30);
+    // 空 payload 不能让下限归零，否则"一个候选都没有"反而全放过。
+    expect(roundCandidateFloor(0)).toBe(1);
   });
 });
 

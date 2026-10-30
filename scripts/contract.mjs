@@ -257,6 +257,10 @@ function assertRoundAnimation(animation, path) {
   strictNumber(animation.seconds, path + ".seconds", { nullable: true, min: 0 });
   strictNumber(animation.cost_usd, path + ".cost_usd", { nullable: true, min: 0 });
   strictString(animation.asset_url, path + ".asset_url", { nullable: true });
+  // 可选：已落盘的旧 round.json 没有这个字段，缺省放过；给了就必须是字符串或 null。
+  if (animation.asset_sha256 !== undefined) {
+    strictString(animation.asset_sha256, path + ".asset_sha256", { nullable: true });
+  }
   if (!animation.scores || typeof animation.scores !== "object") {
     fail(path + ".scores", "object", animation.scores);
   }
