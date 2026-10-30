@@ -41,3 +41,17 @@ jobs:
       # 构建后校验产物里没有回退到根绝对路径的引用，否则 Pages 子路径部署整页白屏。
       # 必须在 build 之后：这一步读的是 dist/index.html，不是源码。
       - run: npm run check:base
+
+      # 资产哈希闸门：public/assets/ 里每个文件都得对得上 round.json 钉的 assethash，
+      # 否则线上 iframe 会 404 或渲染出别的内容。改过资产就必须重算并更新 asset_sha256。
+      - run: npm run verify:assets
+
+      # 真浏览器基线（Playwright + Chromium）。单测全跑在 jsdom 上，既不执行 CSP、
+      # 也不做 MIME 检查，子路径失效与 CSP 写歪这两类整页白屏故障只有真浏览器能兜住。
+      # 必须排在 build 之后：webServer 直接吃上一步的 dist/，E2E_PREBUILT=1 跳过重复构建。
+      - run: npx playwright install --with-deps chromium
+      # 起服务由 playwright.config.ts 的 webServer 托管（preview，端口 4321，单 worker），
+      # 别在这里再起一遍 preview，否则 strictPort 直接撞端口。
+      - run: npm run e2e
+        env:
+          E2E_PREBUILT: "1"
