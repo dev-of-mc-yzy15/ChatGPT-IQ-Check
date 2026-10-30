@@ -73,12 +73,20 @@ export function TrendChart({
     return <section className="card"><h2>RadarBench 趋势</h2><p className="muted">暂无可展示的曲线。</p></section>;
   }
   const grids = candidates.map((c) => buildDailyGrid(c.history));
-  const times = grids.flat().map((p) => new Date(p.at).getTime());
-  if (!times.length) {
+  // 单趟循环求横轴首尾，不先 flat 再 `Math.min(...times)`：曲线一多（每条又带个 1970 坏点）
+  // 实参数量就越过 V8 上限抛 RangeError，而这里外层没有 try，整张首页图会被 ErrorBoundary 吃掉。
+  let min = Number.POSITIVE_INFINITY;
+  let max = Number.NEGATIVE_INFINITY;
+  for (const grid of grids) {
+    for (const p of grid) {
+      const t = new Date(p.at).getTime();
+      if (t < min) min = t;
+      if (t > max) max = t;
+    }
+  }
+  if (min > max) {
     return <section className="card"><h2>RadarBench 趋势</h2><p className="muted">暂无历史数据。</p></section>;
   }
-  const min = Math.min(...times);
-  const max = Math.max(...times);
   // 刻度跟着数据的满分走，上游改评分上限时图不会失真。
   const ticks = [0, 1, 2, 3].map((i) => Math.round((scoreMax * i) / 3));
   const xTickTimes = Array.from({ length: 5 }, (_, i) => min + ((max - min) * i) / 4);

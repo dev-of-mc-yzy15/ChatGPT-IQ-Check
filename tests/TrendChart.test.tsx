@@ -157,6 +157,27 @@ describe("TrendChart", () => {
     expect(labels).toContain("10-23");
     expect(labels.some((l) => /^\d{2}-\d{2}$/.test(l))).toBe(true);
   });
+
+  // 缺陷 4（组件侧）：组件在 `grids.flat()` 之后同样写 `Math.min(...times)`，把日桶摊成实参。
+  // 逐条曲线各带一个 1970 坏点，横轴被拉到 56 年，实参数量直接越过 V8 上限；组件外层没有 try，
+  // 一旦抛出整张首页图就被 ErrorBoundary 吃掉——所以这里必须「不抛且真的画出图」。
+  // 注意：跨度上限（MAX_GRID_DAYS）落地后单条网格会变短，断言因此只锁散点数与刻度，不锁折线段数。
+  it("renders six series that each carry a 1970 outlier without blowing the argument limit", () => {
+    const candidates = Array.from({ length: 6 }, (_, i) => mk({
+      model: `M${i}`,
+      history: [
+        { at: "1970-01-01T00:00:00Z", score: 0, coverage: 64, required_tasks: 64, score_status: "complete" },
+        { at: "2026-10-24T00:00:00Z", score: 100, coverage: 64, required_tasks: 64, score_status: "complete" },
+      ],
+    }));
+    const { container } = render(<TrendChart candidates={candidates} scoreMax={150} />);
+    expect(screen.getByRole("img", { name: /RadarBench 趋势/ })).toBeInTheDocument();
+    // 每条曲线两个散点：坏点没有额外造点，也没被吞掉。
+    expect(container.querySelectorAll("circle")).toHaveLength(12);
+    // 横轴刻度画得出来，说明 min/max 真的算出来了。
+    const labels = Array.from(container.querySelectorAll("svg text")).map((t) => t.textContent ?? "");
+    expect(labels.filter((l) => /^\d{2}-\d{2}$/.test(l))).toHaveLength(5);
+  });
 });
 
 describe("TrendControls", () => {
