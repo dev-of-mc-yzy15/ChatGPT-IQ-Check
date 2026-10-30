@@ -4,10 +4,16 @@ import { candidateKey } from "../../scripts/contract.mjs";
 export const EFFORT_ORDER = ["low", "medium", "high", "xhigh", "max", "ultra"];
 export type SortKey = "model" | "effort" | "score" | "coverage" | "graded_runs_count" | "latest_graded_at";
 
+/** 未知档位（上游新加的档）排到已知档之后，而不是 indexOf 得 -1 挤到最前。 */
+function effortRank(effort: string): number {
+  const at = EFFORT_ORDER.indexOf(effort);
+  return at === -1 ? EFFORT_ORDER.length : at;
+}
+
 export function sortCandidates(rows: RadarCandidate[], key: SortKey, dir: "asc" | "desc"): RadarCandidate[] {
   return [...rows].sort((a, b) => {
     if (key === "effort") {
-      const order = EFFORT_ORDER.indexOf(a.effort) - EFFORT_ORDER.indexOf(b.effort);
+      const order = effortRank(a.effort) - effortRank(b.effort);
       return dir === "asc" ? order : -order;
     }
     const av = a[key];
@@ -28,6 +34,13 @@ export function computeDelta(history: HistoryPoint[]): { delta: number | null; d
   return { delta: Math.round((current.score - previous.score) * 10) / 10, days };
 }
 
+/** UTC 日键：带时区偏移的 at 直接用 slice(0,10) 会落到本地日，跨日错桶。 */
+export function utcDayKey(at: string): string {
+  const ms = Date.parse(at);
+  // 解不出来的串退回字面前缀，至少不抛 RangeError 把整页拖垮。
+  return Number.isFinite(ms) ? new Date(ms).toISOString().slice(0, 10) : at.slice(0, 10);
+}
+
 export const DEGRADE_THRESHOLD = -5;
 export const MIN_COVERAGE_RATIO = 0.9;
 
@@ -38,10 +51,10 @@ export const MIN_COVERAGE_RATIO = 0.9;
 export function lastPerDay(history: HistoryPoint[]): HistoryPoint[] {
   const byDay = new Map<string, HistoryPoint>();
   for (const p of history) {
-    const day = p.at.slice(0, 10);
+    const day = utcDayKey(p.at);
     const seen = byDay.get(day);
     // 取当天最晚的一条，不依赖上游给的数组顺序。
-    if (!seen || p.at > seen.at) byDay.set(day, p);
+    if (!seen || Date.parse(p.at) > Date.parse(seen.at)) byDay.set(day, p);
   }
   return [...byDay.values()].sort((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : 0));
 }
@@ -75,12 +88,18 @@ export function topCandidates(rows: RadarCandidate[], n = 6): RadarCandidate[] {
 
 export function buildDailyGrid(history: HistoryPoint[]): { at: string; score: number | null }[] {
   if (!history.length) return [];
-  const start = new Date(history[0].at);
-  const end = new Date(history[history.length - 1].at);
-  const byDay = new Map(history.map((p) => [p.at.slice(0, 10), p.score]));
+  const times = history.map((h) => Date.parse(h.at)).filter((ms) => Number.isFinite(ms));
+  // start > end（上游给了倒序或坏时间）时早退，别产出空网格还当成"没有降智"。
+  if (!times.length) return [];
+  const lowest = Math.min(...times);
+  const highest = Math.max(...times);
+  // 从 UTC 零点起走，否则首尾当天会因取整被吞掉一天。
+  const from = new Date(lowest);
+  from.setUTCHours(0, 0, 0, 0);
+  const byDay = new Map(history.map((h) => [utcDayKey(h.at), h.score]));
   const out: { at: string; score: number | null }[] = [];
-  for (let d = new Date(start); d <= end; d.setUTCDate(d.getUTCDate() + 1)) {
-    const key = d.toISOString().slice(0, 10);
+  for (let d = from.getTime(); d <= highest; d += 86400000) {
+    const key = new Date(d).toISOString().slice(0, 10);
     out.push({ at: key + "T00:00:00.000Z", score: byDay.get(key) ?? null });
   }
   return out;
@@ -92,7 +111,12 @@ export function roundMatrix(round: RoundData): {
   cells: Map<string, RoundCandidate>;
 } {
   const models = [...new Set(round.candidates.map((c) => c.model))];
-  const efforts = EFFORT_ORDER.filter((e) => round.candidates.some((c) => c.effort === e));
+  const knownEfforts = EFFORT_ORDER.filter((e) => round.candidates.some((c) => c.effort === e));
+  // 上游新加的档位不能整列消失，追加到末尾。
+  const unknownEfforts = [...new Set(round.candidates.map((c) => c.effort))]
+    .filter((e) => !EFFORT_ORDER.includes(e))
+    .sort();
+  const efforts = [...knownEfforts, ...unknownEfforts];
   const cells = new Map(round.candidates.map((c) => [candidateKey(c.model, c.effort), c]));
   return { models, efforts, cells };
 }

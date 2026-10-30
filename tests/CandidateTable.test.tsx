@@ -113,3 +113,25 @@ describe("CandidateTable", () => {
     expect(cell).toHaveTextContent("1 天");
   });
 });
+
+describe("P2-7 / P2-8 可访问名与 0 分母", () => {
+  it("gives the search box exactly one accessible name", () => {
+    render(<CandidateTable rows={[mk({})]} selectedKeys={[]} onToggle={() => {}} scoreMax={150} />);
+    // label 文本在，input 上不再挂同名 aria-label（否则读屏念两遍）
+    expect(screen.getAllByLabelText(/搜索模型或档位/)).toHaveLength(1);
+    expect(screen.getByLabelText(/搜索模型或档位/).tagName).toBe("INPUT");
+  });
+
+  it("shows a dash instead of a fake percentage when required_tasks is 0", () => {
+    render(<CandidateTable rows={[mk({ coverage: 64, required_tasks: 0 })]} selectedKeys={[]} onToggle={() => {}} scoreMax={150} />);
+    const cell = screen.getByTitle("覆盖 64");
+    expect(cell).toHaveTextContent("—");
+    // max(1, 0) 的老写法会渲染成 6400%
+    expect(cell).not.toHaveTextContent("%");
+  });
+
+  it("still shows a real percentage when required_tasks is positive", () => {
+    render(<CandidateTable rows={[mk({ coverage: 32, required_tasks: 64 })]} selectedKeys={[]} onToggle={() => {}} scoreMax={150} />);
+    expect(screen.getByRole("row", { name: /A/ })).toHaveTextContent("50%");
+  });
+});

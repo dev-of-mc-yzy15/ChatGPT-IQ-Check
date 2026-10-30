@@ -46,6 +46,8 @@ describe("candidate keys", () => {
     expect(parseCandidateKey("a|b")).toBeTruthy();
     expect(() => parseCandidateKey("|high")).toThrow(/bad candidate key/);
     expect(() => parseCandidateKey("model|")).toThrow(/bad candidate key/);
+    // P1-5：完全没有分隔符时以前 effort 解出 undefined，静默产出空档位。
+    expect(() => parseCandidateKey("nomodel")).toThrow(/bad candidate key/);
   });
 });
 

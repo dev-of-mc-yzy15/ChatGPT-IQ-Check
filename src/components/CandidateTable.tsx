@@ -52,8 +52,8 @@ export function CandidateTable({
     <section className="card" aria-label="RadarBench 候选">
       <h2>RadarBench 候选</h2>
       <label className="muted">
-        搜索模型或档位{" "}
-        <input value={query} onChange={(e) => setQuery(e.target.value)} aria-label="搜索模型或档位" />
+        {/* label 已经提供可访问名，再挂 aria-label 读屏会念两遍。 */}
+        搜索模型或档位 <input value={query} onChange={(e) => setQuery(e.target.value)} />
       </label>
       <div className="table-wrap">
         <table style={{ minWidth: 760 }}>
@@ -103,7 +103,12 @@ export function CandidateTable({
                   <th scope="row"><ModelName name={r.model} /></th>
                   <td>{fmtEffort(r.effort)}</td>
                   <td>{fmtScore(r.score)}</td>
-                  <td>{fmtPercent(r.coverage / Math.max(1, r.required_tasks))}</td>
+                  {/* required_tasks 为 0 时不能用 max(1,·) 硬凑分母，会伪装成 6400%。 */}
+                  <td>
+                    {r.required_tasks > 0
+                      ? fmtPercent(r.coverage / r.required_tasks)
+                      : <span title={`覆盖 ${r.coverage}`}>—</span>}
+                  </td>
                   <td className={r.score_status === "provisional" ? "muted" : undefined}>
                     {STATUS_LABELS[r.score_status]}
                   </td>

@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   sortCandidates, computeDelta, findDegradationPoints, topCandidates, buildDailyGrid, lastPerDay, roundMatrix,
+  utcDayKey,
 } from "../src/lib/derive";
 import type { HistoryPoint, RadarCandidate, RoundData } from "../src/types";
 
@@ -121,5 +122,67 @@ describe("roundMatrix", () => {
     expect(m.efforts).toEqual(["low", "high"]);
     expect(m.cells.get("A|high")?.score).toBe(20);
     expect(m.cells.get("B|high")).toBeUndefined();
+  });
+});
+
+describe("P1-6 未知档位", () => {
+  it("sorts an unknown effort after every known effort", () => {
+    const rows = [mk({ effort: "gigantic" }), mk({ effort: "low" }), mk({ effort: "ultra" })];
+    expect(sortCandidates(rows, "effort", "asc").map((r) => r.effort)).toEqual(["low", "ultra", "gigantic"]);
+    expect(sortCandidates(rows, "effort", "desc").map((r) => r.effort)).toEqual(["gigantic", "ultra", "low"]);
+  });
+
+  it("keeps an unknown effort column in roundMatrix instead of dropping it", () => {
+    const round = {
+      candidates: [mk({ model: "m", effort: "low" }), mk({ model: "m", effort: "gigantic" })],
+    } as unknown as RoundData;
+    expect(roundMatrix(round).efforts).toEqual(["low", "gigantic"]);
+  });
+});
+
+describe("P1-7 UTC 日键", () => {
+  it("buckets offset timestamps by UTC day, not by their local date text", () => {
+    // 两个都是 UTC 10-24 当天，本地日期文本一个 24 一个 25 —— 按 slice(0,10) 会分成两桶。
+    expect(utcDayKey("2026-10-24T23:30:00+08:00")).toBe("2026-10-24");
+    expect(utcDayKey("2026-10-25T01:00:00+08:00")).toBe("2026-10-24");
+    const series = lastPerDay([
+      hp("2026-10-24T23:30:00+08:00", 100),
+      hp("2026-10-25T01:00:00+08:00", 90),
+    ]);
+    expect(series).toHaveLength(1);
+    expect(series[0].score).toBe(90);
+  });
+
+  it("emits UTC day keys that cover every input day", () => {
+    const grid = buildDailyGrid([
+      hp("2026-10-24T23:30:00+08:00", 100),
+      hp("2026-10-26T01:00:00+08:00", 90),
+    ]);
+    // 10-26T01:00+08:00 其实是 UTC 10-25T17:00，所以只跨 24/25 两天。
+    expect(grid.map((g) => g.at)).toEqual([
+      "2026-10-24T00:00:00.000Z",
+      "2026-10-25T00:00:00.000Z",
+    ]);
+    expect(grid[1].score).toBe(90);
+  });
+
+  it("does not return an empty grid when history arrives in descending order", () => {
+    const grid = buildDailyGrid([hp("2026-10-26T00:00:00Z", 90), hp("2026-10-24T00:00:00Z", 100)]);
+    expect(grid.map((g) => g.score)).toEqual([100, null, 90]);
+  });
+});
+
+describe("P2-9 topCandidates 平手", () => {
+  it("breaks a score tie by the more recent grading time", () => {
+    const rows = [
+      mk({ model: "old", score: 100, latest_graded_at: "2026-10-01T00:00:00Z" }),
+      mk({ model: "new", score: 100, latest_graded_at: "2026-10-20T00:00:00Z" }),
+    ];
+    expect(topCandidates(rows, 1).map((r) => r.model)).toEqual(["new"]);
+  });
+
+  it("breaks a tie where both are null without throwing", () => {
+    const rows = [mk({ model: "a", score: 50, latest_graded_at: null }), mk({ model: "b", score: 50, latest_graded_at: null })];
+    expect(topCandidates(rows, 2).map((r) => r.model)).toEqual(["a", "b"]);
   });
 });
