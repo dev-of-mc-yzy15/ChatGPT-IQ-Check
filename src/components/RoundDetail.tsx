@@ -1,10 +1,56 @@
+import { useEffect, useState } from "react";
 import type { RoundCandidate, RoundData, RoundTaskDef } from "../types";
+import { assetUrl } from "../lib/asset";
 import { fmtDateTime, fmtEffort, fmtMoney, fmtScore, fmtSeconds } from "../lib/format";
 import { ModelName } from "./ModelName";
 
 /** 盲评分数是 0–100 制，上屏统一 /100 归一；非有限值保持 "—"，不要落成 NaN。 */
 function norm(score: number | null | undefined): string {
   return score == null || !Number.isFinite(score) ? "—" : (score / 100).toFixed(2);
+}
+
+/**
+ * 上游产物是 `*.html.txt`，静态托管按扩展名一律回 `text/plain`——把它直接塞进
+ * iframe 的 `src`，浏览器会当纯文本显示、屏上是源码而不是动画。所以先取文本再走
+ * `srcDoc`，浏览器强制按 HTML 解析；取回前不挂 iframe。
+ */
+function AnimationPlayer({ src, title }: { src: string; title: string }) {
+  const [html, setHtml] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    let alive = true;
+    const ctrl = new AbortController();
+    setHtml(null);
+    setError(null);
+    fetch(src, { signal: ctrl.signal })
+      .then((res) => (res.ok ? res.text() : Promise.reject(new Error(`HTTP ${res.status}`))))
+      .then((text) => {
+        if (alive) setHtml(text);
+      })
+      .catch((err: unknown) => {
+        if (!alive) return;
+        setError(err instanceof Error ? err.message : String(err));
+      });
+    return () => {
+      alive = false;
+      ctrl.abort();
+    };
+  }, [src]);
+
+  if (error) return <p className="muted">动画加载失败：{error}</p>;
+  if (html == null) return <p className="muted">正在加载动画…</p>;
+  return (
+    <iframe
+      // 只放脚本：动画靠内联 script 跑。坚决不加 allow-same-origin——加了同源，沙箱隔离基本失效。
+      sandbox="allow-scripts"
+      srcDoc={html}
+      title={title}
+      width="100%"
+      height={220}
+      referrerPolicy="no-referrer"
+      style={{ border: "1px solid var(--line)", borderRadius: 8, display: "block", marginTop: 8 }}
+    />
+  );
 }
 
 export function RoundDetail({
@@ -16,9 +62,15 @@ export function RoundDetail({
   tasks: RoundTaskDef[];
   round?: RoundData["round"];
 }) {
+  // hooks 必须在 null 分支之前：candidate 由空转有值时不能改变 hook 调用顺序。
+  const [assetOpen, setAssetOpen] = useState(false);
+  useEffect(() => setAssetOpen(false), [candidate]);
   if (!candidate) return <section className="card muted">选择上方格子查看逐题详情。</section>;
   const byId = new Map(candidate.tasks.map((t) => [t.task_id, t]));
   const animation = candidate.animation;
+  // 上游 asset_url 是站点根绝对路径，必须经 assetUrl 换成带 base 的站内路径。
+  const animationSrc = assetUrl(animation?.asset_url);
+  const checksum = animation?.asset_sha256?.trim() || null;
   return (
     <section className="card" aria-labelledby="round-detail-heading">
       <h2 id="round-detail-heading">
@@ -74,6 +126,26 @@ export function RoundDetail({
             · 分项满分 /100
           </p>
           {animation.reason && <p>{animation.reason}</p>}
+          {animationSrc && (
+            <>
+              {/* 折叠：一轮 34 个候选各有几十 KB 自包含 HTML，展开才取，别让首屏替全部候选买单。 */}
+              <details onToggle={(e) => setAssetOpen(e.currentTarget.open)}>
+                <summary>播放降智动画（沙箱隔离，展开后加载）</summary>
+                {assetOpen && (
+                  <AnimationPlayer
+                    src={animationSrc}
+                    title={`降智动画：${candidate.model} · ${fmtEffort(candidate.effort)}`}
+                  />
+                )}
+              </details>
+              {checksum && (
+                <p className="muted">
+                  校验和 <code title={checksum}>{checksum.slice(0, 8)}</code>…（上游 asset_sha256 前 8 位，
+                  可选中复制）
+                </p>
+              )}
+            </>
+          )}
         </div>
       ) : (
         <p className="muted">动画不可用</p>

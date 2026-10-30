@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { RoundDetail } from "../src/components/RoundDetail";
 import type { RoundCandidate, RoundData, RoundTaskDef } from "../src/types";
 
@@ -90,5 +90,121 @@ describe("RoundDetail", () => {
     );
     expect(screen.getByText("动画不可用")).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: /动画盲评/ })).not.toBeInTheDocument();
+  });
+});
+
+describe("RoundDetail 动画资产", () => {
+  const SHA = "69d67bc51db3e2ee7826b9ae19b863bab200efee8359b5c72a1f676267b107b2";
+  const UPSTREAM = "/assets/degradation-codex-205416a78068-6a72489e707c-gpt-6.1-sol-low-69d67bc51db3.html.txt";
+  const NAME = UPSTREAM.split("/").pop()!;
+  const BODY = "<html><body><svg id=\"a\"></svg></body></html>";
+  const withAsset = (over: Partial<RoundCandidate> = {}): RoundCandidate => ({
+    ...candidate,
+    ...over,
+    animation: { ...candidate.animation!, asset_url: UPSTREAM, asset_sha256: SHA },
+  });
+
+  /** details 的 toggle 事件 jsdom 不会自己派发，手动置位再派发，模拟用户展开。 */
+  function expand(container: HTMLElement) {
+    const details = container.querySelector("details")!;
+    details.open = true;
+    fireEvent(details, new Event("toggle"));
+  }
+
+  beforeEach(() => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(BODY, { status: 200 })));
+  });
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("默认折叠，展开前不加载、不挂 iframe", () => {
+    const { container } = render(<RoundDetail candidate={withAsset()} tasks={tasks} />);
+    expect(container.querySelector("details")).not.toHaveAttribute("open");
+    expect(container.querySelector("iframe")).toBeNull();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("展开后按 base 路径取回文本，走 srcDoc 而不是 src", async () => {
+    // 产物是 *.html.txt，托管按扩展名回 text/plain；若用 src，iframe 里只会显示源码。
+    const { container } = render(<RoundDetail candidate={withAsset()} tasks={tasks} />);
+    expand(container);
+    const frame = await screen.findByTitle(/降智动画/);
+    expect(fetch).toHaveBeenCalledWith(`${import.meta.env.BASE_URL}assets/${NAME}`, expect.anything());
+    // 关键：不渲染 src，改用 srcDoc 强制按 HTML 解析。
+    expect(frame).not.toHaveAttribute("src");
+    expect(frame.getAttribute("srcDoc")).toContain("<svg");
+  });
+
+  it("沙箱恰好只放脚本，绝不放 allow-same-origin", async () => {
+    const { container } = render(<RoundDetail candidate={withAsset()} tasks={tasks} />);
+    expand(container);
+    const frame = await screen.findByTitle(/降智动画/);
+    expect(frame).toHaveAttribute("sandbox", "allow-scripts");
+    expect(frame.getAttribute("sandbox")).not.toContain("allow-same-origin");
+  });
+
+  it("iframe 尺寸固定且带高度", async () => {
+    const { container } = render(<RoundDetail candidate={withAsset()} tasks={tasks} />);
+    expand(container);
+    const frame = await screen.findByTitle(/降智动画/);
+    expect(frame).toHaveAttribute("height", "220");
+    expect(frame).toHaveAttribute("width", "100%");
+  });
+
+  it("取回失败时给出可读提示，不留空框", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response("", { status: 404 })));
+    const { container } = render(<RoundDetail candidate={withAsset()} tasks={tasks} />);
+    expand(container);
+    expect(await screen.findByText(/动画加载失败：HTTP 404/)).toBeInTheDocument();
+    expect(container.querySelector("iframe")).toBeNull();
+  });
+
+  it("渲染 asset_sha256 的前 8 位供人肉核对", () => {
+    render(<RoundDetail candidate={withAsset()} tasks={tasks} />);
+    const code = screen.getByText(SHA.slice(0, 8));
+    expect(code.tagName).toBe("CODE");
+    // 悬停看全文。
+    expect(code).toHaveAttribute("title", SHA);
+  });
+
+  it("不同候选的 iframe title 各不相同且可读", async () => {
+    const a = withAsset({ model: "gpt-6.1-sol", effort: "low" });
+    const b = withAsset({ model: "gpt-6-sol", effort: "high" });
+    const first = render(<RoundDetail candidate={a} tasks={tasks} />);
+    expand(first.container);
+    const titleA = (await screen.findByTitle(/降智动画/)).getAttribute("title");
+    first.unmount();
+    const second = render(<RoundDetail candidate={b} tasks={tasks} />);
+    expand(second.container);
+    const titleB = (await screen.findByTitle(/降智动画/)).getAttribute("title");
+    // 34 个候选若同名，读屏与标签页里就分不清是哪一格。
+    expect(titleA).not.toBe(titleB);
+    expect(titleA).toContain("gpt-6.1-sol");
+    expect(titleA).toContain("低");
+    expect(titleB).toContain("gpt-6-sol");
+  });
+
+  it("切换候选后折叠状态回落，不自动替新候选加载", async () => {
+    const { container, rerender } = render(<RoundDetail candidate={withAsset()} tasks={tasks} />);
+    expand(container);
+    await screen.findByTitle(/降智动画/);
+    rerender(<RoundDetail candidate={withAsset({ model: "gpt-6-sol" })} tasks={tasks} />);
+    expect(container.querySelector("iframe")).toBeNull();
+  });
+
+  it("没有 asset_url 时不渲染任何 iframe 或空占位框", () => {
+    const bare = withAsset();
+    bare.animation = { ...bare.animation!, asset_url: null, asset_sha256: null };
+    const { container } = render(<RoundDetail candidate={bare} tasks={tasks} />);
+    expect(container.querySelector("iframe")).toBeNull();
+    expect(container.querySelector("details")).toBeNull();
+    // 动画区仍在（摘要、理由都在），只是没有播放器。
+    expect(screen.getByRole("heading", { name: /动画盲评/ })).toBeInTheDocument();
+    expect(screen.queryByText(/校验和/)).not.toBeInTheDocument();
+  });
+
+  it("animation 整体为 null 时也不炸", () => {
+    const { container } = render(<RoundDetail candidate={{ ...candidate, animation: null }} tasks={tasks} />);
+    expect(container.querySelector("iframe")).toBeNull();
+    expect(screen.getByText("动画不可用")).toBeInTheDocument();
   });
 });
