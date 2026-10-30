@@ -174,4 +174,35 @@ describe("workflows", () => {
     expect(triggers).toEqual(expect.arrayContaining(["push", "workflow_run", "workflow_dispatch"]));
     expect(wf.on.workflow_run.workflows).toContain("refresh-data");
   });
+
+  // 产物闸门只装在 ci 上等于只管 PR、不管发布：机器人的 [skip ci] 数据提交走
+  // workflow_run 直进 deploy，人工直推 main 也不经过 PR，两条路都绕开了 ci。
+  // deploy 是唯一上线路径，所以它自己的 build 之后、产物上传之前必须再跑一遍，
+  // 否则闸门对线上等于白设。
+  it("deploy runs the artifact gates after build and before uploading", () => {
+    const wf = load("deploy.yml");
+    // 把 run step 与 uses step 压进同一条序列，才能跨越 run/uses 边界比顺序：
+    // 只在 run 数组上比，「在 upload 之前」这种断言根本够不到 uses step。
+    const seq: string[] = wf.jobs.build.steps
+      .map((s: { run?: string; uses?: string }) => s.run ?? s.uses ?? "")
+      .filter(Boolean);
+    const at = (needle: string) => {
+      const i = seq.findIndex((s) => s.includes(needle));
+      expect(i, `${needle} 必须进 deploy`).toBeGreaterThanOrEqual(0);
+      return i;
+    };
+    // 闸门读的是 dist/，排在 build 之前会读到陈旧产物、甚至读不到直接红。
+    const build = at("npm run build");
+    expect(at("npm run check:base"), "check:base 必须排在 build 之后").toBeGreaterThan(build);
+    expect(at("npm run check:eol"), "check:eol 必须排在 build 之后").toBeGreaterThan(build);
+    expect(at("npm run verify:assets"), "verify:assets 必须排在 build 之后").toBeGreaterThan(build);
+    // 三道闸门的相对顺序与 ci.yml 保持一致，不另立一套。
+    expect(at("npm run check:base")).toBeLessThan(at("npm run check:eol"));
+    expect(at("npm run check:eol")).toBeLessThan(at("npm run verify:assets"));
+    // 传上去之后再跑就拦不住了。
+    const upload = at("actions/upload-pages-artifact");
+    for (const gate of ["npm run check:base", "npm run check:eol", "npm run verify:assets"]) {
+      expect(at(gate), `${gate} 必须排在 upload-pages-artifact 之前`).toBeLessThan(upload);
+    }
+  });
 });

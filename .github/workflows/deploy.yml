@@ -54,6 +54,14 @@ jobs:
       - run: npm test
       - run: npm run build
 
+      # 下面三道是产物闸门，ci.yml 里有同一套。只装在 ci 上等于只管 PR、不管发布：
+      # 机器人带 [skip ci] 的数据提交走 workflow_run 直进这里，人工直推 main 也不经过 PR，
+      # 两条路都绕开了 ci。deploy 是唯一上线路径，闸门必须自己再跑一遍才拦得住线上。
+      # 顺序与 ci.yml 一致，且都必须在 build 之后——它们读的是 dist/，不是源码。
+      - run: npm run check:base
+      - run: npm run check:eol
+      - run: npm run verify:assets
+
       - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
