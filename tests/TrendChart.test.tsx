@@ -110,6 +110,42 @@ describe("TrendChart", () => {
     expect(degrade?.querySelector("title")?.textContent).toMatch(/分数下降 -8\.0/);
   });
 
+  // P1-12：图例原本是静态 span，只能看不能点，读屏也拿不到开关状态。
+  it("renders each legend entry as a pressed toggle button", () => {
+    render(<TrendChart candidates={[mk()]} scoreMax={150} />);
+    const legend = screen.getByRole("button", { name: /A/ });
+    expect(legend).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("toggles a series off and back on from the legend", async () => {
+    const { container } = render(<TrendChart candidates={[mk()]} scoreMax={150} />);
+    expect(container.querySelectorAll("polyline")).toHaveLength(3);
+    const legend = screen.getByRole("button", { name: /A/ });
+
+    await userEvent.click(legend);
+    // 关：aria-pressed 翻转，曲线与散点一起从图里撤掉。
+    expect(legend).toHaveAttribute("aria-pressed", "false");
+    expect(container.querySelectorAll("polyline")).toHaveLength(0);
+    expect(container.querySelectorAll("circle")).toHaveLength(0);
+
+    await userEvent.click(legend);
+    // 开：回到按下态，曲线复原。
+    expect(legend).toHaveAttribute("aria-pressed", "true");
+    expect(container.querySelectorAll("polyline")).toHaveLength(3);
+  });
+
+  // 关掉一条不影响另一条：两条曲线的开关是各自独立的。
+  it("keeps the other series visible when one is toggled off", async () => {
+    const { container } = render(<TrendChart candidates={[mk(), mk({ model: "B" })]} scoreMax={150} />);
+    const buttons = screen.getAllByRole("button");
+    expect(buttons).toHaveLength(2);
+    await userEvent.click(buttons[0]);
+    expect(buttons[0]).toHaveAttribute("aria-pressed", "false");
+    expect(buttons[1]).toHaveAttribute("aria-pressed", "true");
+    // 剩下的那条曲线还在：3 段折线仍在。
+    expect(container.querySelectorAll("polyline")).toHaveLength(3);
+  });
+
   it("labels the x axis in Asia/Shanghai MM-DD", () => {
     const { container } = render(<TrendChart candidates={[candidate]} scoreMax={150} />);
     const labels = Array.from(container.querySelectorAll("svg text")).map((t) => t.textContent ?? "");

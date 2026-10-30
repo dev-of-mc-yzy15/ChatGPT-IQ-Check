@@ -34,8 +34,35 @@ describe("RoundDetail", () => {
     expect(totals).toHaveTextContent("已知成本 $0.50（1 题成本未知）");
     expect(screen.getByText("1.000")).toBeInTheDocument();
     expect(screen.getByText("0.500")).toBeInTheDocument();
-    expect(screen.getByText(/91/)).toBeInTheDocument();
+    // P1-16：盲评分 0–100，上屏必须先 /100 归一，分母写明，原始分留在括号里可核对。
+    const judge = screen.getByRole("heading", { name: /动画盲评/ });
+    expect(judge).toHaveTextContent("/ 100");
+    expect(judge).toHaveTextContent("0.91");
+    expect(judge).toHaveTextContent("原始 91");
     expect(screen.getByText(/不错/)).toBeInTheDocument();
+  });
+
+  // P1-16：分项 24 分也必须归一到 0.24，不能原始拼接冒充同一量纲。
+  it("normalizes every animation sub-score and spells the denominator", () => {
+    render(<RoundDetail candidate={candidate} tasks={tasks} />);
+    const line = screen.getByText(/pelican/);
+    expect(line).toHaveTextContent("pelican 0.24（24）");
+    expect(line).toHaveTextContent("finish 0.19（19）");
+    expect(line).toHaveTextContent("/100");
+    // 原始值不能被归一抹掉。
+    expect(line).toHaveTextContent("cycling 0.23（23）");
+  });
+
+  it("keeps an em dash when the animation total is missing", () => {
+    render(
+      <RoundDetail
+        candidate={{ ...candidate, animation: { ...candidate.animation!, score: null } }}
+        tasks={tasks}
+      />,
+    );
+    const judge = screen.getByRole("heading", { name: /动画盲评/ });
+    expect(judge).toHaveTextContent("— / 100");
+    expect(judge).not.toHaveTextContent("NaN");
   });
 
   it("renders the round timestamps when round is provided", () => {

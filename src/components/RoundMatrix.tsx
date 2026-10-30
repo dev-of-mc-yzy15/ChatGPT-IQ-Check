@@ -25,7 +25,14 @@ export function RoundMatrix({
 }) {
   const { models, efforts, cells } = roundMatrix(round);
   const scoreMax = round.candidates[0]?.score_max ?? SCORE_MAX_FALLBACK;
-  const verified = round.candidates.filter((c) => c.scored_tasks === c.total_tasks).length;
+  // P1-11：分母是必做题数（required_tasks），不是候选数——候选档位少的时候用候选数做分母永远满分，会掩盖题目根本没跑完。
+  // 上游 round 段没给 required_tasks 时回退到题集里的 required 标记与 task_count（两者同源，都是本轮必做题数）。
+  const requiredTasks = round.tasks.filter((t) => t.required).length || round.round.task_count || 1;
+  // 分子取各档位已评分题数的最小值：最慢的档位决定真实核验进度，不许被跑得快的档位拉高。
+  const verifiedTasks = round.candidates.length
+    ? Math.min(...round.candidates.map((c) => c.scored_tasks || 0))
+    : 0;
+  const verifiedPct = Math.round((Math.min(verifiedTasks, requiredTasks) / requiredTasks) * 100);
   const totalCost = round.candidates.reduce(
     (sum, c) => sum + (Number.isFinite(c.totals.cost_usd) ? c.totals.cost_usd : 0),
     0,
@@ -36,8 +43,8 @@ export function RoundMatrix({
       <h2>本轮雷达</h2>
       <p className="muted">
         {round.round.status === "completed" ? "本轮已完成" : `本轮状态：${round.round.status}`} ·{" "}
-        {verified}/{round.candidates.length} 档位核验 · 本轮用时{" "}
-        {fmtSeconds(round.round.timings?.wall_seconds)} · 已知测试费用 {fmtMoney(totalCost)}
+        {verifiedTasks}/{requiredTasks} 题已核验（{verifiedPct}%） · 本轮用时{" "}
+        {fmtSeconds(round.round.timings?.wall_seconds)} · 已知测试费用（USD） {fmtMoney(totalCost)}
         {unknownCostTasks > 0 ? `（${unknownCostTasks} 题成本未知）` : ""}
       </p>
       <p className="muted">
@@ -73,9 +80,12 @@ export function RoundMatrix({
                           className="card"
                           data-band={band}
                           aria-pressed={selectedKey === key}
-                          aria-label={`${model} ${fmtEffort(effort)} ${fmtScore(cell.score)} 分`}
                           onClick={() => onSelect(key)}
                         >
+                          {/* 可访问名走 sr-only 文本：aria-label 是纯文本，塞不进 lang；只有真实文本节点上的 lang 才让读屏换语音。 */}
+                          <span className="sr-only">
+                            <span lang="en">{model}</span> {fmtEffort(effort)} {fmtScore(cell.score)} 分
+                          </span>
                           {fmtScore(cell.score)}
                         </button>
                       ) : (

@@ -64,3 +64,24 @@ th button { background: none; border: 0; color: inherit; cursor: pointer; paddin
 [data-theme="dark"] .round-matrix button[data-band="mid"] { background: #0c4a6e; }
 [data-theme="dark"] .round-matrix button[data-band="low"] { background: #422006; }
 [data-theme="dark"] .round-matrix button[data-band="verylow"] { background: #450a0a; }
+/* P1-9：aria-pressed 是选中格唯一的视觉信号，之前只有语义没有样式，键盘/读屏以外完全看不出选中。
+   优先级与上面的 data-band 规则相同，靠后定义覆盖底色；颜色一律走 var()，深浅主题都不掉色。 */
+.round-matrix button[aria-pressed="true"] {
+  border: 2px solid var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+  color: var(--fg);
+  font-weight: 700;
+}
+.round-matrix button[aria-pressed="false"] { border: 1px solid var(--line); }
+/* 视觉隐藏但保留在可访问名里（P1-10 的 lang 标记靠它承载）。 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}

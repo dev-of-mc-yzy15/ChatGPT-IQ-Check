@@ -2,6 +2,11 @@ import type { RoundCandidate, RoundData, RoundTaskDef } from "../types";
 import { fmtDateTime, fmtEffort, fmtMoney, fmtScore, fmtSeconds } from "../lib/format";
 import { ModelName } from "./ModelName";
 
+/** 盲评分数是 0–100 制，上屏统一 /100 归一；非有限值保持 "—"，不要落成 NaN。 */
+function norm(score: number | null | undefined): string {
+  return score == null || !Number.isFinite(score) ? "—" : (score / 100).toFixed(2);
+}
+
 export function RoundDetail({
   candidate,
   tasks,
@@ -60,9 +65,13 @@ export function RoundDetail({
       </div>
       {animation?.status === "available" ? (
         <div className="card" style={{ marginTop: 12 }}>
-          <h3>动画盲评 · {animation.score ?? "—"} / 100</h3>
+          {/* P1-16：原始分一律 /100 归一到 0–1 再上屏，原始值留在括号里可核对，分母写明，避免 24 分被读成 24 分制。 */}
+          <h3>动画盲评 · {norm(animation.score)} / 100（原始 {animation.score ?? "—"}）</h3>
           <p className="muted">
-            {Object.entries(animation.scores).map(([k, v]) => `${k} ${v}`).join(" · ")}
+            {Object.entries(animation.scores)
+              .map(([k, v]) => `${k} ${norm(v)}（${v}）`)
+              .join(" · ")}{" "}
+            · 分项满分 /100
           </p>
           {animation.reason && <p>{animation.reason}</p>}
         </div>
