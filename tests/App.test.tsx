@@ -3,8 +3,9 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "../src/App";
 
-vi.mock("../src/data/loader", () => ({
-  loadAll: vi.fn(async () => ({
+vi.mock("../src/data/loader", () => {
+  const ok = <T,>(data: T) => ({ data, error: null });
+  const payload = {
     round: {
       schema_version: 1,
       fetch_id: "f",
@@ -84,8 +85,20 @@ vi.mock("../src/data/loader", () => ({
       stale_days: 0,
       errors: [],
     },
-  })),
-}));
+  };
+
+  return {
+    loadAll: vi.fn(async () => ({
+      round: ok(payload.round),
+      radarBench: ok(payload.radarBench),
+      status: ok(payload.status),
+    })),
+    slotRound: vi.fn(async () => ok(payload.round)),
+    slotRadarBench: vi.fn(async () => ok(payload.radarBench)),
+    slotStatus: vi.fn(async () => ok(payload.status)),
+    toSlot: vi.fn(),
+  };
+});
 
 describe("App", () => {
   it("renders the round tab and switches to trend", async () => {
@@ -104,10 +117,35 @@ describe("App", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders an error state when loading fails", async () => {
-    const { loadAll } = await import("../src/data/loader");
-    vi.mocked(loadAll).mockRejectedValueOnce(new Error("boom"));
+  it("keeps the other tab usable when one slot fails", async () => {
+    const { slotRound } = await import("../src/data/loader");
+    vi.mocked(slotRound).mockResolvedValueOnce({ data: null, error: "round.json 结构异常：boom" });
     render(<App />);
-    expect(await screen.findByRole("alert")).toHaveTextContent(/boom/);
+
+    expect(await screen.findByText(/本轮雷达加载失败/)).toBeInTheDocument();
+    expect(screen.getByText(/boom/)).toBeInTheDocument();
+
+    // 本轮槽塌了，趋势槽照常
+    await userEvent.click(screen.getByRole("tab", { name: /RadarBench 趋势/ }));
+    expect(await screen.findByRole("heading", { name: /RadarBench 趋势/ })).toBeInTheDocument();
+    expect(screen.queryByText(/趋势加载失败/)).toBeNull();
+  });
+
+  it("retries only the failed slot", async () => {
+    const { slotStatus } = await import("../src/data/loader");
+    vi.mocked(slotStatus).mockResolvedValueOnce({ data: null, error: "status.json 加载失败：HTTP 500" });
+    render(<App />);
+
+    const alert = await screen.findByText(/数据状态加载失败/);
+    expect(alert).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /本轮雷达/ })).toHaveAttribute("aria-selected", "true");
+
+    const retried = vi.mocked(slotStatus);
+    const before = retried.mock.calls.length;
+    await userEvent.click(screen.getByRole("button", { name: "重试" }));
+    expect(retried.mock.calls.length).toBe(before + 1);
+    // 重试后状态槽恢复：横幅（role=status）重新出现
+    expect(await screen.findByRole("status")).toHaveTextContent(/数据检查于/);
+    expect(screen.queryByText(/数据状态加载失败/)).toBeNull();
   });
 });

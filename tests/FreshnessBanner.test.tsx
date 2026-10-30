@@ -70,3 +70,23 @@ describe("FreshnessBanner", () => {
     expect(screen.getByRole("status")).toHaveTextContent("部分候选复用旧数据：2 条");
   });
 });
+
+describe("FreshnessBanner 未知态", () => {
+  it("warns when stale_days is null instead of silently taking the fresh path", () => {
+    renderBanner({ stale_days: null });
+    const banner = screen.getByRole("status");
+    expect(banner).toHaveTextContent("数据新鲜度未知");
+    expect(banner).not.toHaveTextContent("数据可能已过期");
+  });
+
+  it("warns when checked_at is unparsable", () => {
+    renderBanner({ checked_at: "not-a-date" });
+    const banner = screen.getByRole("status");
+    expect(banner).toHaveTextContent("数据检查时间未知");
+  });
+
+  it("warns when errors is missing", () => {
+    renderBanner({ errors: undefined as unknown as string[] });
+    expect(screen.getByRole("status")).toHaveTextContent("复用记录缺失");
+  });
+});

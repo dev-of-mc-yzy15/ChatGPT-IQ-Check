@@ -121,6 +121,7 @@ export interface StatusData {
   round_ok: boolean;
   latest_graded_at: string | null;
   round_updated_at: string | null;
-  stale_days: number;
+  /** null = 上游没给，未知不等于 0。 */
+  stale_days: number | null;
   errors: string[];
 }

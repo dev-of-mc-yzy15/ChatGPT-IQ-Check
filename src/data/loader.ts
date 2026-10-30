@@ -1,6 +1,15 @@
 import type { RadarBenchData, RoundData, StatusData } from "../types";
 import { assertRadarBenchShape, assertRoundShape, assertStatusShape } from "../../scripts/contract.mjs";
 
+/** 单份数据的加载结果。失败只塌掉自己这一槽，不连坐整页。 */
+export type Slot<T> = { data: T | null; error: string | null };
+
+export type LoadedSlots = {
+  radarBench: Slot<RadarBenchData>;
+  round: Slot<RoundData>;
+  status: Slot<StatusData>;
+};
+
 export function urlFor(rel: string, base = import.meta.env.BASE_URL || "/"): string {
   return base.endsWith("/") ? base + rel : base + "/" + rel;
 }
@@ -59,15 +68,29 @@ export async function loadStatus(): Promise<StatusData> {
   return data;
 }
 
-export async function loadAll(): Promise<{
-  radarBench: RadarBenchData;
-  round: RoundData;
-  status: StatusData;
-}> {
+/** 把一次加载压成槽结果：成功留 data，失败留 message，绝不抛。 */
+export async function toSlot<T>(pending: Promise<T>): Promise<Slot<T>> {
+  try {
+    return { data: await pending, error: null };
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : String(error) };
+  }
+}
+
+export const slotRadarBench = () => toSlot(loadRadarBench());
+export const slotRound = () => toSlot(loadRound());
+export const slotStatus = () => toSlot(loadStatus());
+
+/**
+ * 三份数据各走各的：任何一份 404 / 结构异常，其余两槽照常可用。
+ * 用 Promise.all（不是 allSettled + 裸 Promise）是因为 toSlot 已经吃掉异常，
+ * 这里不会 reject，顺序也稳定。
+ */
+export async function loadAll(): Promise<LoadedSlots> {
   const [radarBench, round, status] = await Promise.all([
-    loadRadarBench(),
-    loadRound(),
-    loadStatus(),
+    slotRadarBench(),
+    slotRound(),
+    slotStatus(),
   ]);
   return { radarBench, round, status };
 }
