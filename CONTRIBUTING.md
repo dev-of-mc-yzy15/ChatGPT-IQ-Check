@@ -29,10 +29,11 @@ npm run build           # tsc -b + typecheck:scripts + vite build
 
 ## PR 闸门
 
-CI（`.github/workflows/ci.yml`）在 PR 上跑四个 `run:` 步骤：前两条是前置，`npm ci --ignore-scripts` 和 `npm audit --omit=dev --audit-level=high --registry=https://registry.npmjs.org/`，安装或高危漏洞任一红就轮不到后面。**真正的闸门是后两条，都绿才给合**：
+CI（`.github/workflows/ci.yml`）在 PR 上跑一串 `run:` 步骤，前两条是前置，任一红就轮不到后面：`npm ci --ignore-scripts`、`npm audit --omit=dev --audit-level=high --registry=https://registry.npmjs.org/`。**真正的闸门是后三条，都绿才给合**：
 
 - `npm test`
 - `npm run build`
+- `npm run check:base`（检查 `dist/index.html` 里没有回退到根绝对路径的引用）
 
 `build` 已经串好 `tsc -b` 和 `typecheck:scripts`，所以 `npm run build` 过就等于类型检查也过了。改 `scripts/` 时想更快看 `checkJs` 的报错，可以单独跑 `npm run typecheck:scripts`（`checkJs` 只在 `tsconfig.scripts.json` 里打开）。
 
@@ -71,7 +72,7 @@ npm run refresh
 
 ## 开 PR 前自查
 
-1. `npm test` 和 `npm run build` 都本地跑过、都绿——不要指望 CI 替你发现。
+1. `npm test`、`npm run build`、`npm run check:base` 都本地跑过、都绿——不要指望 CI 替你发现。
 2. 改的是数据格式的话，`public/data/*.json` 是 `npm run refresh` 生成的，不是手编的。
 3. 新交互/新动画在 `prefers-reduced-motion: reduce` 下试过一遍。
 4. 新增依赖说清理由；它能进 `dependencies` 还是只该进 `devDependencies`。

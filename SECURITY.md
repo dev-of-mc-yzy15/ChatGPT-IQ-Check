@@ -37,6 +37,8 @@ ChatGPT IQ Check（降智雷达）是 **[codexradar.com](https://codexradar.com/
 
 部署链路的风险是**产物污染**：只要能让 `dist` 里出现不该有的内容（或让构建步骤被绕过），就能把它送上 `*.github.io`。
 
+同一条链上还有一类静默失败：引用退化成根绝对路径（`src="/assets/x.js"`）时本地和单测全绿、线上整页白屏。`npm run check:base` 把这条人工防线做成了 CI 闸门——绕过它（或让它静默跳过）同样算缺陷。
+
 ### 已经落实的基线
 
 - 三个 workflow 都在 workflow 级显式声明 `permissions`，不依赖仓库默认权限。默认面只有 `contents: read`；带写权限的只有两处，且各自写在需要它的 job 上：`refresh-data` 的 `contents: write` + `issues: write`，以及 deploy job 的 `pages: write` + `id-token: write`。
