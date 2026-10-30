@@ -222,3 +222,66 @@ describe("assertStatusShape 新分类字段", () => {
     expect(assertStatusShape({ ...status, min_latest: null }).min_latest).toBeNull();
   });
 });
+
+describe("夹具 asset 文件名与 sha256 前缀不变量", () => {
+  // 规则来源：上游把每个动画命名为 <run>-<model>-<effort>-<sha256 前 12 位>.html.txt
+  // （tests/fixtures/README.md「asset.sha256 must stay」）。夹具里那个值锚定真实上游文件，
+  // 所以文件名里的十六进制必须就是 sha256 的开头，否则说明有人手滑改了一边没跟上另一边。
+  //
+  // 只核前缀、不重算整串：能核的只有文件名带的前缀。public/assets 现存的 34 个产物里，
+  // 末段全部是 12 位且 34/34 等于自身 sha256 前 12 位；夹具这一条却是 10 位（941fa56cda），
+  // URL 现在仍答 200，且把它补成 12 位（941fa56cdad0）同样答 200、字节数也一模一样，
+  // 可见上游对末段长度不敏感。故这里接受 10~12 位，而不是钉死 12 位去逼夹具改值。
+  // 剩 52 位不可复算：上游文件体已被回退页覆盖（b68eb88f…），原始字节拿不到。
+  const MIN_PREFIX = 10;
+  const MAX_PREFIX = 12;
+
+  /** 递归收集所有同时带 url 与 sha256 的 asset 对象，不依赖固定路径，加了新动画也自动覆盖。 */
+  function collectAssets(node: unknown, path = "$"): Array<{ path: string; url: string; sha256: string }> {
+    if (!node || typeof node !== "object") return [];
+    const found: Array<{ path: string; url: string; sha256: string }> = [];
+    const obj = node as Record<string, unknown>;
+    if (!Array.isArray(node) && typeof obj.url === "string" && typeof obj.sha256 === "string") {
+      found.push({ path, url: obj.url, sha256: obj.sha256 });
+    }
+    for (const key of Object.keys(obj)) {
+      found.push(...collectAssets(obj[key], `${path}.${key}`));
+    }
+    return found;
+  }
+
+  it("每个 asset 的 url 文件名末段都是 sha256 的十六进制前缀", () => {
+    const assets = collectAssets(read("tests/fixtures/round.sample.json"));
+    // 遍历结果为空时下面一条都不跑，等于恒绿——夹具必须真的带 asset。
+    expect(assets.length).toBeGreaterThan(0);
+
+    const problems: string[] = [];
+    for (const { path, url, sha256 } of assets) {
+      const base = url.split("/").pop() ?? "";
+      // 以 .html.txt 收尾是前提，否则末段不是哈希前缀而是文件名尾巴。
+      if (!base.endsWith(".html.txt")) {
+        problems.push(`${path}: url basename 不以 .html.txt 结尾 (${base})`);
+        continue;
+      }
+      const fromName = base.slice(0, -".html.txt".length).split("-").pop() ?? "";
+      if (!new RegExp(`^[0-9a-f]{${MIN_PREFIX},${MAX_PREFIX}}$`).test(fromName)) {
+        problems.push(`${path}: 文件名末段不是 ${MIN_PREFIX}~${MAX_PREFIX} 位小写十六进制 (${fromName})`);
+        continue;
+      }
+      if (!sha256.startsWith(fromName)) {
+        problems.push(`${path}: 文件名末段 ${fromName} 不是 sha256 的前缀 (${sha256.slice(0, 12)})`);
+      }
+    }
+    expect(problems).toEqual([]);
+  });
+
+  it("夹具里的 sha256 都是满 64 位十六进制", () => {
+    // 前缀规则只在摘要保持全长时才有意义：被截短就说明有人把 sha256 缩成了可读前缀，
+    // 下游拿它校验下载到的字节时会全部对不上。
+    const assets = collectAssets(read("tests/fixtures/round.sample.json"));
+    expect(assets.length).toBeGreaterThan(0);
+    for (const { path, sha256 } of assets) {
+      expect(sha256, path).toMatch(/^[0-9a-f]{64}$/);
+    }
+  });
+});
