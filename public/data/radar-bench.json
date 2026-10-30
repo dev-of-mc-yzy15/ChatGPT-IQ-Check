@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "fetch_id": "dda5747a-491c-4198-8fab-27c6d2073fae",
-  "generated_at": "2026-10-30T19:40:38.982Z",
-  "checked_at": "2026-10-30T19:40:38.982Z",
+  "fetch_id": "a7e95283-4827-4d4e-89d3-4a244f05a7e5",
+  "generated_at": "2026-10-30T21:45:18.867Z",
+  "checked_at": "2026-10-30T21:45:18.867Z",
   "benchmark": "radar-bench-final64-20261004",
   "score_version": "radar-bench-v2-150",
   "score_max": 150,
