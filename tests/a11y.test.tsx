@@ -193,7 +193,7 @@ async function blockingFindings(container: HTMLElement) {
   return { violations: blocking(results.violations), incomplete: blocking(results.incomplete) };
 }
 
-/** 失败时把规则 id 和命中节点打出来，只报一句「有 3 个 violation」等于没报。 */
+/** 失败时把规则 id 和命中节点打出来，只报一句「有三处问题」等于没报。 */
 function formatViolations(violations: Awaited<ReturnType<typeof blockingFindings>>["violations"]): string {
   return violations
     .map((v) => `${v.id} [${v.impact}] → ${v.nodes.map((n) => n.target.join(" ")).join(" | ")}`)
@@ -228,8 +228,9 @@ function activateSkipLink(link: HTMLElement): HTMLElement {
 
 describe("无障碍闸门", () => {
   // 首屏（本轮雷达 + 状态横幅）跑一遍 axe，切到趋势面板再跑一遍：
+  // violations 与 incomplete 都要空——aria 引用断链只会掉进后者。
   // 两个 panel 的表格、按钮、live region 都要过，不能只扫当前可见那一屏。
-  it("渲染完成的页面没有 critical / serious 的 axe 违规", async () => {
+  it("渲染完成的页面没有 critical / serious 的 axe 违规或待核项", async () => {
     const { container } = await renderReady();
 
     const roundFindings = await blockingFindings(container);
