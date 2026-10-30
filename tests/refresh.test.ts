@@ -11,7 +11,7 @@ import {
   roundCandidateFloor,
   parseArgs,
 } from "../scripts/refresh.mjs";
-import { assertRoundShape, assertStatusShape } from "../scripts/contract.mjs";
+import { assertRadarBenchShape, assertRoundShape, assertStatusShape } from "../scripts/contract.mjs";
 import bindingRaw from "./fixtures/binding.sample.json";
 import summaryRaw from "./fixtures/summary.sample.json";
 import roundRaw from "./fixtures/round.sample.json";
@@ -666,7 +666,7 @@ describe("refreshAll 只回填合法的易变字段", () => {
 
   /** 跑一轮落盘 → 把指定文件的易变字段改坏 → 再跑一轮，返回落盘结果。 */
   async function seedThenCorrupt(
-    fileName: "round.json" | "status.json",
+    fileName: "round.json" | "status.json" | "radar-bench.json",
     mutate: (data: Record<string, any>) => void,
   ) {
     const dir = await mkdtemp(join(tmpdir(), "iq-refresh-"));
@@ -703,6 +703,17 @@ describe("refreshAll 只回填合法的易变字段", () => {
     expect(typeof onDisk.fetch_id).toBe("string");
     expect((onDisk.fetch_id as string).length).toBeGreaterThan(0);
     expect(() => assertRoundShape(onDisk)).not.toThrow();
+  });
+
+  // radar-bench 与 round/status 各是一处独立调用点，共用助手不等于共用覆盖：
+  // 这里直击它自己的回填分支，避免 :571 只靠「同一个函数」间接保证。
+  it("旧 radar-bench.generated_at 为 null：不回填，落盘是本次新生成的合法 ISO", async () => {
+    const onDisk = await seedThenCorrupt("radar-bench.json", (d) => {
+      d.generated_at = null;
+    });
+    expect(isIso(onDisk.generated_at)).toBe(true);
+    expect(onDisk.generated_at).toBe("2026-10-24T00:30:00.000Z");
+    expect(() => assertRadarBenchShape(onDisk)).not.toThrow();
   });
 
   it("旧 round.checked_at 是「昨天」：不回填，落盘是本次新生成的合法 ISO", async () => {
