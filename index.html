@@ -3,6 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- 安全策略必须早于所有资源引用。纯静态 Pages 只能靠 meta：frame-ancestors 在 meta 中不生效（浏览器只认 HTTP 头），仍列出，换宿主补头时可直接复用同一策略。 -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'sha256-QRtBo4K/rL32+D+p4l/o5Yk5ixR0CSfY0TuNoTqALZI='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'none'; object-src 'none'"
+    />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta name="description" content="非官方项目：展示 CodexRadar 公开的 RadarBench 分数、覆盖率与日桶趋势。分数是第三方基准测试分数，不是心理学 IQ。" />
     <meta name="theme-color" content="#ffffff" />
     <meta name="color-scheme" content="light dark" />
