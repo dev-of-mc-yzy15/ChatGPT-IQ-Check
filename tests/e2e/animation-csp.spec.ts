@@ -1,5 +1,5 @@
 import { expect, test, type Frame, type Locator, type Page } from "@playwright/test";
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -108,10 +108,84 @@ const NETWORK_NOISE = /net::ERR_NETWORK_CHANGED/;
  * 但每次 setAttribute('d') 都打一条，一次加载累计 145 条，足以把 console 断言打红。
  *
  * 与 CSP、脚本执行、可达性都无关，视觉上只是围巾局部形状略失真。产物是上游生成的、
- * `npm run refresh` 会整份覆盖，改本地文件还得同步 round.json 的 asset_sha256，所以放行；
- * 只放过这一个错误形态，其余 `attribute d` 报错仍算红。
+ * `npm run refresh` 会整份覆盖，改本地文件还得同步 round.json 的 asset_sha256，所以放行。
+ *
+ * **放行必须「形态 + 归属」两条同时成立**，缺一不可：
+ * - 只按形态放行（先前的写法）：别的产物将来犯同一个错，也会被静默吞掉，本该红的变绿；
+ * - 只按归属放行：这一个产物将来换一种新错误，也会被一并吞掉。
+ * 所以形态与文件名拆成两个常量，判定集中在下面的 `ConsoleLedger`，两处 console 监听共用。
+ *
+ * 归属取 `msg.location().url` 的**末段文件名**（已实测可用）：Chromium 把子 frame 内联脚本
+ * 的报错记在该子文档自己的 URL 上，`sandbox` 造成的 opaque origin 不影响——实测在
+ * `sandbox="allow-scripts"` 的 iframe 里，这条消息的 location().url 正是产物 URL、line 指向
+ * 474/475 两行本身；父文档自己的消息则指向页面 URL（末段为空串），两者靠文件名天然分开。
+ * 万一换宿主或浏览器把 location 抹平，`stray` 会带着实际 URL 原文报出来，不会静默跑偏。
  */
-const PRODUCT_NOISE = /<path> attribute d: Unexpected end of attribute/;
+const KNOWN_SVG_DEFECT_ASSET =
+  "degradation-codex-205416a78068-6a72489e707c-gpt-6-astra-max-7026bb729b07.html";
+const KNOWN_SVG_DEFECT_PATTERN = /<path> attribute d: Unexpected end of attribute/;
+
+/** 归属跑偏时留多少条原文样本。这条缺陷每帧一条，真实场景一次加载上百条，全列会淹掉报告。 */
+const STRAY_SAMPLE_LIMIT = 5;
+
+/** 从 console 消息的来源 URL 取末段文件名；父文档、空 URL 取到空串。 */
+function assetFileNameOf(url: string): string {
+  return url.split(/[?#]/)[0].split("/").pop() ?? "";
+}
+
+/**
+ * console / pageerror 的记账本，两处用例共用，避免各写一份过滤规则再走散。
+ *
+ * 它把「SVG 缺陷放行」拆成三档：形态与归属都对 → 计数放行；形态对而归属于别的产物 →
+ * 记 `stray`（红，并指名道姓是哪个产物）；其余 → 记 `errors`（红）。
+ * `knownDefectHits` 供全量用例的陈旧守卫判活。
+ */
+class ConsoleLedger {
+  readonly errors: string[] = [];
+  readonly pageErrors: string[] = [];
+  /** 形态命中且归属正确的次数；为 0 说明这条放行已经陈旧。 */
+  knownDefectHits = 0;
+  /** 形态命中但来源不是已知产物的原文样本（最多留 STRAY_SAMPLE_LIMIT 条），附实际来源便于定位。 */
+  readonly stray: string[] = [];
+  /** 归属跑偏的总条数，可能远多于留样。 */
+  strayTotal = 0;
+
+  watch(page: Page): void {
+    page.on("console", (msg) => {
+      if (msg.type() !== "error") return;
+      const text = msg.text();
+      if (META_CSP_NOISE.test(text) || NETWORK_NOISE.test(text)) return;
+      if (!KNOWN_SVG_DEFECT_PATTERN.test(text)) {
+        this.errors.push(text);
+        return;
+      }
+      const location = msg.location();
+      const source = assetFileNameOf(location.url);
+      if (source === KNOWN_SVG_DEFECT_ASSET) {
+        this.knownDefectHits += 1;
+        return;
+      }
+      this.strayTotal += 1;
+      if (this.stray.length >= STRAY_SAMPLE_LIMIT) return;
+      const origin = location.url
+        ? `产物 ${source || "(URL 末段为空)"}（${location.url}）`
+        : "来源 URL 为空（归属不出来）";
+      this.stray.push(`${origin}：${text}`);
+    });
+    page.on("pageerror", (error) => this.pageErrors.push(error.message));
+  }
+
+  /** 归属跑偏时的断言文案：必须说清噪声来自哪个非白名单产物。 */
+  get strayMessage(): string {
+    const omitted = this.strayTotal - this.stray.length;
+    return (
+      `"${KNOWN_SVG_DEFECT_PATTERN.source}" 只放行 ${KNOWN_SVG_DEFECT_ASSET}，` +
+      `但下面 ${this.strayTotal} 条来自别的产物` +
+      (omitted > 0 ? `（只留前 ${this.stray.length} 条样本）` : "") +
+      `：\n${this.stray.join("\n")}`
+    );
+  }
+}
 
 /** 子 frame 的探针桶：`__raf` 由产物脚本触发，`__violations` 是 CSP 违规原文。 */
 type ProbeWindow = Window & { __raf?: number; __violations?: string[]; __isChild?: boolean };
@@ -232,15 +306,10 @@ async function expectToggled(
 test.describe("降智动画在沙箱 iframe 内可执行且无 CSP 违规", () => {
   // 核心用例：脚本执行 + 零违规。修复前（srcDoc 继承父 CSP）在第一步就红。
   test("展开动画后内联脚本真的跑起来，且全程无 CSP 违规", async ({ page }) => {
-    const consoleErrors: string[] = [];
-    const pageErrors: string[] = [];
-    page.on("console", (msg) => {
-      if (msg.type() !== "error") return;
-      const text = msg.text();
-      if (META_CSP_NOISE.test(text) || NETWORK_NOISE.test(text) || PRODUCT_NOISE.test(text)) return;
-      consoleErrors.push(text);
-    });
-    page.on("pageerror", (error) => pageErrors.push(error.message));
+    // 这条用例的候选由 `pickAnimatedCandidate` 决定，不一定就是带缺陷的那一个；
+    // 所以放行走同一套「形态 + 归属」规则：挑中别人时不放行，挑中那一个时照放。
+    const ledger = new ConsoleLedger();
+    ledger.watch(page);
 
     await installProbe(page);
     const target = pickAnimatedCandidate();
@@ -268,7 +337,7 @@ test.describe("降智动画在沙箱 iframe 内可执行且无 CSP 违规", () =
           "）。CSP 违规：" +
           (probe.violations.join(" | ") || "（无 violation 事件）") +
           "；console：" +
-          (consoleErrors.join(" | ") || "（无）") +
+          (ledger.errors.join(" | ") || "（无）") +
           "\n原始错误：" +
           (error as Error).message,
       );
@@ -340,8 +409,9 @@ test.describe("降智动画在沙箱 iframe 内可执行且无 CSP 违规", () =
     // 页面级信号：父文档也没被自己的 CSP 打到。
     const pageViolations = await page.evaluate(() => (window as ProbeWindow).__violations ?? []);
     expect(pageViolations, `父文档 CSP 违规：${pageViolations.join(" | ")}`).toEqual([]);
-    expect(consoleErrors, `console 错误：${consoleErrors.join(" | ")}`).toEqual([]);
-    expect(pageErrors, `未捕获异常：${pageErrors.join(" | ")}`).toEqual([]);
+    expect(ledger.stray, ledger.strayMessage).toEqual([]);
+    expect(ledger.errors, `console 错误：${ledger.errors.join(" | ")}`).toEqual([]);
+    expect(ledger.pageErrors, `未捕获异常：${ledger.pageErrors.join(" | ")}`).toEqual([]);
   });
 
   // 产物按 text/html 落盘是这条路的前提：上游 `.html.txt` 会被托管回 text/plain，
@@ -388,26 +458,41 @@ const PROBE_BATCH_SIZE = 8;
 /** 承载探测 iframe 的容器 id：必须挂在真实页面上，父页面 CSP 才真的参与。 */
 const PROBE_HOST_ID = "asset-probe-host";
 
+/** 一个产物：站内 URL + 它在磁盘上的真实字节数（查不到时为 -1）。 */
+type AssetRef = { url: string; bytes: number };
+
 /**
  * 全量清单：`public/data/round.json` 里每个 `animation.asset_url` 都换算成本地路径。
  *
  * 不写死 34 条——上游换一批候选、增减产物，清单自动跟着变（条数由用例里的守卫显式卡住）。
  * 换算与 `src/lib/asset.ts` 的 `assetUrl(localAssetName())` 同路：只取 basename、
  * 去掉上游 `.txt`、拼到本站 `BASE_PATH` 的 `assets/` 下。
+ *
+ * 顺手把磁盘字节数取回来：**产物缺失时 vite preview 的 SPA fallback 会回 200 的
+ * index.html**，状态码和 content-type 全都照样合格，只有体积对不上——不比对体积，
+ * 「产物 404」就会被 fallback 掩盖成绿。
  */
-function collectAssetPaths(): string[] {
+function collectAssets(): AssetRef[] {
   const round = JSON.parse(readFileSync(resolve(repoRoot, "public/data/round.json"), "utf8")) as {
     candidates?: { animation?: { asset_url?: string } }[];
   };
-  const paths: string[] = [];
+  const assetsDir = resolve(repoRoot, "public/assets");
+  const assets: AssetRef[] = [];
   for (const candidate of round.candidates ?? []) {
     const name = candidate.animation?.asset_url;
     if (!name) continue;
     const base = name.split(/[?#]/)[0].split("/").pop();
     if (!base) continue;
-    paths.push(`${BASE_PATH}assets/${toLocalName(base)}`);
+    const local = toLocalName(base);
+    let bytes = -1;
+    try {
+      bytes = statSync(resolve(assetsDir, local)).size;
+    } catch {
+      bytes = -1;
+    }
+    assets.push({ url: `${BASE_PATH}assets/${local}`, bytes });
   }
-  return paths;
+  return assets;
 }
 
 /**
@@ -430,7 +515,8 @@ test.describe("全部动画产物逐个可达且内联无 CSP 违规", () => {
     // 34 个分 5 批跑，实测远低于 90s；上限给到 120s 是留冷启动与杀软扫描的余量。
     test.setTimeout(120_000);
 
-    const urls = collectAssetPaths();
+    const assets = collectAssets();
+    const urls = assets.map((asset) => asset.url);
     expect(
       urls.length,
       `必须从 round.json 的 candidates[].animation.asset_url 取到全部 ${EXPECTED_ASSET_COUNT} 个产物，实际 ${urls.length} 条` +
@@ -459,15 +545,8 @@ test.describe("全部动画产物逐个可达且内联无 CSP 违规", () => {
     ).toBe(1);
     expect(urls, "引 Google Fonts 的那个产物必须也在遍历清单里").toContain(`${BASE_PATH}assets/${fontAssets[0]}`);
 
-    const consoleErrors: string[] = [];
-    const pageErrors: string[] = [];
-    page.on("console", (msg) => {
-      if (msg.type() !== "error") return;
-      const text = msg.text();
-      if (META_CSP_NOISE.test(text) || NETWORK_NOISE.test(text) || PRODUCT_NOISE.test(text)) return;
-      consoleErrors.push(text);
-    });
-    page.on("pageerror", (error) => pageErrors.push(error.message));
+    const ledger = new ConsoleLedger();
+    ledger.watch(page);
 
     await installProbe(page);
     await page.goto(BASE_PATH);
@@ -482,31 +561,42 @@ test.describe("全部动画产物逐个可达且内联无 CSP 违规", () => {
 
     const problems: string[] = [];
     for (let offset = 0; offset < urls.length; offset += PROBE_BATCH_SIZE) {
-      const batch = urls.slice(offset, offset + PROBE_BATCH_SIZE);
+      const batch = assets.slice(offset, offset + PROBE_BATCH_SIZE);
 
       // 先单独打传输层：状态码与 content-type 和「渲染成不成」分开取证，
       // 这样「被托管回 text/plain」和「文档根本没起来」不会混成一条含混信息。
       await Promise.all(
-        batch.map(async (url) => {
-          const res = await page.request.get(url).catch((error: Error) => error);
+        batch.map(async (asset) => {
+          const res = await page.request.get(asset.url).catch((error: Error) => error);
           if (res instanceof Error) {
-            problems.push(`${url} 请求失败：${res.message}`);
+            problems.push(`${asset.url} 请求失败：${res.message}`);
             return;
           }
-          if (res.status() !== 200) problems.push(`${url} 状态码 ${res.status()}（必须 200）`);
+          if (res.status() !== 200) problems.push(`${asset.url} 状态码 ${res.status()}（必须 200）`);
           const type = res.headers()["content-type"] ?? "";
           if (!type.includes("text/html")) {
-            problems.push(`${url} content-type 为 ${JSON.stringify(type)}（必须含 text/html，否则 iframe 里只剩源码）`);
+            problems.push(
+              `${asset.url} content-type 为 ${JSON.stringify(type)}（必须含 text/html，否则 iframe 里只剩源码）`,
+            );
+          }
+          const bytes = (await res.body())?.length ?? 0;
+          if (asset.bytes < 0) {
+            problems.push(`${asset.url} 在 public/assets 里没有对应文件`);
+          } else if (bytes !== asset.bytes) {
+            problems.push(
+              `${asset.url} 响应体积 ${bytes}B 与磁盘 ${asset.bytes}B 不符` +
+                "（多半是 404 被 SPA fallback 换成了 index.html）",
+            );
           }
         }),
       );
 
       // 再挂 iframe：`sandbox="allow-scripts"` 与真实详情卡保持一致。
       await page.evaluate(
-        ({ id, batch: urlsInBatch }) => {
+        ({ id, batchUrls }) => {
           const container = document.getElementById(id)!;
           container.replaceChildren();
-          urlsInBatch.forEach((url, index) => {
+          batchUrls.forEach((url, index) => {
             const iframe = document.createElement("iframe");
             iframe.setAttribute("sandbox", "allow-scripts");
             iframe.setAttribute("data-probe-index", String(index));
@@ -515,21 +605,21 @@ test.describe("全部动画产物逐个可达且内联无 CSP 违规", () => {
             container.append(iframe);
           });
         },
-        { id: PROBE_HOST_ID, batch },
+        { id: PROBE_HOST_ID, batchUrls: batch.map((asset) => asset.url) },
       );
 
       await Promise.all(
-        batch.map(async (url, index) => {
+        batch.map(async (asset, index) => {
           const iframe = host.locator(`iframe[data-probe-index="${index}"]`);
           try {
-            await expect(iframe, `${url} 的 iframe 必须挂上`).toBeAttached({ timeout: 10_000 });
+            await expect(iframe, `${asset.url} 的 iframe 必须挂上`).toBeAttached({ timeout: 10_000 });
             const frame = await (await iframe.elementHandle())?.contentFrame();
             if (!frame) {
-              problems.push(`${url} 没加载出真实子文档`);
+              problems.push(`${asset.url} 没加载出真实子文档`);
               return;
             }
             await expect
-              .poll(() => frame.url(), { message: `${url} 子文档必须导航到真实地址`, timeout: 20_000 })
+              .poll(() => frame.url(), { message: `${asset.url} 子文档必须导航到真实地址`, timeout: 20_000 })
               .toContain(`${BASE_PATH}assets/`);
 
             const probe = await frame.evaluate(() => {
@@ -540,16 +630,16 @@ test.describe("全部动画产物逐个可达且内联无 CSP 违规", () => {
                 violations: w.__violations ?? [],
               };
             });
-            if (!probe.isChild) problems.push(`${url} 探针没落到子文档，违规收集不可信`);
+            if (!probe.isChild) problems.push(`${asset.url} 探针没落到子文档，违规收集不可信`);
             // text/plain 被浏览器当源码渲染时，contentType 也会是 text/plain——
             // 与上面的响应头断言互为交叉证据。
             if (probe.contentType !== "text/html") {
-              problems.push(`${url} 子文档 contentType 为 ${JSON.stringify(probe.contentType)}（必须 text/html）`);
+              problems.push(`${asset.url} 子文档 contentType 为 ${JSON.stringify(probe.contentType)}（必须 text/html）`);
             }
             const violations = probe.violations.filter((item) => !META_CSP_NOISE.test(item));
-            if (violations.length > 0) problems.push(`${url} CSP 违规：${violations.join(" | ")}`);
+            if (violations.length > 0) problems.push(`${asset.url} CSP 违规：${violations.join(" | ")}`);
           } catch (error) {
-            problems.push(`${url} 渲染/取证失败：${(error as Error).message.split("\n")[0]}`);
+            problems.push(`${asset.url} 渲染/取证失败：${(error as Error).message.split("\n")[0]}`);
           }
         }),
       );
@@ -562,8 +652,27 @@ test.describe("全部动画产物逐个可达且内联无 CSP 违规", () => {
 
     const pageViolations = await page.evaluate(() => (window as ProbeWindow).__violations ?? []);
     expect(pageViolations, `父文档 CSP 违规：${pageViolations.join(" | ")}`).toEqual([]);
-    expect(consoleErrors, `console 错误：${consoleErrors.join(" | ")}`).toEqual([]);
-    expect(pageErrors, `未捕获异常：${pageErrors.join(" | ")}`).toEqual([]);
+    expect(ledger.stray, ledger.strayMessage).toEqual([]);
+    expect(ledger.errors, `console 错误：${ledger.errors.join(" | ")}`).toEqual([]);
+
+    // ── 陈旧守卫 ──
+    // 放行只对那一个产物、那一种形态成立。上游哪天真把这个 SVG 拼接缺陷修了（或换了产物），
+    // 白名单就成了永远不生效的死规则，谁也不会主动回头删。这里直接钉住「它还活着」：
+    // 全量遍历里必须至少见到一条该产物发出的该形态报错，一条都没有就红，逼人回收白名单。
+    // 用 poll 而不是直接读计数：console 事件是异步投递的，最后一批刚渲染完时可能还差几条在路上。
+    try {
+      await expect
+        .poll(() => ledger.knownDefectHits, { timeout: 5_000, message: "已知缺陷该产物的报错条数必须 > 0" })
+        .toBeGreaterThan(0);
+    } catch {
+      throw new Error(
+        `放行已陈旧：${KNOWN_SVG_DEFECT_ASSET} 在本次全量遍历里一条 ` +
+          `"${KNOWN_SVG_DEFECT_PATTERN.source}" 都没产生。上游可能已修复该 SVG 拼接缺陷，` +
+          "请复核后删掉这条白名单并在 CHANGELOG 里结案。",
+      );
+    }
+
+    expect(ledger.pageErrors, `未捕获异常：${ledger.pageErrors.join(" | ")}`).toEqual([]);
 
     test.info().annotations.push({
       type: "产物覆盖",
