@@ -41,6 +41,24 @@ describe("workflows", () => {
     expect(wf.concurrency["cancel-in-progress"]).toBe(false);
   });
 
+  // 仓库 Pages 站点从未启用（has_pages:false），actions/configure-pages 的 enablement 入参
+  // 默认 false，不会替我们建站点，不显式开就必然在 configure-pages 这步 404。
+  // 权限同理：工作流级只有 contents 是个洞——job 级 permissions 会整体覆盖工作流级，
+  // deploy job 自带 pages/id-token 也救不了 build job，所以闸门必须钉在工作流级。
+  it("deploy grants pages/id-token at workflow level and lets configure-pages create the site", () => {
+    const wf = load("deploy.yml");
+    expect(wf.permissions.contents, "原有 contents: read 不能被顶掉").toBe("read");
+    expect(wf.permissions.pages, "工作流级必须给 pages: write").toBe("write");
+    expect(wf.permissions["id-token"], "工作流级必须给 id-token: write").toBe("write");
+    // 同上，按 uses 找而不是按下标：中间插一个 step 就整条断言错位。
+    const configure = wf.jobs.build.steps.find((s: { uses?: string }) =>
+      String(s.uses ?? "").startsWith("actions/configure-pages"),
+    );
+    expect(configure, "configure-pages 步骤必须还在").toBeTruthy();
+    // with: 整块缺失时 configure.with 会是 undefined，用可选链让红点落在断言说明串上。
+    expect(configure.with?.enablement, "enablement 必须显式为 true，默认 false 不建站点").toBe(true);
+  });
+
   it("ci verifies every pull request without publish permissions", () => {
     const wf = load("ci.yml");
     expect(Object.keys(wf.on)).toContain("pull_request");
