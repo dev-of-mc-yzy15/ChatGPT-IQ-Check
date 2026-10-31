@@ -125,6 +125,22 @@ describe("verify-assets", () => {
     expect(r.stdout).toContain(LOCAL_NAME);
   });
 
+  it("两个候选都落空时把试过的两个名字都点出来", async () => {
+    // 只报上游名会让人去 ls 一个磁盘上从不存在的 .html.txt，闸门自己的输出把人指错方向。
+    // 夹具照上面「上游 .html.txt 映射到本地 .html」那条来：数据里是上游名，盘上本该是映射名。
+    const root = await repo();
+    await writeRound(root, [{ asset_url: `/assets/${NAME}`, asset_sha256: sha256(BODY) }]);
+    await rm(join(root, "public", "assets", LOCAL_NAME));
+
+    const r = run(root);
+
+    expect(r.code).toBe(1);
+    expect(r.stdout).toContain("missing=1");
+    // 整串连写断言，别拆成「含 NAME」「含 LOCAL_NAME」两句：LOCAL_NAME 是 NAME 的前缀子串，
+    // 拆开写的话光靠 .html.txt 那一行就能蒙过去，改前也会绿。
+    expect(r.stdout).toContain(`public/assets/${NAME} 或 public/assets/${LOCAL_NAME}（ENOENT）`);
+  });
+
   it("asset_sha256 为 null 即 unpinned 并退出 1", async () => {
     // 没钉哈希等于没校验，不能因为文件存在就放过——那正是「已逐个比对」这句话的漏洞。
     const root = await repo();

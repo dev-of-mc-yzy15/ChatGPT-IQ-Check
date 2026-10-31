@@ -192,7 +192,8 @@ async function classify(root, pins) {
       }
     }
     if (code !== "") {
-      report.missing.push("public/assets/" + pin.name + "（" + code + "）");
+      // 两个候选都试过了，报全：只报上游名会让人去 ls 一个磁盘上不存在的 .html.txt。
+      report.missing.push(names.map((name) => "public/assets/" + name).join(" 或 ") + "（" + code + "）");
       continue;
     }
     const file = "public/assets/" + used;
