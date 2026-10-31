@@ -75,10 +75,11 @@ function main() {
     return;
   }
 
-  for (const violation of violations) {
-    console.error(violation);
-  }
-  console.error(`${violations.length} 个已跟踪文件末尾缺换行，补一个 \\n 再提交`);
+  // 逐行 console.error 在 stderr 接管道、整包并发负载下会丢首条违规行（退出码仍是 1，
+  // 只是点名消失，测试与 CI 日志都跟着瞎）。合并成单次写入，只走一次 flush。
+  console.error(
+    `${violations.join("\n")}\n${violations.length} 个已跟踪文件末尾缺换行，补一个 \\n 再提交`,
+  );
   process.exitCode = 1;
 }
 
