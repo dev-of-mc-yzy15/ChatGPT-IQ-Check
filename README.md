@@ -30,7 +30,9 @@
 
 ## 技术栈
 
-React 19 · TypeScript 5 · Vite 8 · Vitest 5 · 原生 CSS 变量（无 UI 框架）· 自绘 SVG 图表（无图表库）
+- React 19 · TypeScript 5 · Vite 8 · Vitest 5 · 原生 CSS 变量（无 UI 框架）· 自绘 SVG 图表（无图表库）
+- 视觉体系走设计令牌（`src/styles/tokens.css`），规范见 `docs/superpowers/specs/2026-11-01-visual-design-tokens.md`：暗色工业质感、单一强调色、数字等宽右对齐
+- 字体自托管（Inter / JetBrains Mono 的 latin 子集 woff2，约 94 KB），不依赖 Google Fonts CDN——实测直连超时
 
 Node 版本要求：**>= 24**。
 

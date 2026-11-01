@@ -47,3 +47,6 @@ coverage/
 test-results/
 playwright-report/
 .playwright/
+
+# 上游页面快照等临时探查产物（体积大、可随时重抓）
+.tmp-probe/

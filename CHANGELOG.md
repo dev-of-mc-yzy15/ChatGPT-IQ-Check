@@ -6,6 +6,8 @@
 
 ### 新增
 
+- 设计令牌层 `src/styles/tokens.css`：色板、字阶、间距、圆角、阴影、动效全部定死成变量，深浅双主题对偶，配套规范 `docs/superpowers/specs/2026-11-01-visual-design-tokens.md`。
+- 自托管字体：Inter 与 JetBrains Mono 的 latin 子集 woff2（5 个文件，约 94 KB）落在 `src/styles/fonts/`，`@font-face` 带 `unicode-range` 与 `font-display: swap`。
 - 从零搭建前端骨架：React 19 + Vite 8 + Vitest 5，base 固定为 `/ChatGPT-IQ-Check/`（`src/`、`tests/setup.ts`、`vite.config.ts`、`tsconfig.json`；代表 commit `88b5360`）。
 - 数据抓取管线：binding / summary 归一化、本轮雷达转换与评分、`refresh` CLI 抓取三源并原子写入（`scripts/lib.mjs`、`scripts/refresh.mjs`；代表 commit `13b87dd`、`d39cc27`、`1e10201`）。
 - 静态 JSON 加载层，含超时、结构校验与三槽错误态（`src/data/loader.ts`；代表 commit `210a907`）。
@@ -22,6 +24,9 @@
 
 ### 变更
 
+- 全站视觉重做：原先只有 `button { font: inherit }` 一条控件样式，tab / 复选框 / 输入框 / 表格全是浏览器原生外观；现改为暗色工业质感——实色卡片配发丝边与内高光、单一哑光香槟金强调、分段 tab、自绘复选项、表格去竖线与等宽数字右对齐、矩阵改极淡 tint + 左竖条编码强度。
+- 长在组件里的内联 `style` 全部下沉到样式表，只留图例色块这类必须由数据决定的取值。
+- 表格数字列统一 `tabular-nums` 并右对齐，分数矩阵纵向可比。
 - 数据契约由双端双实现改为单一实现，`scripts/contract.mjs` 统一供管道与浏览器调用（`254356a`，前身见 `13b87dd`）。
 - 候选身份串收敛到 `candidateKey` / `parseCandidateKey`，替掉 9 处手写 `model|effort` 拼接（`e4502ba`）。
 - `scripts/*.mjs` 纳入 `checkJs` 类型检查，新增独立 `tsconfig.scripts.json` 并挂进 build 链（`1330bf2`）。
@@ -35,6 +40,9 @@
 
 ### 修复
 
+- `TrendChart` 里 `fill="var(--muted)"` 与 `stroke="var(--bg)"` 引用了从未定义的变量（实际只有 `--fg-muted` / `--bg-base`），SVG 刻度与空心点一直在吃无效值，改为真实令牌。
+- 375px 下横向溢出：`main` 与 `[role="tabpanel"]` 改成 grid 后，隐式 `auto` 列按宽表格的 max-content 撑开整页，补 `grid-template-columns: minmax(0, 1fr)`。
+- `ThemeToggle` 与重试按钮原先复用 `.card` 当按钮，改走 `.btn-ghost`，不再跟卡片抢样式。
 - 三份数据改分槽加载，任一槽失败不再整页白屏；重试只重试失败槽（`4e2eca3`，配合 `ErrorBoundary` 判据改为 `hasError`）。
 - 空串 / `null` / `NaN` 不再被 `Number(x ?? 0)` 静默折成 0，校验失败直接抛（`e3ffd30`、`d095576`、`eee61a9`）。
 - 候选下限不再被 `max(30, …)` 钉死，上游候选少于 30 时不再永久刷新失败（`3657ead`、`eee61a9`）。
