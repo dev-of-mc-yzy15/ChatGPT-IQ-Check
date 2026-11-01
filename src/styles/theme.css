@@ -1,82 +1,359 @@
-:root {
-  --bg: #ffffff;
-  --fg: #17181c;
-  --muted: #5c6370;
-  --card: #f6f7f9;
-  --line: #e1e4e8;
-  --accent: #1d4ed8;
-  --down: #b91c1c;
-  --up: #15803d;
-  --warn-bg: #fff7e6;
-  --warn-fg: #92400e;
-  color-scheme: light;
+/**
+ * 组件样式层。色值/字阶/间距一律取自 tokens.css，本文件不写裸十六进制。
+ *
+ * 分两段：base（元素与排版基线）→ components（卡片、按钮、分段、勾选、输入、表格、矩阵）。
+ * 顺序即优先级，勿把 base 段挪到后面。
+ *
+ * 语义类名契约（测试直接断言，不许改名）：
+ *   .card  tests/FreshnessBanner.test.tsx:196
+ *   .muted tests/CandidateTable.test.tsx:52
+ *   .down  tests/CandidateTable.test.tsx:112
+ *   .up    tests/CandidateTable.test.tsx:128
+ *   .warn  tests/FreshnessBanner.test.tsx:196
+ */
+
+/* ───────────────────────── base ───────────────────────── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
-[data-theme="dark"] {
-  --bg: #0f1115;
-  --fg: #e8eaed;
-  --muted: #9aa0a6;
-  --card: #171a21;
-  --line: #2a2f38;
-  --accent: #93b4ff;
-  --down: #f87171;
-  --up: #4ade80;
-  --warn-bg: #2b2111;
-  --warn-fg: #fbbf24;
-  color-scheme: dark;
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
 }
-* { box-sizing: border-box; }
+
 body {
   margin: 0;
-  background: var(--bg);
+  background: var(--bg-base);
   color: var(--fg);
-  font: 14px/1.55 "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font: var(--fs-body)/var(--lh-body) var(--font-sans);
+  font-feature-settings: "cv11" 1;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
-a { color: var(--accent); }
-button { font: inherit; }
-:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
-.muted { color: var(--muted); }
-.down { color: var(--down); }
-.up { color: var(--up); }
-.warn { background: var(--warn-bg); color: var(--warn-fg); border-radius: 10px; padding: 10px 12px; }
-main { max-width: 1180px; margin: 0 auto; padding: 24px; display: grid; gap: 20px; }
-/* grid 子项默认 min-width:auto，宽表格会把整列撑开导致整页横向溢出；允许收缩后溢出只留在 .table-wrap 内滚动 */
-main > * { min-width: 0; }
-.skip-link { position: absolute; left: -9999px; }
-.skip-link:focus { left: 12px; top: 12px; z-index: 10; background: var(--card); padding: 8px 12px; border-radius: 8px; }
-/* 横向滚动容器：tabindex=0 让它进焦点序列，看不见的溢出部分键盘才够得到；
-   焦点态必须自己给描边——容器没有背景/边框，全局 :focus-visible 落在它身上也看不见。 */
-.table-wrap { overflow-x: auto; }
-.table-wrap:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-table { width: 100%; border-collapse: collapse; }
-th, td { padding: 8px 6px; border-top: 1px solid var(--line); text-align: left; }
-th button { background: none; border: 0; color: inherit; cursor: pointer; padding: 0; }
-@media (max-width: 720px) {
-  main { padding: 12px; gap: 12px; }
-  .card { padding: 12px; }
-  .round-matrix td button { min-width: 52px; }
+
+/* 数字必须等宽：34 格矩阵与表格靠纵向对齐，比例数字会让整列读数歪掉。 */
+body,
+input,
+button,
+table {
+  font-variant-numeric: tabular-nums;
 }
-@media (prefers-reduced-motion: reduce) {
-  * { scroll-behavior: auto !important; }
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 600;
+  line-height: var(--lh-tight);
 }
-.round-matrix button[data-band="high"] { background: #dcfce7; }
-.round-matrix button[data-band="mid"] { background: #e0f2fe; }
-.round-matrix button[data-band="low"] { background: #fef9c3; }
-.round-matrix button[data-band="verylow"] { background: #fee2e2; }
-[data-theme="dark"] .round-matrix button[data-band="high"] { background: #14532d; }
-[data-theme="dark"] .round-matrix button[data-band="mid"] { background: #0c4a6e; }
-[data-theme="dark"] .round-matrix button[data-band="low"] { background: #422006; }
-[data-theme="dark"] .round-matrix button[data-band="verylow"] { background: #450a0a; }
-/* P1-9：aria-pressed 是选中格唯一的视觉信号，之前只有语义没有样式，键盘/读屏以外完全看不出选中。
-   优先级与上面的 data-band 规则相同，靠后定义覆盖底色；颜色一律走 var()，深浅主题都不掉色。 */
-.round-matrix button[aria-pressed="true"] {
-  border: 2px solid var(--accent);
-  box-shadow: inset 0 0 0 1px var(--accent);
+
+h1 {
+  font-size: var(--fs-display);
+  letter-spacing: var(--tracking-display);
+}
+
+h2 {
+  font-size: var(--fs-h2);
+  letter-spacing: -0.01em;
+}
+
+h3 {
+  font-size: var(--fs-h3);
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--brass);
+  text-decoration-color: var(--brass-dim);
+  text-underline-offset: 2px;
+  transition: color var(--t-fast) var(--ease), text-decoration-color var(--t-fast) var(--ease);
+}
+
+a:hover {
   color: var(--fg);
-  font-weight: 700;
+  text-decoration-color: var(--fg-muted);
 }
-.round-matrix button[aria-pressed="false"] { border: 1px solid var(--line); }
-/* 视觉隐藏但保留在可访问名里（P1-10 的 lang 标记靠它承载）。 */
+
+code,
+kbd,
+samp {
+  font-family: var(--font-mono);
+  font-size: 0.94em;
+}
+
+/* 焦点环是全站唯一「必须显眼」的装饰：键盘用户只有它。brass 双环 + 外晕。 */
+:focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+  box-shadow: 0 0 0 4px var(--brass-glow);
+}
+
+/* ─────────────────────── 控件 reset ─────────────────────── */
+/* 原生外观全关。默认灰立体边框、系统圆角、立体凸起是「浏览器原版」的根源。 */
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+  margin: 0;
+}
+
+button {
+  appearance: none;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+  text-align: inherit;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+input[type="checkbox"] {
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  flex: none;
+  margin: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  background: var(--bg-overlay);
+  display: inline-grid;
+  place-content: center;
+  vertical-align: -2px;
+  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+}
+
+/* 勾用 conic 画：不引 SVG 资源，缩放不失真，深浅主题都能靠 currentColor 适应。 */
+input[type="checkbox"]::after {
+  content: "";
+  width: 9px;
+  height: 9px;
+  transform: scale(0);
+  transition: transform var(--t-fast) var(--ease);
+  background: var(--bg-base);
+  clip-path: polygon(14% 46%, 0 62%, 40% 100%, 100% 22%, 86% 8%, 39% 68%);
+}
+
+input[type="checkbox"]:checked {
+  background: var(--brass);
+  border-color: var(--brass);
+}
+
+input[type="checkbox"]:checked::after {
+  transform: scale(1);
+}
+
+input[type="checkbox"]:disabled {
+  opacity: 0.4;
+}
+
+input[type="text"],
+input:not([type]),
+input[type="search"] {
+  appearance: none;
+  width: min(190px, 100%);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--bg-overlay);
+  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+}
+
+input[type="text"]:hover,
+input:not([type]):hover {
+  border-color: var(--line-strong);
+}
+
+input[type="text"]:focus-visible,
+input:not([type]):focus-visible {
+  border-color: var(--brass);
+  background: var(--bg-raised);
+}
+
+/* ─────────────────────── 可复用组件 ─────────────────────── */
+
+/* 次要按钮：透明底 + 发丝描边。ThemeToggle、重试按钮都走它。 */
+.btn,
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: transparent;
+  color: var(--fg-muted);
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+  transition: color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease),
+    background var(--t-fast) var(--ease);
+}
+
+.btn:hover,
+.btn-ghost:hover {
+  color: var(--fg);
+  border-color: var(--line-strong);
+  background: var(--bg-overlay);
+}
+
+.btn:active,
+.btn-ghost:active {
+  background: var(--bg-sunken);
+}
+
+/* 分段控件承载 tab：贴一条底线，选中项用 brass 短下划线压住，比原生按钮块沉稳。 */
+.seg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  border-bottom: 1px solid var(--line-hair);
+}
+
+.seg > button {
+  position: relative;
+  padding: var(--sp-2) var(--sp-3) calc(var(--sp-2) + 2px);
+  border-radius: var(--r-sm) var(--r-sm) 0 0;
+  color: var(--fg-muted);
+  font-size: var(--fs-sm);
+  letter-spacing: 0.01em;
+  transition: color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+}
+
+.seg > button::after {
+  content: "";
+  position: absolute;
+  inset-inline: var(--sp-2);
+  bottom: -1px;
+  height: 2px;
+  background: var(--brass);
+  transform: scaleX(0);
+  transition: transform var(--t-base) var(--ease);
+}
+
+.seg > button:hover {
+  color: var(--fg);
+  background: var(--bg-overlay);
+}
+
+.seg > button[aria-selected="true"] {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+/* 选中项只靠底部 brass 短线和字重表达，不给底色：底色块在近黑底上会像补丁，
+   且与 hover 的浅底叠起来会发灰。 */
+.seg > button[aria-selected="true"]:hover {
+  background: transparent;
+}
+
+.seg > button[aria-selected="true"]::after {
+  transform: scaleX(1);
+}
+
+/* 复选项：整块可点，选中时描边转 brass 并挂一层极淡晕。 */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--line-hair);
+  border-radius: var(--r-md);
+  background: var(--bg-overlay);
+  color: var(--fg-muted);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  transition: color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease),
+    background var(--t-fast) var(--ease);
+}
+
+.chip:hover {
+  color: var(--fg);
+  border-color: var(--line-strong);
+  background: var(--bg-raised);
+}
+
+/* :has 让勾选态直接作用在整块上；不支持时勾选框自身仍有选中样式，不丢信息。 */
+.chip:has(input:checked) {
+  color: var(--fg);
+  border-color: var(--brass);
+  background: var(--brass-solid);
+}
+
+/* 只对「选不了」的块降透明。未选中本身已经靠 muted 降了一档，再叠 opacity 会整排糊成灰。 */
+.chip:has(input:disabled) {
+  color: var(--fg-faint);
+  border-style: dashed;
+  cursor: not-allowed;
+}
+
+.chip:has(input:disabled):hover {
+  background: var(--bg-overlay);
+}
+
+/* 卡片：实色抬升 + 发丝边 + 顶部内高光。不用毛玻璃，34 格数据量大时实色更清楚。 */
+.card {
+  background: var(--bg-raised);
+  border: 1px solid var(--line-hair);
+  border-radius: var(--r-lg);
+  padding: var(--sp-5);
+  box-shadow: var(--shadow-card);
+}
+
+.card > h2 {
+  margin-bottom: var(--sp-2);
+}
+
+.card > h2 + .muted {
+  margin-bottom: var(--sp-4);
+}
+
+/* 次级文字。muted 在卡片小字里最常用，必须保持 6:1 以上。 */
+.muted {
+  color: var(--fg-muted);
+  font-size: var(--fs-sm);
+  line-height: 1.55;
+}
+
+.down {
+  color: var(--down);
+}
+
+.up {
+  color: var(--up);
+}
+
+/* 告警条：brass 偏黄一档，左缘 2px 实线，不用满块高饱和底色。 */
+.warn {
+  border-color: var(--warn-line) !important;
+  border-left: 2px solid var(--warn-fg);
+  background: var(--warn-bg);
+  color: var(--warn-fg);
+}
+
+.warn strong {
+  color: var(--warn-fg);
+}
+
+.warn .muted,
+.warn p {
+  color: var(--warn-fg);
+}
+
+/* 视觉隐藏但保留在可访问名里。 */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -87,4 +364,471 @@ th button { background: none; border: 0; color: inherit; cursor: pointer; paddin
   clip: rect(0 0 0 0);
   white-space: nowrap;
   border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+}
+
+.skip-link:focus {
+  left: var(--sp-3);
+  top: var(--sp-3);
+  z-index: 10;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-md);
+  background: var(--bg-raised);
+  box-shadow: var(--shadow-pop);
+}
+
+/* ───────────────────────── 布局 ───────────────────────── */
+
+main {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: var(--sp-8) var(--sp-6) var(--sp-12);
+  display: grid;
+  /* 显式 minmax(0,1fr)：隐式列是 auto，会按 max-content 把列撑到表格最小宽度，
+     下方 min-width:0 根本没机会收缩，整页就横向溢出了。 */
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-5);
+}
+
+/* grid 子项默认 min-width:auto，宽表格会把整列撑开导致整页横向溢出；
+   允许收缩后溢出只留在 .table-wrap 内滚动。 */
+main > * {
+  min-width: 0;
+}
+
+/* 顶部品牌区：左侧标识与标题成 lockup，右侧状态胶囊浮在右边。 */
+.masthead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding-bottom: var(--sp-4);
+  border-bottom: 1px solid var(--line-hair);
+}
+
+.masthead__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-width: 0;
+}
+
+/* 标识：一条 brass 斜线，纯 CSS，不引图片资源。 */
+.masthead__mark {
+  flex: none;
+  width: 3px;
+  height: 34px;
+  border-radius: var(--r-pill);
+  background: linear-gradient(180deg, var(--brass), transparent);
+}
+
+.masthead__sub {
+  margin-top: var(--sp-2);
+  color: var(--fg-muted);
+  font-size: var(--fs-sm);
+}
+
+footer {
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--line-hair);
+  color: var(--fg-muted);
+  font-size: var(--fs-sm);
+}
+
+/* tabpanel 自带焦点位，去掉默认粗环改发丝内描边，避免整块高亮抢戏。 */
+[role="tabpanel"]:focus-visible {
+  outline: 1px solid var(--line);
+  outline-offset: var(--sp-2);
+}
+
+[role="tabpanel"] {
+  display: grid;
+  /* 同 main：tabpanel 也是 grid 容器，隐式列 auto 会把宽表格的 max-content 当列宽，
+     漏了这一条时表格照样顶破整页。 */
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-5);
+}
+
+[role="tabpanel"][hidden] {
+  display: none;
+}
+
+/* ───────────────────────── 表格 ───────────────────────── */
+
+.table-wrap {
+  overflow-x: auto;
+  margin-top: var(--sp-3);
+}
+
+/* 容器无底色无边框，全局焦点环落在它身上也看不见，必须自己给。 */
+.table-wrap:focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+}
+
+caption {
+  padding-bottom: var(--sp-2);
+  text-align: left;
+  font-size: var(--fs-sm);
+}
+
+/* 只留横向发丝线，竖线全部去掉——竖线多了像 Excel，横向留白才像看板。 */
+th,
+td {
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--line-hair);
+  text-align: left;
+  vertical-align: middle;
+}
+
+thead th {
+  color: var(--fg-muted);
+  font-size: var(--fs-label);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  border-bottom-color: var(--line);
+  white-space: nowrap;
+}
+
+tbody tr {
+  transition: background var(--t-fast) var(--ease);
+}
+
+tbody tr:hover {
+  background: var(--bg-overlay);
+}
+
+tbody th {
+  font-weight: 500;
+}
+
+/* 表头排序按钮：整格可点，悬停给 brass，当前排序列常亮。 */
+thead th button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  color: inherit;
+  font-size: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  font-weight: inherit;
+  transition: color var(--t-fast) var(--ease);
+}
+
+thead th button:hover {
+  color: var(--brass);
+}
+
+thead th button[aria-sort="ascending"],
+thead th button[aria-sort="descending"],
+thead th[aria-sort="ascending"],
+thead th[aria-sort="descending"] {
+  color: var(--brass);
+}
+
+/* 数字列右对齐：等宽数字 + 右贴边，扫读时量级一眼可比。 */
+.num {
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 0.96em;
+}
+
+thead th.num {
+  text-align: right;
+}
+
+/* ─────────────────────── 分数矩阵 ─────────────────────── */
+
+/* 矩阵是页面主角，格子里只有数字，靠 tint + 左竖条编码强度，不用大色块。 */
+.round-matrix td {
+  padding: var(--sp-1);
+  border-bottom: 0;
+}
+
+.round-matrix tbody th {
+  padding-inline: var(--sp-3) var(--sp-4);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--fg);
+  border-bottom: 0;
+  white-space: nowrap;
+}
+
+.round-matrix tbody tr:hover {
+  background: transparent;
+}
+
+.round-matrix td button {
+  display: block;
+  width: 100%;
+  min-width: 62px;
+  padding: var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-3);
+  border: 1px solid transparent;
+  border-left-width: 3px;
+  border-radius: var(--r-sm);
+  font-family: var(--font-mono);
+  font-size: var(--fs-h3);
+  font-weight: 500;
+  text-align: left;
+  color: var(--fg);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease),
+    transform var(--t-fast) var(--ease);
+}
+
+.round-matrix td button:hover {
+  transform: translateY(-1px);
+}
+
+.round-matrix td button:active {
+  transform: translateY(0);
+}
+
+/* 四档强度：tint 极淡，竖条才是真正编码。暗底与亮底给不同透明度，否则亮底上发灰。 */
+.round-matrix button[data-band="high"] {
+  background: rgba(111, 199, 155, 0.13);
+  border-left-color: var(--up);
+}
+
+.round-matrix button[data-band="mid"] {
+  background: rgba(122, 166, 218, 0.12);
+  border-left-color: #7aa6da;
+}
+
+.round-matrix button[data-band="low"] {
+  background: rgba(224, 190, 116, 0.12);
+  border-left-color: var(--warn-fg);
+}
+
+.round-matrix button[data-band="verylow"] {
+  background: rgba(226, 140, 124, 0.13);
+  border-left-color: var(--down);
+}
+
+.round-matrix button:hover {
+  background: var(--bg-overlay);
+}
+
+[data-theme="light"] .round-matrix button[data-band="high"] {
+  background: rgba(18, 114, 75, 0.15);
+}
+
+[data-theme="light"] .round-matrix button[data-band="mid"] {
+  background: rgba(28, 78, 132, 0.14);
+}
+
+[data-theme="light"] .round-matrix button[data-band="low"] {
+  background: rgba(146, 106, 10, 0.15);
+}
+
+[data-theme="light"] .round-matrix button[data-band="verylow"] {
+  background: rgba(163, 48, 31, 0.14);
+}
+
+[data-theme="light"] .round-matrix button:hover {
+  background: var(--bg-overlay);
+}
+
+/* 选中格：aria-pressed 是唯一视觉信号，之前只有语义没样式。
+   brass 双环 + 外晕，并压住 data-band 的底色强度，选中格在整片 tint 里必须跳出来。 */
+.round-matrix button[aria-pressed="true"] {
+  border-color: var(--brass);
+  box-shadow: inset 0 0 0 1px var(--brass), 0 0 0 3px var(--brass-glow);
+  font-weight: 600;
+}
+
+.round-matrix button[aria-pressed="false"] {
+  border-top-color: transparent;
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+}
+
+/* ────────────────────── 图表与产物 ────────────────────── */
+
+figure {
+  margin: 0;
+}
+
+figcaption {
+  margin-top: var(--sp-2);
+  color: var(--fg-muted);
+  font-size: var(--fs-sm);
+}
+
+/* 图例按钮：选中时左缘 brass 实线，比整块填色克制。 */
+.legend button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
+  border: 1px solid var(--line-hair);
+  border-left-width: 4px;
+  border-radius: var(--r-sm);
+  color: var(--fg-muted);
+  font-size: var(--fs-sm);
+  transition: color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+}
+
+.legend button:hover {
+  color: var(--fg);
+  background: var(--bg-overlay);
+}
+
+.legend button[aria-pressed="false"] {
+  opacity: 0.4;
+}
+
+.legend button[aria-pressed="true"] {
+  color: var(--fg);
+}
+
+/* 动画产物 iframe：发丝边 + 收紧圆角，跟前身内联样式一致但走变量。 */
+.asset-frame {
+  display: block;
+  width: 100%;
+  margin-top: var(--sp-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+}
+
+/* ───────────────────────── 响应式 ───────────────────────── */
+
+@media (max-width: 720px) {
+  main {
+    padding: var(--sp-4) var(--sp-3) var(--sp-8);
+    gap: var(--sp-4);
+  }
+
+  .card {
+    padding: var(--sp-3);
+    border-radius: var(--r-md);
+  }
+
+  .masthead {
+    flex-direction: column;
+    gap: var(--sp-3);
+  }
+
+  .round-matrix td button {
+    min-width: 52px;
+    font-size: var(--fs-body);
+  }
+
+  h1 {
+    font-size: var(--fs-display);
+  }
+}
+
+/* ─────────────────────── 减动效 ─────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  .round-matrix td button:hover {
+    transform: none;
+  }
+}
+
+/* ─────────────────── 补充组件（结构换类名后新增） ─────────────────── */
+
+/* 趋势图 svg：宽度铺满、高度按 viewBox 比例自适应。 */
+.chart {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* 图例容器：与图表留一档间距后换行排布。 */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+}
+
+/* 图例色块：圆点跟折线同色，尺寸统一由这里定，组件只传 background。 */
+.legend__dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: var(--r-pill);
+}
+
+/* 曲线选择的多选块容器。 */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+/* 逐题详情里的动画区块：与上方表格拉开一档。 */
+.detail-block {
+  margin-top: var(--sp-3);
+}
+
+/* 矩阵表格最小宽度：够放下 6 档 + 模型名列，窄屏靠外层横向滚动。 */
+.round-matrix__table {
+  min-width: 560px;
+}
+
+details > summary {
+  cursor: pointer;
+  color: var(--fg-muted);
+  font-size: var(--fs-sm);
+  padding: var(--sp-2) 0;
+  transition: color var(--t-fast) var(--ease);
+}
+
+details > summary:hover {
+  color: var(--fg);
+}
+
+/* 候选表最小宽度：够放下选择列 + 6 列 + 状态 + Δ，窄屏靠外层横向滚动。 */
+.candidate-table {
+  min-width: 760px;
+}
+
+/* 搜索行：标签与输入框基线对齐成一行，标签不再占满整行。 */
+.field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+}
+
+/* 卡片内连续段落的呼吸：关于页与详情页都是纯段落堆叠，段间必须留白。 */
+.card > p + p,
+.card > p + .muted,
+.card > .muted + p {
+  margin-top: var(--sp-3);
+}
+
+/* 段内行内代码（校验和）用等宽 + 微弱底，避免和正文糊在一起。 */
+code {
+  padding: 1px var(--sp-1);
+  border-radius: var(--r-sm);
+  background: var(--bg-overlay);
+  color: var(--fg);
 }

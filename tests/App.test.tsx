@@ -328,7 +328,7 @@ describe("主题与 theme-color", () => {
 
     expect(result.current[0]).toBe(initial);
     expect(document.documentElement.dataset.theme).toBe(initial);
-    expect(meta()?.getAttribute("content")).toBe(initial === "dark" ? "#0f1115" : "#ffffff");
+    expect(meta()?.getAttribute("content")).toBe(initial === "dark" ? "#08090C" : "#FBFBFC");
   });
 
   it("syncs meta[theme-color] with the active theme", async () => {
@@ -344,11 +344,11 @@ describe("主题与 theme-color", () => {
     await userEvent.click(toggle);
     const dark = document.documentElement.dataset.theme;
     expect(dark).not.toBe(light);
-    expect(meta()?.getAttribute("content")).not.toBe("#ffffff");
+    expect(meta()?.getAttribute("content")).toBe("#08090C");
 
     await userEvent.click(toggle);
     // 第二次点击必须真的翻回去：闭包持旧值的话这里会停在 dark。
     expect(document.documentElement.dataset.theme).toBe(light);
-    expect(meta()?.getAttribute("content")).toBe("#ffffff");
+    expect(meta()?.getAttribute("content")).toBe("#FBFBFC");
   });
 });

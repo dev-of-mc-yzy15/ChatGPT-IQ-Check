@@ -62,9 +62,13 @@ test.describe("子路径部署与 CSP 的真实浏览器基线", () => {
     // 一个都没解析到就是假绿：说明选择器过期或产物形状变了。
     expect(refs.length, "页面必须自报至少一个脚本或样式").toBeGreaterThan(0);
 
+    const selfOrigin = new URL(BASE_PATH, page.url()).origin;
     for (const url of refs) {
-      const { pathname } = new URL(url);
-      expect(pathname, `${url} 必须带 base 前缀`).toContain(BASE_PATH);
+      const { pathname, origin } = new URL(url);
+      // 跨域外链（字体样式表）天生没有 base 前缀，前缀只对站内产物成立；
+      // 类型断言两边都做——外链拿回 HTML 同样说明引用写歪了。
+      const sameOrigin = origin === selfOrigin;
+      if (sameOrigin) expect(pathname, `${url} 必须带 base 前缀`).toContain(BASE_PATH);
       const res = await page.request.get(url);
       expect(res.status(), `${url} 必须 200`).toBe(200);
       const type = res.headers()["content-type"] ?? "";

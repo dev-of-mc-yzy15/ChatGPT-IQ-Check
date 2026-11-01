@@ -5,11 +5,11 @@ const KEY = "iq-radar-theme";
 
 /** 地址栏/状态栏配色取自 theme.css 的 --bg，浅深各一份。 */
 const THEME_COLOR: Record<Theme, string> = {
-  light: "#ffffff",
-  dark: "#0f1115",
+  light: "#FBFBFC",
+  dark: "#08090C",
 };
 
-/** index.html 里是静态 #ffffff；测试与首屏之外都靠这里兜底，缺节点就补一个。 */
+/** index.html 里是静态 #FBFBFC；测试与首屏之外都靠这里兜底，缺节点就补一个。 */
 function syncThemeColor(theme: Theme) {
   let meta = document.querySelector('meta[name="theme-color"]');
   if (!meta) {
