@@ -6,6 +6,8 @@ import {
   transformSummary,
   mergeRadarBench,
   validateRadarBench,
+  parseHomeOverview,
+  buildRadarBenchFromOverview,
 } from "../scripts/lib.mjs";
 
 describe("transformBinding", () => {
@@ -314,5 +316,138 @@ describe("transformRound", () => {
   });
   it("defaults scoreMax to 150 when the caller omits it", () => {
     expect(transformRound(roundRaw).candidates.map((c) => c.score_max)).toEqual([150, 150]);
+  });
+});
+
+// 站点概览兜底：结构化端点挂掉时的第二源。这块数据埋在首页 HTML 里，
+// 解析必须稳：找不到、括号不配平、全是坏行都要明确抛，不能吐半份数据。
+describe("parseHomeOverview", () => {
+  const html = (payload: string) =>
+    `<html><body><p>x</p><script type="application/json" id="home-overview-data">${payload}</script></body></html>`;
+
+  it("pulls rows, protocol and the round completion stamp", () => {
+    const payload = JSON.stringify({
+      scores: {
+        protocol: "codex-four-weighted-150-v2",
+        round_id: "codex-four-279-10c-solmax-20261031",
+        score_max: 150,
+        author_test_interval: { completed_at: "2026-10-31T08:53:42.839890+00:00" },
+        rows: [
+          { model: "gpt-6.1-sol", effort: "low", score150: 114.375, cost_usd: 0.36, model_elapsed_seconds: 530.5 },
+          { model: "gpt-6-luna", effort: "max", score150: 84.189, cost_usd: 0.09, model_elapsed_seconds: 971.4 },
+        ],
+      },
+    });
+    const o = parseHomeOverview(html(payload));
+    expect(o.protocol).toBe("codex-four-weighted-150-v2");
+    expect(o.roundId).toBe("codex-four-279-10c-solmax-20261031");
+    expect(o.completedAt).toBe("2026-10-31T08:53:42.839890+00:00");
+    expect(o.scoreMax).toBe(150);
+    // 秒 → 毫秒、成本原样保留，供合成的 statistics 用。
+    expect(o.rows).toEqual([
+      { model: "gpt-6.1-sol", effort: "low", score: 114.375, elapsedMs: 530500, costUsd: 0.36 },
+      { model: "gpt-6-luna", effort: "max", score: 84.189, elapsedMs: 971400, costUsd: 0.09 },
+    ]);
+  });
+
+  it("dedupes repeated model/effort pairs and skips rows without a finite score", () => {
+    const payload = JSON.stringify({
+      scores: {
+        rows: [
+          { model: "a", effort: "low", score150: 10 },
+          { model: "a", effort: "low", score150: 99 },
+          { model: "b", effort: "low", score150: "n/a" },
+          { model: "c", effort: "low", score150: 20 },
+          { model: "", effort: "low", score150: 30 },
+        ],
+      },
+    });
+    expect(parseHomeOverview(html(payload)).rows.map((r) => `${r.model}|${r.effort}`)).toEqual([
+      "a|low",
+      "c|low",
+    ]);
+  });
+
+  it("throws when the block is missing", () => {
+    expect(() => parseHomeOverview("<html></html>")).toThrow(/not found/);
+  });
+
+  it("throws when the block is unbalanced", () => {
+    expect(() => parseHomeOverview(`<script id="home-overview-data">{"scores":{"rows":[`)).toThrow(/unbalanced/);
+  });
+
+  it("throws when the block is not JSON", () => {
+    expect(() => parseHomeOverview(html("{oops}"))).toThrow(/bad home-overview-data/);
+  });
+
+  it("throws when no row survives", () => {
+    expect(() => parseHomeOverview(html(JSON.stringify({ scores: { rows: [] } })))).toThrow(/no usable/);
+  });
+});
+
+describe("buildRadarBenchFromOverview", () => {
+  it("produces a document that passes the radar-bench contract", () => {
+    const overview = {
+      protocol: "codex-four-weighted-150-v2",
+      roundId: "codex-four-279-10c-solmax-20261031",
+      completedAt: "2026-10-31T08:53:42.839890+00:00",
+      scoreMax: 150,
+      rows: [
+        { model: "m", effort: "low", score: 114.375, elapsedMs: 1000, costUsd: 0.5 },
+      ],
+    };
+    const doc = buildRadarBenchFromOverview({
+      overview,
+      generatedAt: "2026-11-01T00:00:00.000Z",
+      checkedAt: "2026-11-01T00:00:00.000Z",
+      fetchId: "f",
+    });
+    expect(() => validateRadarBench(doc, { minCandidates: 1 })).not.toThrow();
+    expect(doc.benchmark).toBe("site-overview-codex-four");
+    // 概览没有覆盖/历史：一律给 0 与空，别编值。
+    expect(doc.candidates[0]).toMatchObject({
+      coverage: 0,
+      required_tasks: 0,
+      graded_runs_count: 0,
+      source_scores: {},
+      history: [],
+      latest_graded_at: "2026-10-31T08:53:42.839890+00:00",
+    });
+  });
+
+  it("falls back to provisional when the round has no completion stamp", () => {
+    const doc = buildRadarBenchFromOverview({
+      overview: {
+        protocol: "p",
+        roundId: "r",
+        completedAt: null,
+        scoreMax: 150,
+        rows: [{ model: "m", effort: "low", score: 1, elapsedMs: null, costUsd: null }],
+      },
+      generatedAt: "2026-11-01T00:00:00.000Z",
+      checkedAt: "2026-11-01T00:00:00.000Z",
+      fetchId: "f",
+    });
+    expect(doc.candidates[0].score_status).toBe("provisional");
+    expect(doc.candidates[0].latest_graded_at).toBeNull();
+  });
+});
+
+describe("overviewToSummaries 越界分数", () => {
+  it("clamps a score above score_max so one bad row cannot fail the whole fallback", () => {
+    const doc = buildRadarBenchFromOverview({
+      overview: {
+        protocol: "p",
+        roundId: "r",
+        completedAt: "2026-10-31T00:00:00.000Z",
+        scoreMax: 150,
+        rows: [{ model: "m", effort: "low", score: 160.5, elapsedMs: null, costUsd: null }],
+      },
+      generatedAt: "2026-11-01T00:00:00.000Z",
+      checkedAt: "2026-11-01T00:00:00.000Z",
+      fetchId: "f",
+    });
+    expect(doc.candidates[0].score).toBe(150);
+    expect(() => validateRadarBench(doc, { minCandidates: 1 })).not.toThrow();
   });
 });

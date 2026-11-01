@@ -67,6 +67,16 @@ tests/                  Vitest 单测与组件测试 + fixtures
 | 候选目录 | `https://codexradar.com/data/radar-bench-binding.json` |
 | 单候选分数 + 历史 | `https://codexradar.com/api/radar-bench-score?model=&effort=&view=summary&selection=user-selected-v1` |
 | 本轮看板 | `https://codexradar.com/degradation-codex-latest.json` |
+| **兜底源**（binding 不可用时） | `https://codexradar.com/` 首页内嵌的 `<script id="home-overview-data">` |
+
+前三个端点共用一套评分协议（`radar-bench-final64-*`、64 题任务集），带 coverage、历史与分类分。首页概览是**另一套协议**（`codex-four-weighted-150-v2`，同为 150 分制但权重口径不同），只有分数、成本与耗时，且覆盖的模型更多（含 `/data/` 不跟踪的 `*-terra` 档）。
+
+所以兜底分两种触发，出口一致：
+
+1. **端点挂了** —— binding 拉不到就整轮失败的话太脆，直接改走概览。
+2. **端点活着但分数停更** —— 分数整体已 ≥7 天没更新（与横幅的告警阈值同一个数）就主动改走概览；否则「过期」会被一轮轮刷新固化下去。
+
+触发后落盘文档的 `benchmark` 会变成 `site-overview-codex-four`、`score_source` 记成 `site-overview`、`errors` 留一条 `overview:` 记录、`ok` 落 false，缺的 coverage / 历史 / 分类分一律填 0 与空（0/0 看得见，比编一个像样的值诚实），概览轮次完成时间充当 `latest_graded_at`。分数新鲜时仍走结构化端点，概览只是并行发一次、不参与主流程。`refreshAll({ fallbackWhenStale: false })` 可关掉第 2 种触发。
 
 不使用的接口（上游已废弃或不可用，留作备忘）：
 `/data/intelligence-efficiency.json`（旧 fallback）、`/api/v1/table`（410）、`/api/intelligence-efficiency-metrics`（502）。
@@ -218,10 +228,15 @@ npm run refresh -- --force  # 内容没变也强制重写（重置时间戳）
   "min_latest": "ISO8601",      // 参与候选里最旧的评分时间
   "stale_count": 0,             // 评分超过 7 天（或时间未知）的候选数
   "round_updated_at": "ISO8601",
-  "stale_days": 0,              // null = 上游没给，未知不等于 0
+  "stale_days": 0,              // 分数与轮次两者的较大值；null = 上游没给，未知不等于 0
+  "score_stale_days": 0,        // 只看分数：横幅「分数已超过 7 天未更新」按它判
+  "round_stale_days": 0,        // 只看降智轮次：轮次久不更新不等于分数过期，单独点名
+  "score_source": "radar-bench-api", // 或 site-overview：本轮分数取自哪条路
   "errors": []
 }
 ```
+
+`stale_days` 是历史字段，取分数与轮次的**较大值**。只看它会把「轮次 8 天没开新轮、分数昨天刚涨」也说成"数据过期"，所以横幅改读拆开的两个口径，分数过期与轮次待更新分别定性。
 
 ### 动画资产：已本地化并渲染
 

@@ -372,3 +372,145 @@ export function validateRound(data, { minCandidates = 30 } = {}) {
   assertMinCandidates(data, minCandidates, "round");
   return data;
 }
+
+/** 站点概览兜底出来的文档标这个 benchmark，与 radar-bench-* 区分得开。 */
+export const OVERVIEW_BENCHMARK = "site-overview-codex-four";
+
+/**
+ * 从站点首页 HTML 里抽出 `home-overview-data` 那块 JSON。
+ *
+ * 站点的结构化端点（binding/summary/round）停更或挂掉时，首页仍然每一次请求都带着
+ * 当前轮次的分数。这块数据埋在 1.7MB 的 HTML 里，位置固定的 `<script type=
+ * "application/json" id="home-overview-data">`；用括号配平截取，不用正则硬啃 JSON。
+ *
+ * 概览与 API 不是同一套评分协议（protocol 是 codex-four-weighted-150-v2，API 是
+ * radar-bench-final64），分数不能当作同一个指标静默互换，所以转换时只搬分数与
+ * 时间，缺的字段给显式零值，由调用方按 benchmark 区分展示。
+ * @param {string} html
+ * @returns {{protocol: string, roundId: string, completedAt: string|null, scoreMax: number|null, rows: {model: string, effort: string, score: number, elapsedMs: number|null, costUsd: number|null}[]}}
+ */
+export function parseHomeOverview(html) {
+  if (typeof html !== "string" || html === "") throw new Error("overview: empty html");
+  const marker = /<script[^>]+id="home-overview-data"[^>]*>/i.exec(html);
+  if (!marker) throw new Error("overview: home-overview-data not found");
+  const start = marker.index + marker[0].length;
+  let depth = 0;
+  let end = -1;
+  for (let i = start; i < html.length; i++) {
+    const ch = html[i];
+    if (ch === "{") depth++;
+    else if (ch === "}") {
+      depth--;
+      if (depth === 0) {
+        end = i + 1;
+        break;
+      }
+    }
+  }
+  if (end < 0) throw new Error("overview: unbalanced home-overview-data");
+  let parsed;
+  try {
+    parsed = JSON.parse(html.slice(start, end));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error("overview: bad home-overview-data (" + message + ")");
+  }
+  const scores = parsed?.scores;
+  if (!scores || typeof scores !== "object") throw new Error("overview: no scores block");
+  const rowsRaw = Array.isArray(scores.rows) ? scores.rows : [];
+  const rows = [];
+  const seen = new Set();
+  for (const row of rowsRaw) {
+    const model = String(row?.model ?? "").trim();
+    const effort = String(row?.effort ?? "").trim();
+    if (!model || !effort) continue;
+    const key = candidateKey(model, effort);
+    if (seen.has(key)) continue;
+    // 概览里分数叫 score150，与 score_display（两位小数字符串）同源；取数字那份。
+    const score = Number(row?.score150);
+    if (!Number.isFinite(score) || score < 0) continue;
+    seen.add(key);
+    const elapsedMs = Number(row?.model_elapsed_seconds);
+    const costUsd = Number(row?.cost_usd);
+    rows.push({
+      model,
+      effort,
+      score,
+      elapsedMs: Number.isFinite(elapsedMs) && elapsedMs >= 0 ? elapsedMs * 1000 : null,
+      costUsd: Number.isFinite(costUsd) && costUsd >= 0 ? costUsd : null,
+    });
+  }
+  if (!rows.length) throw new Error("overview: no usable score rows");
+  const scoreMax = strictNumber(scores.score_max ?? SCORE_MAX, "overview.score_max", { min: 1 });
+  const completedAtRaw = scores.author_test_interval?.completed_at;
+  return {
+    protocol: String(scores.protocol ?? ""),
+    roundId: String(scores.round_id ?? ""),
+    // 轮次完成时间就是这批分数的评分时间；解析不了给 null，由调用方当"未知"处理。
+    completedAt:
+      typeof completedAtRaw === "string" && Number.isFinite(Date.parse(completedAtRaw))
+        ? completedAtRaw
+        : null,
+    scoreMax: scoreMax ?? SCORE_MAX,
+    rows,
+  };
+}
+
+/**
+ * 把概览行摊成契约要求的候选形状。
+ *
+ * 概览没有 coverage / required_tasks / source_scores / history —— 这些一律给 0 或空，
+ * 而不是猜一个看起来合理的数：看板会把 0/0 原样画出来，比编一个值诚实。
+ * score_status 跟着轮次完成时间走：有完成时间才算 complete，否则 provisional。
+ *
+ * 分数按 score_max 收口：契约要求 score <= score_max，概览里万一写了越界值（上游换分母
+ * 而 score_max 没跟上），兜底路径会因为一个越界行整轮校验失败 —— 应急通道不该这么脆，
+ * 所以就地 clamp 而不是抛。
+ * @param {{protocol: string, roundId: string, completedAt: string|null, scoreMax: number|null, rows: any[]}} overview
+ * @returns {Summary[]}
+ */
+export function overviewToSummaries(overview) {
+  const completedAt = overview.completedAt;
+  const cap = overview.scoreMax ?? SCORE_MAX;
+  return overview.rows.map((row) => ({
+    model: row.model,
+    effort: row.effort,
+    score: row.score > cap ? cap : row.score,
+    coverage: 0,
+    required_tasks: 0,
+    score_status: completedAt ? "complete" : "provisional",
+    graded_runs_count: 0,
+    source_scores: {},
+    statistics: {
+      sample_count: 0,
+      elapsed_ms_mean: row.elapsedMs,
+      api_equivalent_usd_mean: row.costUsd,
+    },
+    latest_graded_at: completedAt,
+    history: [],
+  }));
+}
+
+/**
+ * 用概览生成一份完整可校验的 radar-bench 文档。
+ * @param {{overview: any, generatedAt: string, checkedAt: string, fetchId: string}} args
+ * @returns {RadarBenchDoc}
+ */
+export function buildRadarBenchFromOverview({ overview, generatedAt, checkedAt, fetchId }) {
+  const candidates = overviewToSummaries(overview);
+  if (!candidates.length) throw new Error("overview: no candidates");
+  return {
+    schema_version: 1,
+    fetch_id: fetchId,
+    generated_at: generatedAt,
+    checked_at: checkedAt,
+    benchmark: OVERVIEW_BENCHMARK,
+    score_version: overview.protocol || OVERVIEW_BENCHMARK,
+    score_max: overview.scoreMax ?? SCORE_MAX,
+    // catalog_version / task_set_sha256 契约要求非空串；概览里没有任务集摘要，用轮次 id 占位，
+    // 空着会直接过不了校验。轮次 id 也缺（旧 HTML）时退到 benchmark 名，仍是非空。
+    catalog_version: overview.roundId || OVERVIEW_BENCHMARK,
+    task_set_sha256: overview.roundId || OVERVIEW_BENCHMARK,
+    candidates,
+  };
+}

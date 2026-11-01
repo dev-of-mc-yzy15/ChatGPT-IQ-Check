@@ -42,7 +42,7 @@ describe("FreshnessBanner", () => {
     expect(banner).toHaveTextContent("2026-10-23 09:19");
     expect(banner).toHaveTextContent("2026-10-23 18:43");
     expect(banner).toHaveTextContent("34/34 候选");
-    expect(banner).not.toHaveTextContent("数据可能已过期");
+    expect(banner).not.toHaveTextContent("分数已超过 7 天未更新");
     expect(banner).not.toHaveTextContent("数据检查已超过 48 小时");
   });
 
@@ -50,25 +50,87 @@ describe("FreshnessBanner", () => {
     renderBanner({ checked_at: hoursAgo(47) });
     const banner = screen.getByRole("status");
     expect(banner).not.toHaveTextContent("数据检查已超过 48 小时");
-    expect(banner).not.toHaveTextContent("数据可能已过期");
+    expect(banner).not.toHaveTextContent("分数已超过 7 天未更新");
   });
 
   it("warns when checked_at is 49 hours old", () => {
     renderBanner({ checked_at: hoursAgo(49) });
     const banner = screen.getByRole("status");
     expect(banner).toHaveTextContent("数据检查已超过 48 小时");
-    expect(banner).not.toHaveTextContent("数据可能已过期");
+    expect(banner).not.toHaveTextContent("分数已超过 7 天未更新");
   });
 
   // 授权的断言语义变更（P1-17）：边界由 > 改 >=，恰好 7 天也必须告警。
-  it("warns when stale_days is exactly 7", () => {
+  // 这两条守的是「键缺失 → 回落 stale_days」路径，名字里标出来，别让它冒充新键的行为。
+  it("falls back and warns when legacy stale_days is exactly 7", () => {
     renderBanner({ stale_days: 7 });
-    expect(screen.getByRole("status")).toHaveTextContent("数据可能已过期（超过 7 天）");
+    expect(screen.getByRole("status")).toHaveTextContent("分数已超过 7 天未更新");
   });
 
-  it("warns when stale_days is well past the 7 day limit", () => {
+  it("falls back and warns when legacy stale_days is well past the limit", () => {
     renderBanner({ stale_days: 8 });
-    expect(screen.getByRole("status")).toHaveTextContent("数据可能已过期（超过 7 天）");
+    expect(screen.getByRole("status")).toHaveTextContent("分数已超过 7 天未更新");
+  });
+
+  // 现场回归：分数昨天还在涨、只有降智轮次 8 天没开新轮。旧实现只读 stale_days（两者最大值），
+  // 于是整页打成"数据可能已过期"——把轮次的旧说成分数的旧。现在只点名轮次。
+  it("blames the round, not the scores, when only the round is old", () => {
+    renderBanner({ stale_days: 8, score_stale_days: 1, round_stale_days: 8 });
+    const banner = screen.getByRole("status");
+    expect(banner).toHaveTextContent("降智轮次已 8 天未更新");
+    expect(banner).not.toHaveTextContent("分数已超过 7 天未更新");
+  });
+
+  // score_stale_days 是分数口径的唯一判据：stale_days 被轮次拉高也不许误报分数。
+  it("judges score freshness by score_stale_days when both are present", () => {
+    renderBanner({ stale_days: 9, score_stale_days: 2, round_stale_days: 2 });
+    const banner = screen.getByRole("status");
+    expect(banner).not.toHaveTextContent("分数已超过 7 天未更新");
+    expect(banner).not.toHaveTextContent("降智轮次已");
+  });
+
+  it("does not name the round under 7 days", () => {
+    renderBanner({ stale_days: 6, score_stale_days: 6, round_stale_days: 6 });
+    expect(screen.getByRole("status")).not.toHaveTextContent("降智轮次已");
+  });
+
+  // 三态判定：键存在但为 null 表示「上游没给分数时间」，这是未知，不是过期。
+  // 用 `??` 回落时会被 stale_days（此处 8，全部由轮次贡献）冒充，无证据地报"分数已超过 7 天"。
+  it("says unknown rather than stale when score_stale_days is explicitly null", () => {
+    renderBanner({ stale_days: 8, score_stale_days: null, round_stale_days: 8 });
+    const banner = screen.getByRole("status");
+    expect(banner).toHaveTextContent("数据新鲜度未知");
+    expect(banner).not.toHaveTextContent("分数已超过 7 天未更新");
+    // 轮次是另一条线，仍要点名，不能被"未知"吞掉。
+    expect(banner).toHaveTextContent("降智轮次已 8 天未更新");
+  });
+
+  // 键缺失才是回落路径：旧 status.json 没有细分口径，只能拿 max 值保守判。
+  it("falls back to stale_days only when score_stale_days key is absent", () => {
+    const { score_stale_days: _omitted, ...legacy } = {
+      stale_days: 8,
+      score_stale_days: 8,
+    };
+    expect("score_stale_days" in legacy).toBe(false);
+    renderBanner(legacy);
+    expect(screen.getByRole("status")).toHaveTextContent("分数已超过 7 天未更新");
+    expect(screen.getByRole("status")).not.toHaveTextContent("数据新鲜度未知");
+  });
+
+  // NaN 与 null 同属未知：`NaN >= 7` 恒 false，不显式判就会静默走新鲜分支。
+  it("treats a NaN score_stale_days as unknown", () => {
+    renderBanner({ stale_days: 9, score_stale_days: Number.NaN, round_stale_days: 1 });
+    const banner = screen.getByRole("status");
+    expect(banner).toHaveTextContent("数据新鲜度未知");
+    expect(banner).not.toHaveTextContent("分数已超过 7 天未更新");
+  });
+
+  // 两者都未知时只报一次未知，不要叠成两句。
+  it("reports a single unknown when both timelines are unknown", () => {
+    renderBanner({ stale_days: null, score_stale_days: null, round_stale_days: null });
+    const banner = screen.getByRole("status");
+    expect(banner).toHaveTextContent("数据新鲜度未知");
+    expect((banner.textContent?.match(/数据新鲜度未知/g) ?? []).length).toBe(1);
   });
 
   it("counts unprefixed errors as broken data files", () => {
@@ -109,7 +171,7 @@ describe("FreshnessBanner 未知态", () => {
     renderBanner({ stale_days: null });
     const banner = screen.getByRole("status");
     expect(banner).toHaveTextContent("数据新鲜度未知");
-    expect(banner).not.toHaveTextContent("数据可能已过期");
+    expect(banner).not.toHaveTextContent("分数已超过 7 天未更新");
   });
 
   // P1-17：NaN !== null，旧实现里 `NaN > 7` 恒 false，会静默走新鲜分支。
@@ -117,7 +179,7 @@ describe("FreshnessBanner 未知态", () => {
     renderBanner({ stale_days: Number.NaN });
     const banner = screen.getByRole("status");
     expect(banner).toHaveTextContent("数据新鲜度未知");
-    expect(banner).not.toHaveTextContent("数据可能已过期");
+    expect(banner).not.toHaveTextContent("分数已超过 7 天未更新");
   });
 
   it("warns when checked_at is unparsable", () => {
@@ -195,5 +257,32 @@ describe("FreshnessBanner 覆盖行", () => {
     // 中性信息：不因为覆盖不全就把卡片升级成告警
     expect(container.querySelector(".card")).not.toHaveClass("warn");
     expect(container).toHaveTextContent("本次覆盖 31/34 个候选。");
+  });
+});
+
+// 兜底源是"换了条数据路"，不是坏文件：overview: 不能混进"数据文件异常"，
+// 而且必须说清分数换协议了，别让人拿两套分直接比。
+describe("FreshnessBanner 兜底来源", () => {
+  it("does not count the overview notice as a broken data file", () => {
+    renderBanner({ errors: ["overview: radar-bench 端点不可用，已回落到站点概览 46 条"] });
+    const banner = screen.getByRole("status");
+    expect(banner).toHaveTextContent("分数取自站点概览兜底");
+    expect(banner).not.toHaveTextContent("数据文件异常");
+  });
+
+  it("prints the produced count instead of 0 fresh when the overview was used", () => {
+    renderBanner({
+      score_source: "site-overview",
+      candidates_ok: 0,
+      candidates_total: 46,
+      binding_total: 46,
+      errors: [],
+    });
+    expect(screen.getByRole("status")).toHaveTextContent("46/46 候选");
+  });
+
+  it("keeps the API wording when nothing was overridden", () => {
+    renderBanner({ score_source: "radar-bench-api" });
+    expect(screen.getByRole("status")).not.toHaveTextContent("站点概览");
   });
 });

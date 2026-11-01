@@ -136,7 +136,13 @@ export interface StatusData {
   /** 评分时间超过 7 天（或时间未知）的候选数。 */
   stale_count: number;
   round_updated_at: string | null;
-  /** null = 上游没给，未知不等于 0。 */
+  /** null = 上游没给，未知不等于 0。取分数与轮次两者的较大值。 */
   stale_days: number | null;
+  /** 只看分数的陈旧天数（横幅「分数已超过 7 天未更新」按它判）；键缺失时横幅才回落 stale_days，显式 null 视为未知。 */
+  score_stale_days?: number | null;
+  /** 只看降智轮次的陈旧天数；轮次久未更新不等于分数过期。 */
+  round_stale_days?: number | null;
+  /** 分数取自结构化端点，还是兜底到站点概览；旧 status.json 无此键。 */
+  score_source?: "radar-bench-api" | "site-overview";
   errors: string[];
 }

@@ -21,6 +21,8 @@
 - 新鲜度横幅消费 `binding_total` / `min_latest` / `stale_count` 三个此前无人读的字段（`FreshnessBanner.tsx`；`f6dd262`）。
 - 首次落库真实数据快照，34/34 候选抓取成功、`stale_days = 0`（`public/data/`；`5811630`）。
 - 移交前重抓上游数据刷新 `public/data/`，`checked_at` 更新至 2026-10-30，`reused_count` / `missing_count` 均为 0（`813e6d0`）。
+- 站点概览兜底源，两种触发：binding 拉不到，以及分数整体已停更 ≥7 天（`fallbackWhenStale` 可关）。抓首页内嵌 `home-overview-data`（`parseHomeOverview` / `buildRadarBenchFromOverview`，`scripts/lib.mjs`；接入见 `scripts/refresh.mjs`），概览与 API 分属两套评分协议，落盘时用 `benchmark` 与 `score_source` 区分，缺的 coverage / 历史 / 分类分填 0 与空，横幅明示「分数取自站点概览兜底」。
+- round 抓取失败时不再整轮失败：形状与分母都合规的旧 round 可沿用，`round_ok` 如实落 false 并记 `round:` 告警。
 
 ### 变更
 
@@ -40,6 +42,7 @@
 
 ### 修复
 
+- 新鲜度横幅把「轮次旧」说成「数据过期」：`stale_days` 原取分数与轮次的较大值，只要降智轮次久不开新轮，即使分数昨天刚更新也整页告警。现拆出 `score_stale_days` / `round_stale_days` 两条独立口径，横幅分别定性为「分数已超过 7 天未更新」与「降智轮次已 N 天未更新」；`stale_days` 保留原语义不破坏外部消费者。
 - `TrendChart` 里 `fill="var(--muted)"` 与 `stroke="var(--bg)"` 引用了从未定义的变量（实际只有 `--fg-muted` / `--bg-base`），SVG 刻度与空心点一直在吃无效值，改为真实令牌。
 - 375px 下横向溢出：`main` 与 `[role="tabpanel"]` 改成 grid 后，隐式 `auto` 列按宽表格的 max-content 撑开整页，补 `grid-template-columns: minmax(0, 1fr)`。
 - `ThemeToggle` 与重试按钮原先复用 `.card` 当按钮，改走 `.btn-ghost`，不再跟卡片抢样式。

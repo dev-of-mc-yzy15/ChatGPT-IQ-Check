@@ -754,3 +754,394 @@ describe("refreshAll 只回填合法的易变字段", () => {
     expect(() => assertStatusShape(onDisk)).not.toThrow();
   });
 });
+
+// 站点概览兜底（用户要求的两源 fallback）：binding 挂了不能整轮失败，
+// 还有首页内嵌的 home-overview-data 这条路；它挂掉才算真失败。
+describe("refreshAll 站点概览兜底", () => {
+  const overviewHtml = (rows: { model: string; effort: string; score150: number }[]) =>
+    `<html><script type="application/json" id="home-overview-data">${JSON.stringify({
+      scores: {
+        protocol: "codex-four-weighted-150-v2",
+        round_id: "codex-four-279-10c-solmax-20261031",
+        score_max: 150,
+        author_test_interval: { completed_at: "2026-10-31T08:53:42.839890+00:00" },
+        rows,
+      },
+    })}</script></html>`;
+
+  function textResponse(body: string, status = 200) {
+    return { ok: status >= 200 && status < 300, status, text: async () => body } as Response;
+  }
+
+  it("falls back to the site overview when binding is unavailable", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "iq-refresh-"));
+    const fetchImpl = vi.fn(async (url: string) => {
+      if (url.includes("radar-bench-binding")) throw new Error("binding down");
+      if (url.endsWith("codexradar.com/")) {
+        return textResponse(
+          overviewHtml([
+            { model: "gpt-6.1-sol", effort: "low", score150: 114.375 },
+            { model: "gpt-6-luna", effort: "max", score150: 84.189 },
+          ]),
+        );
+      }
+      if (url.includes("degradation-codex-latest")) return jsonResponse(roundRaw);
+      throw new Error("unexpected url " + url);
+    });
+    const result = await refreshAll({
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+      outDir: dir,
+      now: () => new Date("2026-11-01T00:00:00Z"),
+      minRadarCandidates: 2,
+      minRoundCandidates: 2,
+    });
+    expect(result.status.score_source).toBe("site-overview");
+    expect(result.radarBench.benchmark).toBe("site-overview-codex-four");
+    expect(result.radarBench.candidates).toHaveLength(2);
+    // 降级必须留痕：既进 errors，也不许把 ok 说成 true。
+    expect(result.status.errors.join("\n")).toMatch(/回落到站点概览/);
+    expect(result.status.ok).toBe(false);
+    const onDisk = JSON.parse(await readFile(join(dir, "radar-bench.json"), "utf8"));
+    expect(onDisk.score_version).toBe("codex-four-weighted-150-v2");
+    expect(() => assertRadarBenchShape(onDisk)).not.toThrow();
+    expect(() => assertStatusShape(JSON.parse(JSON.stringify(result.status)))).not.toThrow();
+  });
+
+  it("throws when both binding and the site overview are unavailable", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "iq-refresh-"));
+    const fetchImpl = vi.fn(async (url: string) => {
+      if (url.includes("radar-bench-binding")) throw new Error("binding down");
+      if (url.endsWith("codexradar.com/")) throw new Error("site down");
+      if (url.includes("degradation-codex-latest")) return jsonResponse(roundRaw);
+      throw new Error("unexpected url " + url);
+    });
+    await expect(
+      refreshAll({
+        fetchImpl: fetchImpl as unknown as typeof fetch,
+        outDir: dir,
+        now: () => new Date("2026-11-01T00:00:00Z"),
+        minRadarCandidates: 2,
+        minRoundCandidates: 2,
+      }),
+    ).rejects.toThrow(/binding down/);
+  });
+
+  it("keeps using the API path and never reads the overview when binding works", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "iq-refresh-"));
+    const fetchImpl = vi.fn(async (url: string) => {
+      if (url.includes("radar-bench-binding")) return jsonResponse(bindingRaw);
+      if (url.includes("radar-bench-score")) {
+        const u = new URL(url);
+        return jsonResponse({ ...summaryRaw, model: u.searchParams.get("model"), effort: u.searchParams.get("effort") });
+      }
+      if (url.includes("degradation-codex-latest")) return jsonResponse(roundRaw);
+      if (url.endsWith("codexradar.com/")) return textResponse(overviewHtml([]));
+      throw new Error("unexpected url " + url);
+    });
+    const result = await refreshAll({
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+      outDir: dir,
+      now: () => new Date("2026-10-24T00:00:00Z"),
+      minRadarCandidates: 3,
+      minRoundCandidates: 2,
+    });
+    expect(result.status.score_source).toBe("radar-bench-api");
+    expect(result.radarBench.benchmark).toBe("radar-bench-final64-20261004");
+  });
+});
+
+// 端点活着但分数停更，和挂掉一样不可用：到阈值就该主动切兜底，不到就不能乱切。
+describe("refreshAll 陈旧自动切换", () => {
+  const html = (rows: { model: string; effort: string; score150: number }[]) =>
+    `<script type="application/json" id="home-overview-data">${JSON.stringify({
+      scores: {
+        protocol: "codex-four-weighted-150-v2",
+        round_id: "codex-four-279-10c-solmax-20261031",
+        score_max: 150,
+        author_test_interval: { completed_at: "2026-11-04T08:00:00.000Z" },
+        rows,
+      },
+    })}</script>`;
+
+  function mkFetch(overviewRows: { model: string; effort: string; score150: number }[]) {
+    return vi.fn(async (url: string) => {
+      if (url.includes("radar-bench-binding")) return jsonResponse(bindingRaw);
+      if (url.includes("radar-bench-score")) {
+        const u = new URL(url);
+        // fixture 的 latest_graded_at 固定在 2026-10-23，配下面的 now 决定陈旧天数。
+        return jsonResponse({ ...summaryRaw, model: u.searchParams.get("model"), effort: u.searchParams.get("effort") });
+      }
+      if (url.includes("degradation-codex-latest")) return jsonResponse(roundRaw);
+      if (url.endsWith("codexradar.com/")) {
+        return { ok: true, status: 200, text: async () => html(overviewRows) } as Response;
+      }
+      throw new Error("unexpected url " + url);
+    });
+  }
+
+  it("switches to the overview when the API scores went stale", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "iq-refresh-"));
+    const result = await refreshAll({
+      fetchImpl: mkFetch([
+        { model: "gpt-6-astra", effort: "high", score150: 120 },
+        { model: "gpt-6.1-sol", effort: "low", score150: 114 },
+        { model: "gpt-6-luna", effort: "max", score150: 84 },
+      ]) as unknown as typeof fetch,
+      outDir: dir,
+      now: () => new Date("2026-11-05T00:00:00Z"), // 距 fixture 的 10-23 已 13 天
+      minRadarCandidates: 2,
+      minRoundCandidates: 2,
+    });
+    expect(result.status.score_source).toBe("site-overview");
+    expect(result.radarBench.benchmark).toBe("site-overview-codex-four");
+    expect(result.status.errors.join("\n")).toMatch(/已回落到站点概览/);
+    // 切换后新鲜度必须按新源重算，不能留着旧源的 13 天。
+    expect(result.status.score_stale_days).toBe(0);
+    expect(result.status.latest_graded_at).toBe("2026-11-04T08:00:00.000Z");
+    expect(result.status.ok).toBe(false);
+  });
+
+  it("stays on the API while the scores are under the threshold", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "iq-refresh-"));
+    const result = await refreshAll({
+      fetchImpl: mkFetch([{ model: "x", effort: "low", score150: 1 }]) as unknown as typeof fetch,
+      outDir: dir,
+      now: () => new Date("2026-10-29T00:00:00Z"), // 距 10-23 只有 6 天
+      minRadarCandidates: 2,
+      minRoundCandidates: 2,
+    });
+    expect(result.status.score_source).toBe("radar-bench-api");
+    expect(result.status.errors.join("\n")).not.toMatch(/回落到站点概览/);
+  });
+
+  it("can be switched off explicitly", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "iq-refresh-"));
+    const result = await refreshAll({
+      fetchImpl: mkFetch([{ model: "x", effort: "low", score150: 1 }]) as unknown as typeof fetch,
+      outDir: dir,
+      now: () => new Date("2026-11-05T00:00:00Z"),
+      minRadarCandidates: 2,
+      minRoundCandidates: 2,
+      fallbackWhenStale: false,
+    });
+    expect(result.status.score_source).toBe("radar-bench-api");
+  });
+});
+
+// P0-1 回归：概览是 best-effort 第二源，必须自成一个很小的预算，失败要重试但次数有上限。
+// 修复前它借主 deadline、且完全不重试：首页一次 5xx 就丢掉整条兜底路，
+// 首页 hang 住则要陪跑到主预算，把主流程的抓取窗口一起耗掉。
+describe("overview 抓取的独立预算与重试", () => {
+  const homeHtml = (rows: { model: string; effort: string; score150: number }[]) =>
+    `<script type="application/json" id="home-overview-data">${JSON.stringify({
+      scores: {
+        protocol: "codex-four-weighted-150-v2",
+        round_id: "codex-four-279-10c-solmax-20261031",
+        score_max: 150,
+        author_test_interval: { completed_at: "2026-10-23T08:53:42.839890+00:00" },
+        rows,
+      },
+    })}</script>`;
+
+  const textResponse = (body: string, status = 200) =>
+    ({ ok: status >= 200 && status < 300, status, text: async () => body }) as Response;
+
+  it("首页 5xx 一次后重试成功：一次抖动不打掉整条兜底路", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "iq-refresh-"));
+    let homeCalls = 0;
+    const fetchImpl = vi.fn(async (url: string) => {
+      if (url.includes("radar-bench-binding")) throw new Error("binding down");
+      if (url.endsWith("codexradar.com/")) {
+        homeCalls += 1;
+        if (homeCalls === 1) return textResponse("upstream boom", 503);
+        return textResponse(homeHtml([{ model: "gpt-6.1-sol", effort: "low", score150: 114.375 }]));
+      }
+      if (url.includes("degradation-codex-latest")) return jsonResponse(roundRaw);
+      throw new Error("unexpected url " + url);
+    });
+    const result = await refreshAll({
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+      outDir: dir,
+      now: () => new Date("2026-10-24T00:00:00Z"),
+      minRadarCandidates: 1,
+      minRoundCandidates: 2,
+    });
+    expect(homeCalls).toBe(2);
+    expect(result.status.score_source).toBe("site-overview");
+  });
+
+  it("首页一直 5xx：重试次数有上限，打满就放弃", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "iq-refresh-"));
+    let homeCalls = 0;
+    const fetchImpl = vi.fn(async (url: string) => {
+      if (url.includes("radar-bench-binding")) throw new Error("binding down");
+      if (url.endsWith("codexradar.com/")) {
+        homeCalls += 1;
+        return textResponse("upstream boom", 502);
+      }
+      if (url.includes("degradation-codex-latest")) return jsonResponse(roundRaw);
+      throw new Error("unexpected url " + url);
+    });
+    await expect(
+      refreshAll({
+        fetchImpl: fetchImpl as unknown as typeof fetch,
+        outDir: dir,
+        now: () => new Date("2026-10-24T00:00:00Z"),
+        minRadarCandidates: 1,
+        minRoundCandidates: 2,
+      }),
+    ).rejects.toThrow(/binding down/);
+    // 一次都不能少（否则一次抖动就没了），也不能像主源那样重试到 3 次（那是拖累）。
+    expect(homeCalls).toBe(2);
+  });
+
+  it("首页 4xx 不重试：不是暂时性错误，重试只是白等", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "iq-refresh-"));
+    let homeCalls = 0;
+    const fetchImpl = vi.fn(async (url: string) => {
+      if (url.includes("radar-bench-binding")) throw new Error("binding down");
+      if (url.endsWith("codexradar.com/")) {
+        homeCalls += 1;
+        return textResponse("nf", 404);
+      }
+      if (url.includes("degradation-codex-latest")) return jsonResponse(roundRaw);
+      throw new Error("unexpected url " + url);
+    });
+    await expect(
+      refreshAll({
+        fetchImpl: fetchImpl as unknown as typeof fetch,
+        outDir: dir,
+        now: () => new Date("2026-10-24T00:00:00Z"),
+        minRadarCandidates: 1,
+        minRoundCandidates: 2,
+      }),
+    ).rejects.toThrow(/binding down/);
+    expect(homeCalls).toBe(1);
+  });
+
+  it("首页永不返回时，主源成功路径不被它拖住", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "iq-refresh-"));
+    const fetchImpl = vi.fn(async (url: string) => {
+      if (url.includes("radar-bench-binding")) return jsonResponse(bindingRaw);
+      if (url.includes("radar-bench-score")) {
+        const u = new URL(url);
+        return jsonResponse({
+          ...summaryRaw,
+          model: u.searchParams.get("model"),
+          effort: u.searchParams.get("effort"),
+        });
+      }
+      if (url.includes("degradation-codex-latest")) return jsonResponse(roundRaw);
+      // 首页挂住，永不 settle
+      if (url.endsWith("codexradar.com/")) return new Promise<Response>(() => {});
+      throw new Error("unexpected url " + url);
+    });
+    const result = await refreshAll({
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+      outDir: dir,
+      // 10-24 相对 fixture 的 10-23 不陈旧 → 不触发陈旧切换，也就不会 await 概览
+      now: () => new Date("2026-10-24T00:00:00Z"),
+      minRadarCandidates: 3,
+      minRoundCandidates: 2,
+    });
+    expect(result.status.score_source).toBe("radar-bench-api");
+    expect(result.radarBench.candidates).toHaveLength(3);
+  });
+});
+
+// P0-2 回归：round 上游挂掉不能把 radar 侧已经拿到的成果一起陪葬。
+// 写盘在整轮最后，修复前 round 一抛就整轮 reject —— 辛苦抓到的 radar 一个字节都不落，
+// 兜底路径（概率最高的故障形态：binding 挂了走概览，round 跟着挂）直接归零。
+describe("round 抓取失败不得陪葬 radar", () => {
+  const okApi = () =>
+    vi.fn(async (url: string) => {
+      if (url.includes("radar-bench-binding")) return jsonResponse(bindingRaw);
+      if (url.includes("radar-bench-score")) {
+        const u = new URL(url);
+        return jsonResponse({
+          ...summaryRaw,
+          model: u.searchParams.get("model"),
+          effort: u.searchParams.get("effort"),
+        });
+      }
+      return jsonResponse(roundRaw);
+    });
+
+  const withRoundDown = (inner: ReturnType<typeof okApi>) =>
+    vi.fn(async (url: string) => {
+      if (url.includes("degradation-codex-latest")) throw new Error("round down");
+      return inner(url);
+    });
+
+  it("round 挂且没有旧数据：radar 照常落盘，round_ok 说真话", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "iq-refresh-"));
+    const result = await refreshAll({
+      fetchImpl: withRoundDown(okApi()) as unknown as typeof fetch,
+      outDir: dir,
+      now: () => new Date("2026-10-24T00:00:00Z"),
+      minRadarCandidates: 3,
+      minRoundCandidates: 2,
+    });
+    expect(result.round).toBeNull();
+    expect(result.status.round_ok).toBe(false);
+    expect(result.status.round_updated_at).toBeNull();
+    expect(result.status.round_stale_days).toBeNull();
+    expect(result.status.errors.join("\n")).toMatch(/round: 本轮抓取失败/);
+    // radar 侧成果必须已经在盘上
+    const onDisk = JSON.parse(await readFile(join(dir, "radar-bench.json"), "utf8"));
+    expect(onDisk.candidates).toHaveLength(3);
+    expect(() => assertRadarBenchShape(onDisk)).not.toThrow();
+    // round.json 既然没有过，就不该凭空造一个
+    await expect(readFile(join(dir, "round.json"), "utf8")).rejects.toThrow();
+  });
+
+  it("round 挂但有形状与分母都合法的旧数据：沿用旧值，不清空", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "iq-refresh-"));
+    await refreshAll({
+      fetchImpl: okApi() as unknown as typeof fetch,
+      outDir: dir,
+      now: () => new Date("2026-10-24T00:00:00Z"),
+      minRadarCandidates: 3,
+      minRoundCandidates: 2,
+    });
+    const before = await readFile(join(dir, "round.json"), "utf8");
+
+    const result = await refreshAll({
+      fetchImpl: withRoundDown(okApi()) as unknown as typeof fetch,
+      outDir: dir,
+      now: () => new Date("2026-10-24T01:00:00Z"),
+      minRadarCandidates: 3,
+      minRoundCandidates: 2,
+    });
+    expect(result.status.round_ok).toBe(true);
+    expect(result.status.errors.join("\n")).toMatch(/沿用上一轮数据/);
+    // 内容一致 → 不重写，盘上仍是原来那份，不能被清空
+    expect(await readFile(join(dir, "round.json"), "utf8")).toBe(before);
+  });
+
+  it("旧 round 的分母与当前不一致时不复用：宁可没有，也不给错刻度", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "iq-refresh-"));
+    await refreshAll({
+      fetchImpl: okApi() as unknown as typeof fetch,
+      outDir: dir,
+      now: () => new Date("2026-10-24T00:00:00Z"),
+      minRadarCandidates: 3,
+      minRoundCandidates: 2,
+    });
+    // 旧刻度的分母被改过（模拟上游改过 score_max）
+    const stale = JSON.parse(await readFile(join(dir, "round.json"), "utf8"));
+    for (const c of stale.candidates) c.score_max = 200;
+    await writeFile(join(dir, "round.json"), JSON.stringify(stale, null, 2) + "\n", "utf8");
+
+    const result = await refreshAll({
+      fetchImpl: withRoundDown(okApi()) as unknown as typeof fetch,
+      outDir: dir,
+      now: () => new Date("2026-10-24T01:00:00Z"),
+      minRadarCandidates: 3,
+      minRoundCandidates: 2,
+    });
+    expect(result.round).toBeNull();
+    expect(result.status.round_ok).toBe(false);
+    expect(result.status.errors.join("\n")).toMatch(/没有可复用的上一轮数据/);
+  });
+});

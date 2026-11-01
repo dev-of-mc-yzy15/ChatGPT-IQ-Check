@@ -405,6 +405,14 @@ export function assertStatusShape(data) {
   strictNumber(data.missing_count, "status.missing_count", { optional: true, min: 0 });
   strictIso(data.min_latest, "status.min_latest", { nullable: true, optional: true });
   strictNumber(data.stale_count, "status.stale_count", { optional: true, min: 0 });
+  // 分数/轮次两条时间线各自归位：stale_days 是两者的较大值（兼容旧消费者），
+  // 拆出来的两个口径同样是 optional（旧 status.json 里没有），但写歪了照样打红。
+  strictNumber(data.score_stale_days, "status.score_stale_days", { nullable: true, optional: true, min: 0 });
+  strictNumber(data.round_stale_days, "status.round_stale_days", { nullable: true, optional: true, min: 0 });
+  // 分数来自哪条路：结构化端点，或站点概览兜底。旧 status.json 没有此键。
+  if (data.score_source !== undefined) {
+    strictEnum(data.score_source, "status.score_source", ["radar-bench-api", "site-overview"]);
+  }
   strictArray(data.errors, "status.errors").forEach((error, i) =>
     strictString(error, "status.errors[" + i + "]"),
   );
