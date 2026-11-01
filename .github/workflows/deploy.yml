@@ -1,5 +1,9 @@
 name: deploy-pages
 
+# 注意：下面的 push 触发带 paths 白名单。空提交（git commit --allow-empty）diff 为空，
+# 不会命中白名单，推上去也不会跑（GitHub 文档：no files changed → workflow will not run）。
+# 要手动触发只有两条路：workflow_dispatch，或对白名单内文件做真实改动（本文件即属白名单）。
+
 on:
   push:
     branches: [main]
@@ -87,5 +91,3 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
-
-# 触发部署验证（Pages 已启用）
