@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "fetch_id": "a7e95283-4827-4d4e-89d3-4a244f05a7e5",
-  "generated_at": "2026-10-30T21:45:18.867Z",
-  "checked_at": "2026-10-30T21:45:18.867Z",
+  "fetch_id": "fdef7944-8a0c-4dfe-a956-1b63ec13eb50",
+  "generated_at": "2026-11-01T06:29:47.668Z",
+  "checked_at": "2026-11-01T06:29:47.668Z",
   "benchmark": "radar-bench-final64-20261004",
   "score_version": "radar-bench-v2-150",
   "score_max": 150,
@@ -277,7 +277,7 @@
       "coverage": 64,
       "required_tasks": 64,
       "score_status": "complete",
-      "graded_runs_count": 124,
+      "graded_runs_count": 125,
       "source_scores": {
         "deepswe": {
           "score": 106.66666666666666,
@@ -301,15 +301,15 @@
           "score": 72.36842105263158,
           "coverage": 19,
           "required_tasks": 19,
-          "graded_runs_count": 32
+          "graded_runs_count": 33
         }
       },
       "statistics": {
-        "sample_count": 137,
-        "elapsed_ms_mean": 761930.4478858111,
-        "api_equivalent_usd_mean": 0.5249578832116788
+        "sample_count": 138,
+        "elapsed_ms_mean": 779149.3721764936,
+        "api_equivalent_usd_mean": 0.5333985289855072
       },
-      "latest_graded_at": "2026-10-23T04:20:58.799582Z",
+      "latest_graded_at": "2026-10-31T08:43:31.273680Z",
       "history": [
         {
           "at": "2026-10-08T00:00:00.000Z",
@@ -397,6 +397,13 @@
         },
         {
           "at": "2026-10-23T00:00:00.000Z",
+          "score": 98.2927307067932,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-31T00:00:00.000Z",
           "score": 98.2927307067932,
           "coverage": 64,
           "required_tasks": 64,
@@ -1113,11 +1120,11 @@
     {
       "model": "gpt-6-astra",
       "effort": "xhigh",
-      "score": 114.25410098973607,
+      "score": 115.42597598973607,
       "coverage": 64,
       "required_tasks": 64,
       "score_status": "complete",
-      "graded_runs_count": 101,
+      "graded_runs_count": 102,
       "source_scores": {
         "deepswe": {
           "score": 125,
@@ -1132,10 +1139,10 @@
           "graded_runs_count": 21
         },
         "tb4": {
-          "score": 96.42857142857143,
+          "score": 101.78571428571429,
           "coverage": 14,
           "required_tasks": 14,
-          "graded_runs_count": 18
+          "graded_runs_count": 19
         },
         "science": {
           "score": 96.05263157894737,
@@ -1145,11 +1152,11 @@
         }
       },
       "statistics": {
-        "sample_count": 101,
-        "elapsed_ms_mean": 902754.1999653447,
+        "sample_count": 102,
+        "elapsed_ms_mean": 898119.9332990178,
         "api_equivalent_usd_mean": null
       },
-      "latest_graded_at": "2026-10-23T03:27:05.676652Z",
+      "latest_graded_at": "2026-10-31T08:50:16.253236Z",
       "history": [
         {
           "at": "2026-10-09T00:00:00.000Z",
@@ -1203,6 +1210,13 @@
         {
           "at": "2026-10-23T00:00:00.000Z",
           "score": 114.25410098973607,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-31T00:00:00.000Z",
+          "score": 115.42597598973607,
           "coverage": 64,
           "required_tasks": 64,
           "score_status": "complete"
@@ -2282,13 +2296,13 @@
       "coverage": 64,
       "required_tasks": 64,
       "score_status": "complete",
-      "graded_runs_count": 85,
+      "graded_runs_count": 86,
       "source_scores": {
         "deepswe": {
           "score": 40,
           "coverage": 15,
           "required_tasks": 15,
-          "graded_runs_count": 22
+          "graded_runs_count": 23
         },
         "pompeii": {
           "score": 63.40604798841734,
@@ -2310,11 +2324,11 @@
         }
       },
       "statistics": {
-        "sample_count": 85,
-        "elapsed_ms_mean": 329958.17223057034,
-        "api_equivalent_usd_mean": 0.017019976470588234
+        "sample_count": 86,
+        "elapsed_ms_mean": 326987.14697207534,
+        "api_equivalent_usd_mean": 0.016941558139534883
       },
-      "latest_graded_at": "2026-10-25T08:19:20.434526Z",
+      "latest_graded_at": "2026-10-31T08:31:06.838619Z",
       "history": [
         {
           "at": "2026-10-10T00:00:00.000Z",
@@ -2392,6 +2406,13 @@
           "coverage": 64,
           "required_tasks": 64,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-10-31T00:00:00.000Z",
+          "score": 26.398386997104335,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
         }
       ]
     },
@@ -2402,7 +2423,7 @@
       "coverage": 64,
       "required_tasks": 64,
       "score_status": "complete",
-      "graded_runs_count": 90,
+      "graded_runs_count": 91,
       "source_scores": {
         "deepswe": {
           "score": 50,
@@ -2420,7 +2441,7 @@
           "score": 16.07142857142857,
           "coverage": 14,
           "required_tasks": 14,
-          "graded_runs_count": 21
+          "graded_runs_count": 22
         },
         "science": {
           "score": 0,
@@ -2430,11 +2451,11 @@
         }
       },
       "statistics": {
-        "sample_count": 90,
-        "elapsed_ms_mean": 573062.2234617465,
-        "api_equivalent_usd_mean": 0.039054511111111107
+        "sample_count": 91,
+        "elapsed_ms_mean": 568849.4957313976,
+        "api_equivalent_usd_mean": 0.03887630769230769
       },
-      "latest_graded_at": "2026-10-25T09:48:31.729607Z",
+      "latest_graded_at": "2026-10-31T07:38:06.244486Z",
       "history": [
         {
           "at": "2026-10-10T00:00:00.000Z",
@@ -2533,23 +2554,30 @@
           "coverage": 64,
           "required_tasks": 64,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-10-31T00:00:00.000Z",
+          "score": 35.94497128688306,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6-luna",
       "effort": "xhigh",
-      "score": 47.549969561688314,
+      "score": 46.378094561688314,
       "coverage": 64,
       "required_tasks": 64,
       "score_status": "complete",
-      "graded_runs_count": 87,
+      "graded_runs_count": 88,
       "source_scores": {
         "deepswe": {
-          "score": 105,
+          "score": 100,
           "coverage": 15,
           "required_tasks": 15,
-          "graded_runs_count": 20
+          "graded_runs_count": 21
         },
         "pompeii": {
           "score": 91.76237824675323,
@@ -2571,11 +2599,11 @@
         }
       },
       "statistics": {
-        "sample_count": 87,
-        "elapsed_ms_mean": 1269587.4748273462,
-        "api_equivalent_usd_mean": 0.1088768735632184
+        "sample_count": 88,
+        "elapsed_ms_mean": 1258130.3444315807,
+        "api_equivalent_usd_mean": 0.10800642045454545
       },
-      "latest_graded_at": "2026-10-25T09:52:45.075440Z",
+      "latest_graded_at": "2026-10-31T08:36:15.704765Z",
       "history": [
         {
           "at": "2026-10-10T00:00:00.000Z",
@@ -2657,6 +2685,13 @@
         {
           "at": "2026-10-25T00:00:00.000Z",
           "score": 47.549969561688314,
+          "coverage": 64,
+          "required_tasks": 64,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-10-31T00:00:00.000Z",
+          "score": 46.378094561688314,
           "coverage": 64,
           "required_tasks": 64,
           "score_status": "complete"
