@@ -17,6 +17,13 @@ const COLUMNS: { key: SortKey; label: string; defaultDir: "asc" | "desc" }[] = [
 const STATUS_AFTER: SortKey = "coverage";
 const STATUS_LABELS: Record<ScoreStatus, string> = { complete: "完整", provisional: "临时" };
 const COLUMN_COUNT = COLUMNS.length + 3;
+/** 右对齐 + 等宽的数字列：量级扫读要靠纵向对齐，左对齐时位数不一就散了。 */
+const NUMERIC_COLUMNS = new Set<SortKey>([
+  "score",
+  "coverage",
+  "graded_runs_count",
+  "latest_graded_at",
+]);
 
 export function CandidateTable({
   rows,
@@ -51,12 +58,12 @@ export function CandidateTable({
   return (
     <section className="card" aria-labelledby="candidate-table-heading">
       <h2 id="candidate-table-heading">RadarBench 候选</h2>
-      <label className="muted">
+      <label className="muted field">
         {/* label 已经提供可访问名，再挂 aria-label 读屏会念两遍。 */}
         搜索模型或档位 <input value={query} onChange={(e) => setQuery(e.target.value)} />
       </label>
       <div className="table-wrap" role="region" aria-label="候选表格（可横向滚动）" tabIndex={0}>
-        <table style={{ minWidth: 760 }}>
+        <table className="candidate-table">
           <caption className="muted">最多选 {MAX_TREND_SERIES} 条曲线；分数为 0–{scoreMax} 的基准测试分数</caption>
           <thead>
             <tr>
@@ -65,6 +72,7 @@ export function CandidateTable({
                 <Fragment key={c.key}>
                   <th
                     scope="col"
+                    className={NUMERIC_COLUMNS.has(c.key) ? "num" : undefined}
                     aria-sort={
                       sort.key === c.key ? (sort.dir === "asc" ? "ascending" : "descending") : "none"
                     }
@@ -76,7 +84,7 @@ export function CandidateTable({
                   {c.key === STATUS_AFTER && <th scope="col">状态</th>}
                 </Fragment>
               ))}
-              <th scope="col">Δ</th>
+              <th scope="col" className="num">Δ</th>
             </tr>
           </thead>
           <tbody>
@@ -102,9 +110,9 @@ export function CandidateTable({
                   </td>
                   <th scope="row"><ModelName name={r.model} /></th>
                   <td>{fmtEffort(r.effort)}</td>
-                  <td>{fmtScore(r.score)}</td>
+                  <td className="num">{fmtScore(r.score)}</td>
                   {/* required_tasks 为 0 时不能用 max(1,·) 硬凑分母，会伪装成 6400%。 */}
-                  <td>
+                  <td className="num">
                     {r.required_tasks > 0
                       ? fmtPercent(r.coverage / r.required_tasks)
                       : <span title={`覆盖 ${r.coverage}`}>—</span>}
@@ -112,10 +120,10 @@ export function CandidateTable({
                   <td className={r.score_status === "provisional" ? "muted" : undefined}>
                     {STATUS_LABELS[r.score_status]}
                   </td>
-                  <td>{r.graded_runs_count}</td>
-                  <td>{fmtDateTime(r.latest_graded_at)}</td>
+                  <td className="num">{r.graded_runs_count}</td>
+                  <td className="num">{fmtDateTime(r.latest_graded_at)}</td>
                   {/* 只靠颜色编码涨跌，色觉障碍用户读不出方向：符号先上，颜色退化成冗余提示。 */}
-                  <td className={deltaClass(delta)}>
+                  <td className={["num", deltaClass(delta)].filter(Boolean).join(" ")}>
                     {/* 没有可比的历史时 fmtDelta 已经给破折号，符号位再补一个就成了「— —」。
                         只在 delta 是有限数时渲染符号连同分隔空格；0 保留（— 0.0）：
                         符号是「无方向」标记，而值是真的 0.0。空格跟着符号走，否则空值会多出前导空格。 */}

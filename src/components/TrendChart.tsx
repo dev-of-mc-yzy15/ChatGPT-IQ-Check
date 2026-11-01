@@ -8,7 +8,9 @@ import { candidateKey } from "../../scripts/contract.mjs";
 const W = 860;
 const H = 340;
 const PAD = { top: 20, right: 20, bottom: 36, left: 48 };
-const COLORS = ["#1d4ed8", "#b45309", "#0f766e", "#7c3aed", "#be123c", "#0369a1"];
+// 低饱和六色谱：brass 打头，接石板蓝 / 鼠尾草绿 / 淡赭 / 薰衣草灰 / 青灰。
+// 鲜红鲜绿在深色底上互相抢，这套明度接近、色相分散，叠在一起也能分得开。
+const COLORS = ["#c9a96b", "#7a9cc6", "#7fa88c", "#c4915e", "#9a93c4", "#6e9ea6"];
 
 function plotWidth() {
   return W - PAD.left - PAD.right;
@@ -104,19 +106,20 @@ export function TrendChart({
           aria-label="RadarBench 趋势"
           viewBox={`0 0 ${W} ${H}`}
           width="100%"
-          // SVG 没有 height="auto" 这个合法取值，响应式高度要走 CSS。
-          style={{ height: "auto", display: "block" }}
+          // SVG 没有 height="auto" 这个合法取值，响应式高度走 .chart。
+          className="chart"
         >
           <title>RadarBench 趋势</title>
           <desc>最多 {MAX_TREND_SERIES} 条候选曲线的日桶分数，0 到 {scoreMax}。</desc>
           {ticks.map((t) => (
             <g key={t}>
-              <line x1={PAD.left} x2={W - PAD.right} y1={yOf(t, scoreMax)} y2={yOf(t, scoreMax)} stroke="var(--line)" />
-              <text x={PAD.left - 8} y={yOf(t, scoreMax) + 4} textAnchor="end" fill="var(--muted)" fontSize="11">{t}</text>
+              {/* 网格线压到发丝级：横线承载刻度，线一重就跟折线抢注意力。 */}
+              <line x1={PAD.left} x2={W - PAD.right} y1={yOf(t, scoreMax)} y2={yOf(t, scoreMax)} stroke="var(--line-hair)" />
+              <text x={PAD.left - 8} y={yOf(t, scoreMax) + 4} textAnchor="end" fill="var(--fg-muted)" fontSize="11">{t}</text>
             </g>
           ))}
           {xTicks.map((t) => (
-            <text key={t} x={xOf(t, min, max)} y={H - 12} textAnchor="middle" fill="var(--muted)" fontSize="11">
+            <text key={t} x={xOf(t, min, max)} y={H - 12} textAnchor="middle" fill="var(--fg-muted)" fontSize="11">
               {fmtMonthDay(t)}
             </text>
           ))}
@@ -146,18 +149,18 @@ export function TrendChart({
             return (
               <g key={seriesKey}>
                 {segments.map((seg, j) => (
-                  <polyline key={j} fill="none" stroke={color} strokeWidth={2}
-                    points={seg.map((p) => `${p.x},${p.y}`).join(" ")} />
+                  <polyline key={j} fill="none" stroke={color} strokeWidth={1.75} strokeLinejoin="round"
+                    strokeLinecap="round" points={seg.map((p) => `${p.x},${p.y}`).join(" ")} />
                 ))}
                 {points.map(({ p, x, y }) => (
-                  <circle key={p.at} cx={x} cy={y} r={3} fill={p.score_status === "complete" ? color : "var(--bg)"}
+                  <circle key={p.at} cx={x} cy={y} r={3} fill={p.score_status === "complete" ? color : "var(--bg-base)"}
                     stroke={color} strokeWidth={1.5}>
                     <title>{`${c.model} ${fmtEffort(c.effort)} · ${fmtMonthDay(new Date(p.at).getTime())} · ${fmtScore(p.score)}`}</title>
                   </circle>
                 ))}
                 {degrade.map(({ point, delta, days }) => (
                   <circle key={"d" + point.at} cx={xOf(new Date(point.at).getTime(), min, max)} cy={yOf(point.score, scoreMax)}
-                    r={6} fill="var(--down)" stroke="var(--bg)" strokeWidth={2}>
+                    r={6} fill="var(--down)" stroke="var(--bg-base)" strokeWidth={2}>
                     <title>{`分数下降 ${fmtDelta(delta)}（${days} 天）`}</title>
                   </circle>
                 ))}
@@ -166,7 +169,7 @@ export function TrendChart({
           })}
         </svg>
       </figure>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 8 }}>
+      <div className="legend">
         {candidates.map((c, i) => {
           const seriesKey = candidateKey(c.model, c.effort);
           const shown = !hiddenKeys.has(seriesKey);
@@ -175,27 +178,12 @@ export function TrendChart({
             <button
               key={seriesKey}
               type="button"
-              className="muted"
               aria-pressed={shown}
               onClick={() => toggleSeries(seriesKey)}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "2px 8px",
-                borderRadius: 999,
-                border: "1px solid",
-                borderColor: shown ? "var(--line)" : "transparent",
-                background: "none",
-                color: "inherit",
-                cursor: "pointer",
-                opacity: shown ? 1 : 0.5,
-              }}
+              // 左缘色条与色块都必须跟着折线颜色走，只能内联取值。
+              style={{ borderLeftColor: COLORS[i % COLORS.length] }}
             >
-              <span
-                aria-hidden="true"
-                style={{ display: "inline-block", width: 10, height: 10, background: COLORS[i % COLORS.length], borderRadius: 999 }}
-              />{" "}
+              <span aria-hidden="true" className="legend__dot" style={{ background: COLORS[i % COLORS.length] }} />{" "}
               <ModelName name={c.model} /> · {fmtEffort(c.effort)}
             </button>
           );
@@ -207,7 +195,7 @@ export function TrendChart({
           <table>
             {/* 数据表保留全量行：图上看不见的序列，核对时仍要能查到原始点。 */}
             <caption className="muted">曲线数据点（含已隐藏序列）</caption>
-            <thead><tr><th scope="col">日期</th><th scope="col">候选</th><th scope="col">分数</th><th scope="col">Δ</th></tr></thead>
+            <thead><tr><th scope="col">日期</th><th scope="col">候选</th><th scope="col" className="num">分数</th><th scope="col" className="num">Δ</th></tr></thead>
             <tbody>
               {candidates.flatMap((c) => c.history.map((p, idx) => {
                 const delta = deltaByKey.get(candidateKey(c.model, c.effort))?.[idx] ?? null;
@@ -215,8 +203,8 @@ export function TrendChart({
                   <tr key={c.model + c.effort + p.at}>
                     <td>{fmtDateTime(p.at)}</td>
                     <td><ModelName name={c.model} /> · {fmtEffort(c.effort)}</td>
-                    <td>{fmtScore(p.score)}</td>
-                    <td className={deltaClass(delta)}>
+                    <td className="num">{fmtScore(p.score)}</td>
+                    <td className={["num", deltaClass(delta)].filter(Boolean).join(" ")}>
                       {/* 首行没有可比的历史，fmtDelta 已经给破折号——符号位只在真有差值时补，
                           否则叠成「— —」。空格跟着符号走，否则空值会多出前导空格。
                           0 保留（— 0.0）：符号是「无方向」标记，值是真的 0.0。 */}

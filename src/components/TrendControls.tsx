@@ -19,13 +19,13 @@ export function TrendControls({
     <section className="card" aria-labelledby="trend-controls-heading">
       <h2 id="trend-controls-heading">曲线选择</h2>
       <p className="muted">最多 {max} 条；当前 {selectedKeys.length} / {rows.length}</p>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+      <div className="chips">
         {rows.map((r) => {
           const key = candidateKey(r.model, r.effort);
           const checked = selectedKeys.includes(key);
           const disabled = !checked && selectedKeys.length >= max;
           return (
-            <label key={key} className="card" style={{ padding: "6px 10px" }}>
+            <label key={key} className="chip">
               <input type="checkbox" checked={checked} disabled={disabled} onChange={() => onToggle(key)} />
               {" "}<ModelName name={r.model} /> · {fmtEffort(r.effort)} · {fmtScore(r.score)}
             </label>

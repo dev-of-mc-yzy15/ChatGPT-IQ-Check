@@ -54,7 +54,7 @@ export function RoundMatrix({
       </p>
       {/* 横向滚动容器要可聚焦（role=region + tabindex=0），否则键盘用户够不到溢出部分；overflow 交给 theme.css，不再内联。 */}
       <div className="table-wrap" role="region" aria-label="分数矩阵（可横向滚动）" tabIndex={0}>
-        <table style={{ minWidth: 560 }}>
+        <table className="round-matrix__table">
           <caption className="muted">模型 × 推理档位，缺失档位显示 —</caption>
           <thead>
             <tr>

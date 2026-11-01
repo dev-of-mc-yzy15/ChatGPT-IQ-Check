@@ -6,7 +6,7 @@ export function ThemeToggle() {
   return (
     <button
       type="button"
-      className="card"
+      className="btn-ghost"
       onClick={toggle}
       aria-label={`切换主题：${theme === "dark" ? "浅色" : "深色"}`}
       aria-pressed={theme === "dark"}

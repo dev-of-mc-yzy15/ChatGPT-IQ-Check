@@ -34,7 +34,7 @@ function AnimationPlayer({ src, title }: { src: string; title: string }) {
       height={220}
       loading="lazy"
       referrerPolicy="no-referrer"
-      style={{ border: "1px solid var(--line)", borderRadius: 8, display: "block", marginTop: 8 }}
+      className="asset-frame"
     />
   );
 }
@@ -80,9 +80,9 @@ export function RoundDetail({
             <tr>
               <th scope="col">任务</th>
               <th scope="col">状态</th>
-              <th scope="col">reward</th>
-              <th scope="col">耗时</th>
-              <th scope="col">成本</th>
+              <th scope="col" className="num">reward</th>
+              <th scope="col" className="num">耗时</th>
+              <th scope="col" className="num">成本</th>
             </tr>
           </thead>
           <tbody>
@@ -92,9 +92,9 @@ export function RoundDetail({
                 <tr key={task.id}>
                   <th scope="row">{task.title_zh || task.id}</th>
                   <td>{row?.status ?? "missing"}</td>
-                  <td>{row?.reward == null ? "—" : row.reward.toFixed(3)}</td>
-                  <td>{fmtSeconds(row?.seconds ?? null)}</td>
-                  <td>{fmtMoney(row?.cost_usd ?? null)}</td>
+                  <td className="num">{row?.reward == null ? "—" : row.reward.toFixed(3)}</td>
+                  <td className="num">{fmtSeconds(row?.seconds ?? null)}</td>
+                  <td className="num">{fmtMoney(row?.cost_usd ?? null)}</td>
                 </tr>
               );
             })}
@@ -102,7 +102,7 @@ export function RoundDetail({
         </table>
       </div>
       {animation?.status === "available" ? (
-        <div className="card" style={{ marginTop: 12 }}>
+        <div className="card detail-block">
           {/* P1-16：原始分一律 /100 归一到 0–1 再上屏，原始值留在括号里可核对，分母写明，避免 24 分被读成 24 分制。 */}
           <h3>动画盲评 · {norm(animation.score)} / 100（原始 {animation.score ?? "—"}）</h3>
           <p className="muted">

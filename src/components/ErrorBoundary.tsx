@@ -39,6 +39,7 @@ export class ErrorBoundary extends Component<Props, State> {
           <p className="muted">{detail}</p>
           <button
             type="button"
+            className="btn-ghost"
             aria-label={retryName}
             onClick={() => this.setState({ hasError: false, error: null })}
           >

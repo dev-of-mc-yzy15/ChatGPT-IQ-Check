@@ -102,8 +102,8 @@ describe("TrendChart", () => {
     const { container } = render(<TrendChart candidates={[mixed]} scoreMax={150} />);
     const circles = Array.from(container.querySelectorAll("circle"));
     expect(circles).toHaveLength(2);
-    expect(circles[0]).toHaveAttribute("fill", "var(--bg)");
-    expect(circles[1]).toHaveAttribute("fill", "#1d4ed8");
+    expect(circles[0]).toHaveAttribute("fill", "var(--bg-base)");
+    expect(circles[1]).toHaveAttribute("fill", "#c9a96b");
   });
 
   it("marks degradation points in red with an annotation", () => {

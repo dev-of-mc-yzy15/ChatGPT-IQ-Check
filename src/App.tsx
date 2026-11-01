@@ -76,7 +76,7 @@ function SlotFallback({
       <p className="muted">{error}</p>
       <p className="muted">其余数据不受影响，可单独重试。</p>
       {/* 可访问名带上槽名：同屏可能出现好几个「重试」，只靠可见文本语音用户分不清要点哪个。 */}
-      <button type="button" aria-label={`重试${label}`} onClick={onRetry}>
+      <button type="button" className="btn-ghost" aria-label={`重试${label}`} onClick={onRetry}>
         重试
       </button>
     </div>
@@ -154,19 +154,14 @@ export default function App() {
     <>
       <SkipLink />
       <main id="main" tabIndex={-1}>
-        <header
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: 12,
-          }}
-        >
-          <div>
-            <h1 style={{ margin: 0 }}>降智雷达</h1>
-            <p className="muted" style={{ margin: "4px 0 0" }}>
-              非官方项目 · 分数是第三方基准测试分数，不是心理学 IQ
-            </p>
+        <header className="masthead">
+          <div className="masthead__brand">
+            {/* 纯 CSS 斜线标识：装饰，读屏不需要。 */}
+            <span className="masthead__mark" aria-hidden="true" />
+            <div>
+              <h1>降智雷达</h1>
+              <p className="masthead__sub">非官方项目 · 分数是第三方基准测试分数，不是心理学 IQ</p>
+            </div>
           </div>
           <ThemeToggle />
         </header>
@@ -181,12 +176,7 @@ export default function App() {
           )}
         </ErrorBoundary>
 
-        <div
-          role="tablist"
-          aria-label="视图"
-          style={{ display: "flex", gap: 8 }}
-          onKeyDown={onTabKeyDown}
-        >
+        <div role="tablist" aria-label="视图" className="seg" onKeyDown={onTabKeyDown}>
           {TABS.map(([key, label], index) => (
             <button
               key={key}
@@ -308,7 +298,7 @@ export default function App() {
           )}
         </div>
 
-        <footer className="muted" style={{ fontSize: 12 }}>
+        <footer>
           数据检查于 {statusData ? fmtDateTime(statusData.checked_at) : "（未取到）"} · 北京时间（UTC+8）· 来源
           codexradar.com · 非官方项目 ·{" "}
           <a href="https://github.com/dev-of-mc-yzy15/ChatGPT-IQ-Check" target="_blank" rel="noreferrer">
