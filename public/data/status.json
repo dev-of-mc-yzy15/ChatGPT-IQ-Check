@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-11-04T06:45:21.192Z",
+  "checked_at": "2026-11-05T07:05:56.190Z",
   "ok": true,
   "benchmark": "radar-bench-final64-20261004",
   "candidates_ok": 34,
@@ -12,6 +12,6 @@
   "min_latest": "2026-10-21T02:39:21.882159Z",
   "stale_count": 24,
   "round_updated_at": "2026-10-24T14:30:39.822736+00:00",
-  "stale_days": 10,
+  "stale_days": 11,
   "errors": []
 }
