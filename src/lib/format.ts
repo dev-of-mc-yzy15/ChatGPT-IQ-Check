@@ -82,6 +82,8 @@ export const EFFORT_LABELS: Record<string, string> = {
   xhigh: "极高",
   max: "最高",
   ultra: "极限",
+  // 社区体感里上游多出一个 off 档（关掉推理），雷达侧没有；不映射的话会显示成 "OFF"。
+  off: "关闭",
 };
 
 // EFFORT_LABELS 是对象字面量，`obj[key] ?? 兜底` 只拦得住 null/undefined，

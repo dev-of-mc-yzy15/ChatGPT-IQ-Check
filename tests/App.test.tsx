@@ -88,6 +88,19 @@ vi.mock("../src/data/loader", () => {
       stale_days: 0,
       errors: [],
     },
+    ratings: {
+      schema_version: 1,
+      generated_at: "2026-10-24T00:00:00Z",
+      checked_at: "2026-10-24T00:00:00Z",
+      window: "rolling_24h",
+      window_hours: 24,
+      source_updated_at: "2026-10-24T00:00:00Z",
+      timezone: "Asia/Shanghai",
+      total_slots: 2,
+      ratings: [
+        { id: "A-high", model: "A", effort: "high", label: "A high", average: 8.5, count: 3 },
+      ],
+    },
   };
 
   return {
@@ -95,10 +108,12 @@ vi.mock("../src/data/loader", () => {
       round: ok(payload.round),
       radarBench: ok(payload.radarBench),
       status: ok(payload.status),
+      ratings: ok(payload.ratings),
     })),
     slotRound: vi.fn(async () => ok(payload.round)),
     slotRadarBench: vi.fn(async () => ok(payload.radarBench)),
     slotStatus: vi.fn(async () => ok(payload.status)),
+    slotRatings: vi.fn(async () => ok(payload.ratings)),
     toSlot: vi.fn(),
   };
 });

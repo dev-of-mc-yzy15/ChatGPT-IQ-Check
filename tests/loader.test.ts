@@ -110,6 +110,8 @@ describe("slots", () => {
     // 另两槽走到了结构校验，说明它们的请求没被 404 连坐
     expect(slots.radarBench.error).toMatch(/结构异常/);
     expect(slots.round.error).toMatch(/结构异常/);
+    // 体感是可选的第三份，同样单独成槽
+    expect(slots.ratings.error).toMatch(/结构异常/);
   });
 
   it("loadAll never rejects even when every slot fails", async () => {
@@ -123,6 +125,7 @@ describe("slots", () => {
     expect(slots.radarBench.error).toMatch(/offline/);
     expect(slots.round.error).toMatch(/offline/);
     expect(slots.status.error).toMatch(/offline/);
+    expect(slots.ratings.error).toMatch(/offline/);
   });
 });
 

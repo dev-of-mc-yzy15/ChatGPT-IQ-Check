@@ -3,7 +3,7 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "vitest-axe";
 import App from "../src/App";
-import type { RadarBenchData, RoundData, StatusData } from "../src/types";
+import type { RadarBenchData, RatingsData, RoundData, StatusData } from "../src/types";
 
 // 闸门目的：把「滚动容器可聚焦 / aria-labelledby / live region / Δ 符号 / tabs 键盘约定」
 // 这些已经修过的 a11y 行为钉死在自动化里，回归不许静默溜过去。
@@ -127,15 +127,32 @@ vi.mock("../src/data/loader", () => {
     errors: [],
   };
 
+  const ratings: RatingsData = {
+    schema_version: 1,
+    generated_at: "2026-10-24T00:00:00Z",
+    checked_at: "2026-10-24T00:00:00Z",
+    window: "rolling_24h",
+    window_hours: 24,
+    source_updated_at: "2026-10-24T00:00:00Z",
+    timezone: "Asia/Shanghai",
+    total_slots: 3,
+    ratings: [
+      { id: "A-high", model: "A", effort: "high", label: "A high", average: 8.5, count: 3 },
+      { id: "B-high", model: "B", effort: "high", label: "B high", average: 6, count: 1 },
+    ],
+  };
+
   return {
     loadAll: vi.fn(async () => ({
       round: ok(round),
       radarBench: ok(radarBench),
       status: ok(status),
+      ratings: ok(ratings),
     })),
     slotRound: vi.fn(async () => ok(round)),
     slotRadarBench: vi.fn(async () => ok(radarBench)),
     slotStatus: vi.fn(async () => ok(status)),
+    slotRatings: vi.fn(async () => ok(ratings)),
     toSlot: vi.fn(),
   };
 });

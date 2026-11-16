@@ -140,3 +140,30 @@ export interface StatusData {
   stale_days: number | null;
   errors: string[];
 }
+
+/**
+ * 社区体感单条：1–10 星人工打分，与 RadarBench 的 0–150 是两套刻度。
+ * 只有「有票」的档位才会被管道写入（count >= 1 且 average 落在 1–10）。
+ */
+export interface RatingRow {
+  id: string;
+  model: string;
+  effort: string;
+  label: string;
+  average: number;
+  count: number;
+}
+
+/** `public/data/ratings.json`：P1 可选源，缺这份文件不影响其它区块。 */
+export interface RatingsData {
+  schema_version: 1;
+  generated_at: string;
+  checked_at: string;
+  window: string;
+  window_hours: number;
+  source_updated_at: string | null;
+  timezone: string | null;
+  /** 上游声明的档位总数（含没人投票的），用来算「N/M 个档位有投票」。 */
+  total_slots: number;
+  ratings: RatingRow[];
+}

@@ -6,7 +6,7 @@ import {
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
-import { slotRadarBench, slotRound, slotStatus, type Slot } from "./data/loader";
+import { slotRadarBench, slotRatings, slotRound, slotStatus, type Slot } from "./data/loader";
 import type { StatusData } from "./types";
 import { MAX_TREND_SERIES, topCandidates } from "./lib/derive";
 import { candidateKey } from "../scripts/contract.mjs";
@@ -17,6 +17,7 @@ import { RoundMatrix } from "./components/RoundMatrix";
 import { CandidateTable } from "./components/CandidateTable";
 import { TrendChart } from "./components/TrendChart";
 import { TrendControls } from "./components/TrendControls";
+import { CommunityRatings } from "./components/CommunityRatings";
 import { ThemeToggle } from "./components/ThemeToggle";
 import { SkipLink } from "./components/SkipLink";
 import { fmtDateTime } from "./lib/format";
@@ -95,6 +96,8 @@ export default function App() {
   const radarBench = useSlot(slotRadarBench);
   const round = useSlot(slotRound);
   const status = useSlot(slotStatus);
+  // 第四槽：社区体感是可选源，单独一槽，失败只塌这张卡片。
+  const ratings = useSlot(slotRatings);
 
   const [tab, setTab] = useState<Tab>("round");
   const [selectedRound, setSelectedRound] = useState<string | null>(null);
@@ -228,6 +231,20 @@ export default function App() {
                     tasks={roundData!.tasks}
                     round={roundData!.round}
                   />
+                  {/* 体感放详情之后：先看矩阵与逐题，再往下才是主观投票，别抢主视图的位置。 */}
+                  <ErrorBoundary inline label="社区体感">
+                    {ratings.loading && !ratings.slot.data ? (
+                      <Loading label="社区体感" />
+                    ) : ratings.slot.error ? (
+                      <SlotFallback
+                        label="社区体感"
+                        error={ratings.slot.error}
+                        onRetry={ratings.retry}
+                      />
+                    ) : (
+                      <CommunityRatings data={ratings.slot.data!} />
+                    )}
+                  </ErrorBoundary>
                 </>
               )}
             </ErrorBoundary>
