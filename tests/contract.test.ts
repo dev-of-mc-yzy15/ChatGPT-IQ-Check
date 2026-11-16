@@ -7,12 +7,14 @@ import {
   strictNumber,
   assertRadarBenchShape,
   assertRoundShape,
+  assertFourTaskShape,
   assertRatingsShape,
   assertStatusShape,
 } from "../scripts/contract.mjs";
 import { validateRadarBench as loaderValidateRadarBench, validateRound as loaderValidateRound } from "../src/data/loader";
 import { validateRadarBench as libValidateRadarBench, validateRatings, validateRound as libValidateRound } from "../scripts/lib.mjs";
 import roundRaw from "./fixtures/round.sample.json";
+import { makeFourTask } from "./fixtures/fourTask";
 import { transformRound } from "../scripts/lib.mjs";
 
 const read = (rel: string) => JSON.parse(readFileSync(resolve(process.cwd(), rel), "utf8"));
@@ -378,5 +380,69 @@ describe("社区体感契约", () => {
     d.ratings[0].model = "";
     expect(() => assertRatingsShape(d)).toThrow(/ratings\[0\]\.model/);
     expect(() => validateRatings(d)).toThrow(/ratings\[0\]\.model/);
+  });
+});
+
+describe("四题协议契约", () => {
+  const doc = () => JSON.parse(JSON.stringify(makeFourTask()));
+
+  it("合法文档通过，并原样返回", () => {
+    const input = doc();
+    expect(assertFourTaskShape(input)).toBe(input);
+  });
+
+  it("权重和必须等于 score_max：差一点都说明口径变了", () => {
+    const d = doc();
+    d.tasks[0].weight = 59;
+    expect(() => assertFourTaskShape(d)).toThrow(/sum === score_max/);
+  });
+
+  it("任务集合必须正好是四个：少一个拒绝，多一个也拒绝", () => {
+    const d1 = doc();
+    d1.tasks = d1.tasks.slice(0, 3);
+    expect(() => assertFourTaskShape(d1)).toThrow(/exactly/);
+
+    const d2 = doc();
+    d2.tasks.push({ id: "extra", title_zh: "多出来的", weight: 0, max: 100 });
+    expect(() => assertFourTaskShape(d2)).toThrow(/exactly/);
+  });
+
+  it("候选重复拒绝：趋势图会出现同色双线、表格 key 冲突", () => {
+    const d = doc();
+    d.candidates.push({ ...d.candidates[0] });
+    expect(() => assertFourTaskShape(d)).toThrow(/unique/);
+  });
+
+  it("分数超过满分拒绝：刻度变了却不报，图上会画出天外一点", () => {
+    const d = doc();
+    d.candidates[0].score = 151;
+    expect(() => assertFourTaskShape(d)).toThrow(/<= 150/);
+  });
+
+  it("history 乱序拒绝：按数组顺序连线会画出折返锯齿", () => {
+    const d = doc();
+    d.candidates[0].history = [
+      { at: "2026-11-16T00:00:00Z", score: 120 },
+      { at: "2026-11-14T00:00:00Z", score: 110 },
+    ];
+    expect(() => assertFourTaskShape(d)).toThrow(/ascending/);
+  });
+
+  it("history 末点必须等于当前分：否则表格与曲线说的不是同一件事", () => {
+    const d = doc();
+    d.candidates[0].score = 100;
+    expect(() => assertFourTaskShape(d)).toThrow(/=== last history point/);
+  });
+
+  it("每个候选必须给全四个任务，缺一个就拒绝", () => {
+    const d = doc();
+    d.candidates[0].tasks = d.candidates[0].tasks.slice(0, 3);
+    expect(() => assertFourTaskShape(d)).toThrow(/4 items/);
+  });
+
+  it("批次 id 重复拒绝", () => {
+    const d = doc();
+    d.batches.push({ ...d.batches[0] });
+    expect(() => assertFourTaskShape(d)).toThrow(/unique id/);
   });
 });

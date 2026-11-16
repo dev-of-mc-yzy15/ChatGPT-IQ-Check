@@ -482,3 +482,119 @@ export function assertRatingsShape(data) {
   }
   return data;
 }
+
+/**
+ * 四题协议固定就这四个任务，顺序即上游 tab 顺序。
+ * 不是"当前已知的子集"而是"完整定义"：上游增删任务必然改变总分口径
+ * （权重和必须等于 score_max），静默放行会让「分数跳变」被误读成「模型降智」。
+ */
+export const FOUR_TASK_IDS = ["combined", "pompeii", "pelican", "candy"];
+
+/**
+ * @param {unknown} value
+ * @param {string} path
+ * @param {number} scoreMax
+ * @returns {number}
+ */
+function strictScoreIn(value, path, scoreMax) {
+  // strictNumber 未开 nullable 时只会返回数字或直接抛错，Number() 仅用于窄化类型。
+  const n = Number(strictNumber(value, path, { min: 0 }));
+  if (n > scoreMax) fail(path, "number <= " + scoreMax, value);
+  return n;
+}
+
+/**
+ * @param {any} data
+ * @returns {any}
+ */
+export function assertFourTaskShape(data) {
+  if (!data || typeof data !== "object") fail("four-task", "object", data);
+  if (data.schema_version !== 1) fail("four-task.schema_version", "1", data.schema_version);
+  strictIso(data.generated_at, "four-task.generated_at");
+  strictIso(data.checked_at, "four-task.checked_at");
+  strictString(data.protocol, "four-task.protocol");
+  const scoreMax = Number(strictNumber(data.score_max, "four-task.score_max", { min: 1 }));
+
+  const round = data.round;
+  if (!round || typeof round !== "object") fail("four-task.round", "object", round);
+  strictString(round.id, "four-task.round.id");
+  strictString(round.label, "four-task.round.label");
+  strictIso(round.completed_at, "four-task.round.completed_at");
+  const expected = Number(strictNumber(round.expected, "four-task.round.expected", { min: 0 }));
+  const graded = Number(strictNumber(round.graded, "four-task.round.graded", { min: 0 }));
+  if (graded > expected) fail("four-task.round.graded", "<= expected " + expected, graded);
+
+  const tasks = strictArray(data.tasks, "four-task.tasks", { minLength: 1 });
+  const ids = tasks.map((t, i) => String(strictString(t?.id, "four-task.tasks[" + i + "].id")));
+  // 集合相等而非包含：少一个说明上游换了协议，多一个说明 transform 混进了别的视图。
+  if (ids.length !== FOUR_TASK_IDS.length || FOUR_TASK_IDS.some((id) => !ids.includes(id))) {
+    fail("four-task.tasks", "exactly " + FOUR_TASK_IDS.join("+"), ids.join(","));
+  }
+  let weightSum = 0;
+  tasks.forEach((t, i) => {
+    weightSum += Number(strictNumber(t.weight, "four-task.tasks[" + i + "].weight", { min: 0 }));
+    strictString(t.title_zh, "four-task.tasks[" + i + "].title_zh");
+  });
+  // 权重和 = 满分，是「分数可比」的唯一保证。差一点都说明口径变了。
+  if (Math.abs(weightSum - scoreMax) > 1e-6) {
+    fail("four-task.tasks[].weight", "sum === score_max " + scoreMax, weightSum);
+  }
+
+  const candidates = strictArray(data.candidates, "four-task.candidates", { minLength: 1 });
+  const seen = new Set();
+  candidates.forEach((c, i) => {
+    const path = "four-task.candidates[" + i + "]";
+    const model = String(strictString(c?.model, path + ".model"));
+    const effort = String(strictString(c?.effort, path + ".effort"));
+    const key = candidateKey(model, effort);
+    // 重复 key 会让趋势图同色双线、表格行 key 冲突。
+    if (seen.has(key)) fail("four-task.candidates", "unique " + key, "duplicate");
+    seen.add(key);
+    strictScoreIn(c.score, path + ".score", scoreMax);
+    strictString(c.score_status, path + ".score_status");
+    strictIso(c.latest_at, path + ".latest_at");
+    const cells = strictArray(c.tasks, path + ".tasks", { minLength: 1 });
+    if (cells.length !== FOUR_TASK_IDS.length) {
+      fail(path + ".tasks", FOUR_TASK_IDS.length + " items", cells.length);
+    }
+    const cellIds = new Set();
+    cells.forEach((cell, j) => {
+      const cpath = path + ".tasks[" + j + "]";
+      const id = String(strictString(cell?.id, cpath + ".id"));
+      if (!FOUR_TASK_IDS.includes(/** @type {any} */ (id))) fail(cpath + ".id", "known task id", id);
+      if (cellIds.has(id)) fail(path + ".tasks", "unique id " + id, "duplicate");
+      cellIds.add(id);
+      strictNumber(cell.seconds, cpath + ".seconds", { min: 0, nullable: true });
+      strictNumber(cell.cost_usd, cpath + ".cost_usd", { min: 0, nullable: true });
+    });
+    const history = strictArray(c.history, path + ".history", { minLength: 1 });
+    let prev = -Infinity;
+    history.forEach((p, j) => {
+      const hpath = path + ".history[" + j + "]";
+      strictIso(p?.at, hpath + ".at");
+      strictScoreIn(p.score, hpath + ".score", scoreMax);
+      // 趋势图按数组顺序连线，乱序会画出折返的锯齿。
+      const t = new Date(p.at).getTime();
+      if (t < prev) fail(hpath + ".at", "ascending", p.at);
+      prev = t;
+    });
+    // 最后一刻必须等于当前分，否则表格与曲线讲的不是同一件事。
+    const last = history[history.length - 1];
+    if (Math.abs(last.score - c.score) > 1e-6) {
+      fail(path + ".score", "=== last history point " + last.score, c.score);
+    }
+  });
+
+  const batches = strictArray(data.batches, "four-task.batches", { minLength: 1 });
+  const batchIds = new Set();
+  batches.forEach((b, i) => {
+    const path = "four-task.batches[" + i + "]";
+    const id = String(strictString(b?.id, path + ".id"));
+    if (batchIds.has(id)) fail("four-task.batches", "unique id " + id, "duplicate");
+    batchIds.add(id);
+    strictString(b.label, path + ".label");
+    strictIso(b.completed_at, path + ".completed_at");
+    Number(strictNumber(b.points, path + ".points", { min: 1 }));
+  });
+  return data;
+}

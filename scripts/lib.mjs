@@ -67,6 +67,7 @@
  * @property {RatingRow[]} ratings
  */
 import {
+  FOUR_TASK_IDS,
   assertMinCandidates,
   assertRadarBenchShape,
   assertRatingsShape,
@@ -480,4 +481,164 @@ export function transformRatings(raw, { generatedAt, checkedAt }) {
 export function validateRatings(data) {
   assertRatingsShape(data);
   return data;
+}
+
+/** 上游没有结构化输出任务中文名，从首页 tab 取的展示名。 */
+const FOUR_TASK_TITLES = /** @type {Record<string, string>} */ ({
+  combined: "秦始皇",
+  pompeii: "庞贝",
+  pelican: "鹈鹕",
+  candy: "糖果",
+});
+
+/**
+ * 把四题的两个上游文件合成一份前端可直读的文档。
+ *
+ * 为什么是两个源：`intelligence-trends.json` 只有历史分数（每个点一个数），
+ * `codex-four-task-results.json` 只有当前轮的逐任务明细（含产物 sha256、判分模型、成本）。
+ * 单看前者做不出「这一分是怎么来的」，单看后者画不出趋势。
+ *
+ * @param {any} trends
+ * @param {any} fourTask
+ * @param {{ generatedAt: string, checkedAt: string }} stamps
+ * @returns {any}
+ */
+export function transformFourTask(trends, fourTask, { generatedAt, checkedAt }) {
+  if (!trends || !Array.isArray(trends.batches) || trends.batches.length === 0) {
+    throw new Error("four-task: intelligence-trends has no batches");
+  }
+  if (!fourTask || !Array.isArray(fourTask.rows) || fourTask.rows.length === 0) {
+    throw new Error("four-task: codex-four-task-results has no rows");
+  }
+  // 只发布全评轮次：缺题时总分不是「低」而是「不完整」，落盘会让它和完整轮同图比较。
+  if (fourTask.all_graded !== true) {
+    throw new Error("four-task: round is not fully graded (graded=" + fourTask.graded + "/" + fourTask.expected + ")");
+  }
+  const scoreMax = Number(fourTask.score_max ?? trends.score_max);
+  if (!Number.isFinite(scoreMax) || scoreMax <= 0) throw new Error("four-task: invalid score_max");
+
+  const latest = trends.batches[trends.batches.length - 1];
+  const weights = latest.task_weights ?? fourTask.task_weights ?? {};
+  for (const id of FOUR_TASK_IDS) {
+    const w = Number(weights[id]);
+    if (!Number.isFinite(w)) throw new Error("four-task: missing weight for " + id);
+  }
+
+  // 历史：每个 (model, effort) 收集一条按时间升序的序列。score 为 null 的批次直接跳过，
+  // 不补点——补一个「沿用上次」会伪造出上游根本没有的测量。
+  /** @type {Map<string, { at: string, score: number }[]>} */
+  const history = new Map();
+  /** @type {any[]} */
+  const batches = [];
+  for (const batch of trends.batches) {
+    const at = batch.completed_at ?? batch.started_at;
+    if (!at) continue;
+    let counted = 0;
+    for (const point of batch.points ?? []) {
+      const score = Number(point?.score);
+      if (!Number.isFinite(score)) continue;
+      counted += 1;
+      const key = candidateKey(point.model, point.effort);
+      const list = history.get(key) ?? [];
+      list.push({ at, score });
+      history.set(key, list);
+    }
+    batches.push({
+      id: String(batch.id),
+      label: String(batch.label ?? batch.id),
+      completed_at: String(at),
+      points: counted,
+    });
+  }
+  // 上游批次顺序不保证升序；趋势图靠数组顺序连线，这里兜底排一次。
+  for (const list of history.values()) {
+    list.sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime());
+  }
+
+  /** @param {any} row */
+  const at = (row) => {
+    // 同一次执行里四个任务时间不同，取最晚的那个作为「这行完成于」。
+    const times = FOUR_TASK_IDS.map((id) => row[id]?.model_completed_at).filter(Boolean);
+    return times.length ? times.sort().at(-1) : null;
+  };
+
+  const candidates = fourTask.rows.map((/** @type {any} */ row) => {
+    const key = candidateKey(row.model, row.effort);
+    const series = history.get(key);
+    if (!series || series.length === 0) {
+      throw new Error("four-task: no history for " + key);
+    }
+    const cells = FOUR_TASK_IDS.map((id) => {
+      const raw = row[id] ?? {};
+      let score;
+      let extra = {};
+      if (id === "candy") {
+        // 糖果只有对错，按满分/零分计；没有中间态。
+        if (typeof raw.correct !== "boolean") throw new Error("four-task: " + key + " candy.correct missing");
+        score = raw.correct ? 100 : 0;
+        extra = { correct: raw.correct };
+      } else if (id === "pompeii") {
+        score = Number(raw.score100);
+        extra = { reward: Number(raw.reward) };
+      } else {
+        score = Number(raw.score);
+      }
+      if (!Number.isFinite(score)) throw new Error("four-task: " + key + " " + id + " score missing");
+      const caps = Array.isArray(raw.applied_caps) ? raw.applied_caps : [];
+      return {
+        id,
+        score,
+        raw_total: Number(raw.raw_score_total ?? score),
+        // 有封顶说明原始分被规则压过，UI 要能看出来「这个分不是它自己拿的」。
+        capped: caps.length > 0,
+        seconds: Number(raw.model_elapsed_seconds ?? NaN),
+        cost_usd: Number(raw.cost_usd ?? NaN),
+        ...extra,
+      };
+    });
+    /** @param {(cell: any) => number} pick */
+    const sum = (pick) => cells.reduce((acc, c) => (Number.isFinite(pick(c)) ? acc + pick(c) : acc), 0);
+    const last = series[series.length - 1];
+    return {
+      model: String(row.model),
+      effort: String(row.effort),
+      score: last.score,
+      score_status: "complete",
+      latest_at: at(row) ?? last.at,
+      tasks: cells,
+      totals: {
+        seconds: sum((/** @type {any} */ c) => c.seconds),
+        cost_usd: Math.round(sum((/** @type {any} */ c) => c.cost_usd) * 1e6) / 1e6,
+      },
+      history: series,
+    };
+  });
+
+  if (candidates.length !== fourTask.rows.length) {
+    throw new Error("four-task: candidate count mismatch");
+  }
+
+  return {
+    schema_version: 1,
+    generated_at: generatedAt,
+    checked_at: checkedAt,
+    protocol: String(fourTask.protocol ?? latest.protocol ?? ""),
+    score_max: scoreMax,
+    round: {
+      id: String(fourTask.round_id ?? latest.id),
+      label: String(latest.label ?? ""),
+      completed_at: String(fourTask.verified_at ?? latest.completed_at ?? ""),
+      expected: Number(fourTask.expected),
+      graded: Number(fourTask.graded),
+      asset_prefix: fourTask.asset_prefix ? String(fourTask.asset_prefix) : null,
+    },
+    tasks: FOUR_TASK_IDS.map((id) => ({
+      id,
+      title_zh: FOUR_TASK_TITLES[id],
+      weight: Number(weights[id]),
+      max: 100,
+    })),
+    candidates,
+    batches,
+  };
 }

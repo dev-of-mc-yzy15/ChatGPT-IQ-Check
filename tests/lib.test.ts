@@ -6,6 +6,7 @@ import {
   transformSummary,
   mergeRadarBench,
   splitRatingId,
+  transformFourTask,
   transformRatings,
   validateRadarBench,
 } from "../scripts/lib.mjs";
@@ -395,5 +396,136 @@ describe("transformRatings", () => {
     expect(doc.source_updated_at).toBeNull();
     expect(doc.timezone).toBeNull();
     expect(doc.window).toBe("rolling_24h"); // 缺 window 用默认值
+  });
+});
+
+describe("transformFourTask", () => {
+  const W = { combined: 60, pompeii: 45, pelican: 22.5, candy: 22.5 };
+  const stamps = { generatedAt: "2026-11-16T02:00:00Z", checkedAt: "2026-11-16T02:00:00Z" };
+
+  const trendsStub = (scores: (number | null)[] = [120, 133.5]) => ({
+    score_max: 150,
+    batches: scores.map((score, i) => ({
+      id: "b" + (i + 1),
+      label: "2026-11-1" + (4 + i * 2),
+      completed_at: `2026-11-${14 + i * 2}T00:00:00Z`,
+      protocol: "codex-four-weighted-150-v2",
+      task_weights: W,
+      points: score == null ? [] : [{ model: "A", effort: "high", score }],
+    })),
+  });
+
+  const fourStub = (over: Record<string, unknown> = {}) => ({
+    round_id: "r1",
+    protocol: "codex-four-weighted-150-v2",
+    verified_at: "2026-11-16T01:42:05Z",
+    expected: 4,
+    graded: 4,
+    all_graded: true,
+    score_max: 150,
+    task_weights: W,
+    rows: [
+      {
+        model: "A",
+        effort: "high",
+        combined: {
+          score: 80,
+          raw_score_total: 84.5,
+          applied_caps: [{ id: "CORE_COMPLETENESS", limit: 69 }],
+          model_elapsed_seconds: 100,
+          cost_usd: 0.1,
+          model_completed_at: "2026-11-16T00:30:00Z",
+        },
+        pompeii: {
+          score100: 90,
+          reward: 0.9,
+          model_elapsed_seconds: 200,
+          cost_usd: 0.2,
+          model_completed_at: "2026-11-16T00:10:00Z",
+        },
+        pelican: {
+          score: 100,
+          raw_score_total: 100,
+          applied_caps: [],
+          model_elapsed_seconds: 300,
+          cost_usd: 0.3,
+          model_completed_at: "2026-11-16T00:20:00Z",
+        },
+        candy: {
+          correct: true,
+          model_elapsed_seconds: 50,
+          cost_usd: 0.05,
+          model_completed_at: "2026-11-16T00:40:00Z",
+        },
+      },
+    ],
+    ...over,
+  });
+
+  it("四个任务按权重合成总分，且与上游给的 score 对得上", () => {
+    const doc = transformFourTask(trendsStub(), fourStub(), stamps);
+    const c = doc.candidates[0];
+    // 80×0.6 + 90×0.45 + 100×0.225 + 100×0.225 = 133.5
+    const weighted = c.tasks.reduce((acc: number, t: any) => {
+      const w = doc.tasks.find((x: any) => x.id === t.id).weight;
+      return acc + (t.score * w) / 100;
+    }, 0);
+    expect(Math.round(weighted * 1000) / 1000).toBe(133.5);
+    expect(c.score).toBe(133.5);
+    expect(c.history.map((p: any) => p.score)).toEqual([120, 133.5]);
+  });
+
+  it("糖果只出对错，映射成 100 / 0", () => {
+    const ok = transformFourTask(trendsStub(), fourStub(), stamps).candidates[0];
+    expect(ok.tasks.find((t: any) => t.id === "candy")).toMatchObject({ score: 100, correct: true });
+
+    const row = fourStub().rows[0];
+    row.candy.correct = false;
+    const bad = transformFourTask(trendsStub([120, 87]), fourStub({ rows: [row] }), stamps).candidates[0];
+    expect(bad.tasks.find((t: any) => t.id === "candy")).toMatchObject({ score: 0, correct: false });
+  });
+
+  it("封顶要留痕：原始分高于计入分时 capped=true", () => {
+    const c = transformFourTask(trendsStub(), fourStub(), stamps).candidates[0];
+    const combined = c.tasks.find((t: any) => t.id === "combined");
+    expect(combined).toMatchObject({ score: 80, raw_total: 84.5, capped: true });
+    expect(c.tasks.find((t: any) => t.id === "pelican").capped).toBe(false);
+  });
+
+  it("耗时与成本按四个任务求和，latest_at 取最晚的那个任务", () => {
+    const c = transformFourTask(trendsStub(), fourStub(), stamps).candidates[0];
+    expect(c.totals.seconds).toBe(650);
+    expect(c.totals.cost_usd).toBe(0.65);
+    expect(c.latest_at).toBe("2026-11-16T00:40:00Z");
+  });
+
+  it("未全评的轮次直接拒绝：缺题时总分是「不完整」而不是「低」", () => {
+    expect(() => transformFourTask(trendsStub(), fourStub({ all_graded: false }), stamps)).toThrow(
+      /not fully graded/,
+    );
+  });
+
+  it("趋势里没有该组合的历史直接抛：不补点，补出来的测量是伪造", () => {
+    const orphan = trendsStub([120, 133.5]);
+    for (const b of orphan.batches) b.points = [{ model: "Z", effort: "low", score: 100 }];
+    expect(() => transformFourTask(orphan, fourStub(), stamps)).toThrow(/no history/);
+  });
+
+  it("无批次的趋势源拒绝", () => {
+    expect(() => transformFourTask({ batches: [] }, fourStub(), stamps)).toThrow(/no batches/);
+  });
+
+  it("缺 correct 的糖果行拒绝：布尔值才能决定 100 还是 0", () => {
+    const row = fourStub().rows[0];
+    delete (row.candy as any).correct;
+    expect(() => transformFourTask(trendsStub(), fourStub({ rows: [row] }), stamps)).toThrow(
+      /candy\.correct/,
+    );
+  });
+
+  it("score 为 null 的批次被跳过，不向前补点", () => {
+    const doc = transformFourTask(trendsStub([120, null, 133.5]), fourStub(), stamps);
+    expect(doc.candidates[0].history).toHaveLength(2);
+    expect(doc.batches).toHaveLength(3);
   });
 });
