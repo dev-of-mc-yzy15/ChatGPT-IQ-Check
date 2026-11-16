@@ -422,3 +422,63 @@ export function assertMinCandidates(data, minimum, label = "data") {
   if (count < minimum) throw new Error(label + ": too few candidates (" + count + " < " + minimum + ")");
   return data;
 }
+
+/** 社区体感是 1–10 星，与 RadarBench 的 0–150 是两套刻度，别混算。 */
+export const RATING_MIN = 1;
+export const RATING_MAX = 10;
+
+/**
+ * 单条体感记录。
+ * 只收「有票」的档位：count >= 1 且 average 落在 1–10，无票的在上游就是 null + 0，
+ * 落盘只会变成几十行空白，交给 transformRatings 直接丢掉。
+ * @param {any} row
+ * @param {number} index
+ */
+function assertRatingRow(row, index) {
+  const path = "ratings[" + index + "]";
+  if (!row || typeof row !== "object") fail(path, "object", row);
+  strictString(row.id, path + ".id");
+  strictString(row.model, path + ".model");
+  strictString(row.effort, path + ".effort");
+  strictString(row.label, path + ".label");
+  // strictNumber 只有 min 没有 max，上界自己判：10 是刻度上限，越界说明上游换了刻度，
+  // 前端按 average / 10 画条会直接溢出，必须在落盘前拦住。
+  const average = strictNumber(row.average, path + ".average", { min: 0 });
+  if (average != null && average > RATING_MAX) {
+    fail(path + ".average", "number <= " + RATING_MAX, row.average);
+  }
+  strictNumber(row.count, path + ".count", { min: 1 });
+}
+
+/**
+ * 社区体感契约（第三份可选数据）。浏览器侧与管道侧共用。
+ * 与另外三份不同，这份**允许 ratings 为空数组**：上游可能 24 小时内无人投票，
+ * 那是"没有体感"而不是"数据坏了"，前端据此显示空态而不是整卡报错。
+ * @param {any} data
+ * @returns {any}
+ */
+export function assertRatingsShape(data) {
+  if (!data || typeof data !== "object") fail("ratings", "object", data);
+  if (data.schema_version !== 1) fail("ratings.schema_version", "1", data.schema_version);
+  strictIso(data.generated_at, "ratings.generated_at");
+  strictIso(data.checked_at, "ratings.checked_at");
+  // window 不枚举：上游目前是 rolling_24h，将来换窗口名不该让整份文件变非法。
+  strictString(data.window, "ratings.window");
+  strictNumber(data.window_hours, "ratings.window_hours", { min: 1 });
+  strictIso(data.source_updated_at, "ratings.source_updated_at", { nullable: true });
+  strictString(data.timezone, "ratings.timezone", { nullable: true });
+  const totalSlots = strictNumber(data.total_slots, "ratings.total_slots", { min: 0 });
+  const rows = strictArray(data.ratings, "ratings.ratings");
+  const seen = new Set();
+  rows.forEach((row, index) => {
+    assertRatingRow(row, index);
+    // 同一档位出现两次，前端按 id 做 key 会重复渲染、合计票数也会翻倍。
+    if (seen.has(row.id)) fail("ratings.ratings", "unique id " + row.id, "duplicate");
+    seen.add(row.id);
+  });
+  // 有票档位不可能多于上游档位总数；倒挂说明 transform 把不该收的行收了进来。
+  if (totalSlots != null && rows.length > totalSlots) {
+    fail("ratings.ratings", "<= total_slots " + totalSlots, rows.length);
+  }
+  return data;
+}

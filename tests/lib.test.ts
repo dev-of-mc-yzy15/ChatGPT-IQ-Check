@@ -5,8 +5,11 @@ import {
   transformBinding,
   transformSummary,
   mergeRadarBench,
+  splitRatingId,
+  transformRatings,
   validateRadarBench,
 } from "../scripts/lib.mjs";
+import ratingsRaw from "./fixtures/ratings.sample.json";
 
 describe("transformBinding", () => {
   it("dedupes and keeps model/effort pairs", () => {
@@ -314,5 +317,83 @@ describe("transformRound", () => {
   });
   it("defaults scoreMax to 150 when the caller omits it", () => {
     expect(transformRound(roundRaw).candidates.map((c) => c.score_max)).toEqual([150, 150]);
+  });
+});
+
+describe("splitRatingId", () => {
+  it("从右往左切出档位，模型名里的连字符/点号原样保留", () => {
+    expect(splitRatingId("gpt-6-astra-xhigh")).toEqual({ model: "gpt-6-astra", effort: "xhigh" });
+    expect(splitRatingId("gpt-6.1-sol-off")).toEqual({ model: "gpt-6.1-sol", effort: "off" });
+    expect(splitRatingId("dsv4-pro-high")).toEqual({ model: "dsv4-pro", effort: "high" });
+  });
+
+  it("未知档位退回最后一个连字符，不把整条丢掉", () => {
+    // 上游将来加 nano 之类的新档，后缀表认不出也得拿到 effort，否则整个新档位会消失
+    expect(splitRatingId("gpt-7-nano")).toEqual({ model: "gpt-7", effort: "nano" });
+  });
+
+  it("拆不开的串返回 null（没有连字符 / 连字符在首尾）", () => {
+    expect(splitRatingId("gpt6")).toBeNull();
+    expect(splitRatingId("-high")).toBeNull();
+    expect(splitRatingId("gpt-6-")).toBeNull();
+    expect(splitRatingId("")).toBeNull();
+  });
+});
+
+describe("transformRatings", () => {
+  const stamps = { generatedAt: "2026-11-17T00:00:00Z", checkedAt: "2026-11-17T00:00:00Z" };
+
+  it("只留有票档位，按星级降序、同分按票数降序", () => {
+    const doc = transformRatings(ratingsRaw, stamps);
+    expect(doc.total_slots).toBe(6);
+    expect(doc.ratings.map((r) => r.id)).toEqual([
+      "gpt-6-astra-xhigh", // 10
+      "gpt-6-astra-max", // 8.4
+      "dsv4-pro-high", // 7.25 → 7.3
+      "gpt-6.1-sol-off", // 5.5
+      "gpt-5.6-luna-low", // 2
+    ]);
+    expect(doc.window).toBe("rolling_24h");
+    expect(doc.window_hours).toBe(24);
+    expect(doc.timezone).toBe("Asia/Shanghai");
+    expect(doc.source_updated_at).toBe("2026-11-16T17:44:18.712Z");
+    expect(doc.schema_version).toBe(1);
+  });
+
+  it("平均分收口到一位小数，identity 三个字段都来自上游", () => {
+    const doc = transformRatings(ratingsRaw, stamps);
+    const dsv4 = doc.ratings.find((r) => r.id === "dsv4-pro-high");
+    expect(dsv4).toMatchObject({ model: "dsv4-pro", effort: "high", average: 7.3, count: 2 });
+  });
+
+  it("count>0 但 average=null 的中间态也丢掉：落盘会让契约打红", () => {
+    const raw = {
+      ...ratingsRaw,
+      models: [{ id: "gpt-6-astra-max", label: "x", average: null, count: 3 }],
+    };
+    expect(transformRatings(raw, stamps).ratings).toEqual([]);
+  });
+
+  it("重复 id 只收一次", () => {
+    const raw = {
+      ...ratingsRaw,
+      models: [
+        { id: "a-high", label: "a", average: 5, count: 1 },
+        { id: "a-high", label: "a", average: 5, count: 1 },
+      ],
+    };
+    expect(transformRatings(raw, stamps).ratings).toHaveLength(1);
+  });
+
+  it("models 为空 / 非对象直接抛，不落一份空文件顶替", () => {
+    expect(() => transformRatings({ models: [] }, stamps)).toThrow(/models is empty/);
+    expect(() => transformRatings(null, stamps)).toThrow(/invalid payload/);
+  });
+
+  it("缺 updated_at / timezone 时落 null，不编造时间", () => {
+    const doc = transformRatings({ models: [{ id: "a-high", label: "a", average: 5, count: 1 }] }, stamps);
+    expect(doc.source_updated_at).toBeNull();
+    expect(doc.timezone).toBeNull();
+    expect(doc.window).toBe("rolling_24h"); // 缺 window 用默认值
   });
 });

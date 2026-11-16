@@ -6,15 +6,19 @@ import {
   transformBinding,
   transformSummary,
   transformRound,
+  transformRatings,
   mergeRadarBench,
   validateRadarBench,
   validateRound,
+  validateRatings,
 } from "./lib.mjs";
 import { assertRadarBenchShape, candidateKey } from "./contract.mjs";
 
 export const BINDING_URL = "https://codexradar.com/data/radar-bench-binding.json";
 export const SUMMARY_URL = "https://codexradar.com/api/radar-bench-score";
 export const ROUND_URL = "https://codexradar.com/degradation-codex-latest.json";
+/** 社区体感：1–10 星人工打分，24h 滚动窗口。P1 可选源，抓不到不影响主流程。 */
+export const RATINGS_URL = "https://codexradar.com/api/model-ratings?view=public&window=24h";
 function defaultDataDir() {
   try {
     return fileURLToPath(new URL("../public/data/", import.meta.url));
@@ -506,6 +510,20 @@ export async function refreshAll({
   const stamp = now().toISOString();
   const fetchId = randomUUID();
 
+  // 社区体感是 P1 可选源：任何失败都只降级成「这张卡片这一轮没有新数据」。
+  // 刻意不写进 status.errors —— errors 会让 status.ok 变 false，进而让顶部横幅
+  // 为一张「不参与主排序」的卡片变黄，等于把可选功能的故障升格成全站告警。
+  /** @type {import("./lib.mjs").RatingsDoc | null} */
+  let ratings = null;
+  try {
+    const ratingsRaw = await fetchJson(RATINGS_URL, { deadline }, fetchImpl);
+    ratings = transformRatings(ratingsRaw, { generatedAt: stamp, checkedAt: stamp });
+    validateRatings(ratings);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn(`社区体感抓取失败（不影响主数据）：${message}`);
+  }
+
   const radarBench = mergeRadarBench({
     binding: availableBinding,
     summaries: available.map((r) => r.summary),
@@ -581,11 +599,27 @@ export async function refreshAll({
     statusChanged = !carryVolatile(status, oldStatus, STATUS_VOLATILE_FIELDS);
   }
 
+  // 可选源单独判定：抓不到就一个字节都不动，盘上留上一轮的结果，
+  // 前端靠它自己的 checked_at 显示陈旧，而不是突然变成 404 白卡。
+  let ratingsChanged = false;
+  if (ratings) {
+    ratingsChanged = true;
+    if (!force) {
+      // 这里的 errors 数组是临时的一次性容器：旧体感文件损坏只该当作「没有旧数据」，
+      // 不能混进 status.errors（理由同上面的 try/catch）。
+      const oldRatings = await readJsonIfExists(join(outDir, "ratings.json"), []);
+      if (oldRatings && contentEqual(oldRatings, ratings)) {
+        ratingsChanged = !carryVolatile(ratings, oldRatings, VOLATILE_FIELDS);
+      }
+    }
+    if (ratingsChanged) await writeJson(join(outDir, "ratings.json"), ratings);
+  }
+
   if (radarChanged) await writeJson(join(outDir, "radar-bench.json"), radarBench);
   if (roundChanged) await writeJson(join(outDir, "round.json"), roundData);
   // status 以前是无条件写，checked_at 每次都变，git diff 恒脏 → 每天一条空提交。
   if (statusChanged) await writeJson(join(outDir, "status.json"), status);
-  return { radarBench, round: roundData, status };
+  return { radarBench, round: roundData, status, ratings };
 }
 
 async function main() {
@@ -594,6 +628,11 @@ async function main() {
   console.log(
     `wrote ${result.radarBench.candidates.length} candidates, ${result.round.candidates.length} round candidates`,
   );
+  if (result.ratings) {
+    console.log(`wrote ${result.ratings.ratings.length}/${result.ratings.total_slots} rated slots`);
+  } else {
+    console.warn("社区体感本轮未更新（沿用盘上已有的 ratings.json）");
+  }
   if (result.status.reused_count) {
     console.warn(`${result.status.reused_count} candidate(s) reused previous data`);
   }

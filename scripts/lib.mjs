@@ -46,10 +46,30 @@
  * @property {number} coverage
  * @property {number} required_tasks
  * @property {number} graded_runs_count
+ *
+ * @typedef {object} RatingRow
+ * @property {string} id
+ * @property {string} model
+ * @property {string} effort
+ * @property {string} label
+ * @property {number} average
+ * @property {number} count
+ *
+ * @typedef {object} RatingsDoc
+ * @property {number} schema_version
+ * @property {string} generated_at
+ * @property {string} checked_at
+ * @property {string} window
+ * @property {number} window_hours
+ * @property {string|null} source_updated_at
+ * @property {string|null} timezone
+ * @property {number} total_slots
+ * @property {RatingRow[]} ratings
  */
 import {
   assertMinCandidates,
   assertRadarBenchShape,
+  assertRatingsShape,
   assertRoundShape,
   candidateKey,
   parseCandidateKey,
@@ -370,5 +390,94 @@ export function transformRound(raw, { scoreMax = SCORE_MAX } = {}) {
 export function validateRound(data, { minCandidates = 30 } = {}) {
   assertRoundShape(data);
   assertMinCandidates(data, minCandidates, "round");
+  return data;
+}
+
+/** 上游 id 是 `model-effort` 的扁平串，档位从右往左取——model 自己带连字符，不能用 split 取第二段。 */
+const KNOWN_EFFORTS = ["low", "medium", "high", "xhigh", "max", "ultra", "off"];
+
+/**
+ * 把 `gpt-6-astra-xhigh` 拆成 `{ model: "gpt-6-astra", effort: "xhigh" }`。
+ *
+ * 优先按已知档位后缀匹配，命中不了才退回「最后一个连字符」。两条路都必要：
+ * 上游将来加 `nano` 这类新档时，后缀表认不出，退回切分仍能拿到 effort（`gpt-7-nano` → model `gpt-7`），
+ * 只是模型名恰好以档位词结尾时（虚构：`gpt-6-max`）第一种匹配更准。
+ * 整个串没有连字符就没法拆，返回 null 交给调用方丢弃。
+ * @param {string} id
+ * @returns {{model: string, effort: string} | null}
+ */
+export function splitRatingId(id) {
+  const text = String(id ?? "").trim();
+  if (!text) return null;
+  for (const effort of KNOWN_EFFORTS) {
+    const suffix = "-" + effort;
+    if (text.length > suffix.length && text.endsWith(suffix)) {
+      return { model: text.slice(0, -suffix.length), effort };
+    }
+  }
+  const at = text.lastIndexOf("-");
+  if (at <= 0 || at === text.length - 1) return null;
+  return { model: text.slice(0, at), effort: text.slice(at + 1) };
+}
+
+/**
+ * 上游 `api/model-ratings?view=public&window=24h` → 内部 ratings.json。
+ *
+ * 只保留有票的档位。上游对每个 model-effort 都发一行，56 行里通常只有十几个有票，
+ * 其余是 `average: null, count: 0`——全量落盘等于让前端画几十行「—」，
+ * 还会把 `rated/total` 的真实比例埋掉。无票不是坏数据，是「还没人体感过」。
+ *
+ * @param {any} raw
+ * @param {{generatedAt: string, checkedAt: string}} stamps
+ * @returns {RatingsDoc}
+ */
+export function transformRatings(raw, { generatedAt, checkedAt }) {
+  if (!raw || typeof raw !== "object") throw new Error("ratings: invalid payload");
+  const models = Array.isArray(raw.models) ? raw.models : [];
+  if (!models.length) throw new Error("ratings: models is empty");
+  const seen = new Set();
+  const ratings = [];
+  for (const item of models) {
+    const id = String(item?.id ?? "").trim();
+    const parsed = splitRatingId(id);
+    // 有票的判定同时看 count 与 average：上游出现过 count>0 但 average=null 的中间态
+    // （票在统计窗口里还没结算），那种行落盘会让契约的 average 非空断言直接红。
+    const count = Number(item?.count);
+    const average = item?.average == null ? null : Number(item?.average);
+    if (!parsed || !Number.isFinite(count) || count < 1) continue;
+    if (average == null || !Number.isFinite(average) || average <= 0) continue;
+    if (seen.has(id)) continue;
+    seen.add(id);
+    ratings.push({
+      id,
+      model: parsed.model,
+      effort: parsed.effort,
+      label: String(item?.label ?? id),
+      // 一位小数就够：1–10 的刻度上再细也读不出来，落盘统一收口也便于比对幂等。
+      average: Math.round(average * 10) / 10,
+      count,
+    });
+  }
+  // 平均分高的在前；同分按票数多的在前，票数少的高分不该压住有共识的。
+  ratings.sort((a, b) => b.average - a.average || b.count - a.count);
+  return {
+    schema_version: 1,
+    generated_at: generatedAt,
+    checked_at: checkedAt,
+    window: String(raw.window ?? "rolling_24h"),
+    window_hours: Number(raw.window_hours ?? 24),
+    source_updated_at: typeof raw.updated_at === "string" ? raw.updated_at : null,
+    timezone: typeof raw.timezone === "string" ? raw.timezone : null,
+    total_slots: models.length,
+    ratings,
+  };
+}
+
+/**
+ * @param {any} data
+ * @returns {RatingsDoc}
+ */
+export function validateRatings(data) {
+  assertRatingsShape(data);
   return data;
 }

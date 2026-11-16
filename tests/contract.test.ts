@@ -7,10 +7,11 @@ import {
   strictNumber,
   assertRadarBenchShape,
   assertRoundShape,
+  assertRatingsShape,
   assertStatusShape,
 } from "../scripts/contract.mjs";
 import { validateRadarBench as loaderValidateRadarBench, validateRound as loaderValidateRound } from "../src/data/loader";
-import { validateRadarBench as libValidateRadarBench, validateRound as libValidateRound } from "../scripts/lib.mjs";
+import { validateRadarBench as libValidateRadarBench, validateRatings, validateRound as libValidateRound } from "../scripts/lib.mjs";
 import roundRaw from "./fixtures/round.sample.json";
 import { transformRound } from "../scripts/lib.mjs";
 
@@ -317,5 +318,65 @@ describe("夹具 asset 文件名与 sha256 前缀不变量", () => {
     for (const { path, sha256 } of assets) {
       expect(sha256, path).toMatch(/^[0-9a-f]{64}$/);
     }
+  });
+});
+
+describe("社区体感契约", () => {
+  const doc = () => ({
+    schema_version: 1,
+    generated_at: "2026-11-17T00:00:00Z",
+    checked_at: "2026-11-17T00:00:00Z",
+    window: "rolling_24h",
+    window_hours: 24,
+    source_updated_at: "2026-11-16T17:44:18Z",
+    timezone: "Asia/Shanghai",
+    total_slots: 56,
+    ratings: [
+      { id: "gpt-6-astra-max", model: "gpt-6-astra", effort: "max", label: "GPT-6 Astra max", average: 8.4, count: 9 },
+    ],
+  });
+
+  it("合法文档通过，并原样返回", () => {
+    const input = doc();
+    expect(assertRatingsShape(input)).toBe(input);
+  });
+
+  it("空 ratings 是合法状态（窗口内无人投票），不是坏数据", () => {
+    expect(() => assertRatingsShape({ ...doc(), ratings: [] })).not.toThrow();
+  });
+
+  it("星级超过 10 直接拒绝：刻度是 1–10，越界说明上游换了刻度", () => {
+    const d = doc();
+    d.ratings[0].average = 10.5;
+    expect(() => assertRatingsShape(d)).toThrow(/average/);
+    // 边界值 10 必须放行
+    d.ratings[0].average = 10;
+    expect(() => assertRatingsShape(d)).not.toThrow();
+  });
+
+  it("count 为 0 的记录不许落盘（有票才该收）", () => {
+    const d = doc();
+    d.ratings[0].count = 0;
+    expect(() => assertRatingsShape(d)).toThrow(/count/);
+  });
+
+  it("重复 id 拒绝：前端用它做 key，重了会重复渲染且票数翻倍", () => {
+    const d = doc();
+    d.ratings = [doc().ratings[0], doc().ratings[0]];
+    d.total_slots = 2;
+    expect(() => assertRatingsShape(d)).toThrow(/duplicate/);
+  });
+
+  it("有票档位多于上游档位总数时拒绝（transform 收多了行）", () => {
+    const d = doc();
+    d.total_slots = 0;
+    expect(() => assertRatingsShape(d)).toThrow(/total_slots/);
+  });
+
+  it("浏览器侧与管道侧用同一份契约，坏 payload 抛在同一处字段", () => {
+    const d = doc();
+    d.ratings[0].model = "";
+    expect(() => assertRatingsShape(d)).toThrow(/ratings\[0\]\.model/);
+    expect(() => validateRatings(d)).toThrow(/ratings\[0\]\.model/);
   });
 });
