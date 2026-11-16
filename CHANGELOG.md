@@ -6,6 +6,9 @@
 
 ### 新增
 
+- **接入四题协议（`codex-four-weighted-150-v2`）**。上游 2026-10-27 起用 4 题加权取代 10 题 / 64 题口径，旧的 `/api/radar-bench-score` 随后下线（502；不带 `view` 是 410 `score_full_view_retired`），`/iq/full/` 上明确写着「还没有发布过全量测试结果」。新增两个静态源：`intelligence-trends.json`（24 批次 × 46 点历史）与 `codex-four-task-results.json`（当前轮 184/184 逐任务明细），合成 `four-task.json`；前端新增「四题竞技场」tab（46 条趋势线 + 排名表 + 任务明细）。权重 **秦始皇 60 + 庞贝 45 + 鹈鹕 22.5 + 糖果 22.5 = 150**，与旧 RadarBench 的 0–150 **不可横向比较**（`scripts/contract.mjs` 的 `assertFourTaskShape`、`scripts/lib.mjs` 的 `transformFourTask`、`src/components/FourTaskPanel.tsx`）。
+- **刷新入口改为双链独立**。旧雷达链在上游换协议后是确定性失败，原先会让整个 `refresh` 在第一步就抛错、四题数据一天都落不了盘。现在两条链各自兜错：只剩旧链挂时按成功退出（继续 `exit 1` 只会每天开一张无人能修的 issue），两条都挂才算整轮失败。
+
 - 从零搭建前端骨架：React 19 + Vite 8 + Vitest 5，base 固定为 `/ChatGPT-IQ-Check/`（`src/`、`tests/setup.ts`、`vite.config.ts`、`tsconfig.json`；代表 commit `88b5360`）。
 - 数据抓取管线：binding / summary 归一化、本轮雷达转换与评分、`refresh` CLI 抓取三源并原子写入（`scripts/lib.mjs`、`scripts/refresh.mjs`；代表 commit `13b87dd`、`d39cc27`、`1e10201`）。
 - 静态 JSON 加载层，含超时、结构校验与三槽错误态（`src/data/loader.ts`；代表 commit `210a907`）。

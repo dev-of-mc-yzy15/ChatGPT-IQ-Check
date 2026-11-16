@@ -6,7 +6,7 @@ import {
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
-import { slotRadarBench, slotRatings, slotRound, slotStatus, type Slot } from "./data/loader";
+import { slotFourTask, slotRadarBench, slotRatings, slotRound, slotStatus, type Slot } from "./data/loader";
 import type { StatusData } from "./types";
 import { MAX_TREND_SERIES, topCandidates } from "./lib/derive";
 import { candidateKey } from "../scripts/contract.mjs";
@@ -18,15 +18,18 @@ import { CandidateTable } from "./components/CandidateTable";
 import { TrendChart } from "./components/TrendChart";
 import { TrendControls } from "./components/TrendControls";
 import { CommunityRatings } from "./components/CommunityRatings";
+import { FourTaskPanel } from "./components/FourTaskPanel";
 import { ThemeToggle } from "./components/ThemeToggle";
 import { SkipLink } from "./components/SkipLink";
 import { fmtDateTime } from "./lib/format";
 
-type Tab = "round" | "trend" | "about";
+type Tab = "round" | "four" | "trend" | "about";
 
 /** tab 顺序即焦点顺序，方向键据此环绕。 */
 const TABS: readonly (readonly [Tab, string])[] = [
   ["round", "本轮雷达"],
+  // 四题排第二：它是上游现在唯一还在更新的口径，旧的 RadarBench 已冻结在 10-24。
+  ["four", "四题竞技场"],
   ["trend", "RadarBench 趋势"],
   ["about", "关于"],
 ];
@@ -98,6 +101,8 @@ export default function App() {
   const status = useSlot(slotStatus);
   // 第四槽：社区体感是可选源，单独一槽，失败只塌这张卡片。
   const ratings = useSlot(slotRatings);
+  // 第五槽：四题协议。与旧雷达链完全独立，旧链挂掉不影响这屏。
+  const fourTask = useSlot(slotFourTask);
 
   const [tab, setTab] = useState<Tab>("round");
   const [selectedRound, setSelectedRound] = useState<string | null>(null);
@@ -246,6 +251,30 @@ export default function App() {
                     )}
                   </ErrorBoundary>
                 </>
+              )}
+            </ErrorBoundary>
+          )}
+        </div>
+
+        <div
+          role="tabpanel"
+          id="panel-four"
+          aria-labelledby="tab-four"
+          tabIndex={0}
+          hidden={tab !== "four"}
+        >
+          {tab === "four" && (
+            <ErrorBoundary inline label="四题竞技场">
+              {fourTask.loading && !fourTask.slot.data ? (
+                <Loading label="四题竞技场" />
+              ) : fourTask.slot.error ? (
+                <SlotFallback
+                  label="四题竞技场"
+                  error={fourTask.slot.error}
+                  onRetry={fourTask.retry}
+                />
+              ) : (
+                <FourTaskPanel data={fourTask.slot.data!} />
               )}
             </ErrorBoundary>
           )}

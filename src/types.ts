@@ -167,3 +167,70 @@ export interface RatingsData {
   total_slots: number;
   ratings: RatingRow[];
 }
+
+/** 四题协议里的四个任务：权重和恒等于 score_max（150）。 */
+export interface FourTaskDef {
+  id: string;
+  title_zh: string;
+  weight: number;
+  /** 单项内部刻度固定 0–100，乘权重后计入总分。 */
+  max: number;
+}
+
+/** 单个候选在单个任务上的成绩。 */
+export interface FourTaskCell {
+  id: string;
+  score: number;
+  /** 判分前的原始分；有 capped 时它高于 score。 */
+  raw_total: number;
+  /** 原始分被规则上限压过（如核心关系不全）。 */
+  capped: boolean;
+  seconds: number;
+  cost_usd: number;
+  /** 仅 candy：只有对错，score 是 100 / 0。 */
+  correct?: boolean;
+  /** 仅 pompeii：0–1 的 reward。 */
+  reward?: number;
+}
+
+export interface FourTaskCandidate {
+  model: string;
+  effort: string;
+  score: number;
+  score_status: string;
+  latest_at: string;
+  tasks: FourTaskCell[];
+  totals: { seconds: number; cost_usd: number };
+  history: { at: string; score: number }[];
+}
+
+export interface FourTaskBatch {
+  id: string;
+  label: string;
+  completed_at: string;
+  /** 该批次里有分数的点数（正常是 46）。 */
+  points: number;
+}
+
+/**
+ * `public/data/four-task.json`：四题加权 150 分协议，2026-10-27 起取代旧的 10/64 题口径。
+ * 与 RadarBench 的 0–150 数值范围相同但**不可横向比较**——题目集合不同。
+ */
+export interface FourTaskData {
+  schema_version: 1;
+  generated_at: string;
+  checked_at: string;
+  protocol: string;
+  score_max: number;
+  round: {
+    id: string;
+    label: string;
+    completed_at: string;
+    expected: number;
+    graded: number;
+    asset_prefix: string | null;
+  };
+  tasks: FourTaskDef[];
+  candidates: FourTaskCandidate[];
+  batches: FourTaskBatch[];
+}

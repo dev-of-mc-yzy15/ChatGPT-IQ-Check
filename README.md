@@ -57,22 +57,44 @@ public/data/
   round.json            本轮逐题明细
   status.json           抓取状态与新鲜度
   ratings.json          社区体感（1–10 星，可选项，缺了不影响其它区块）
+  four-task.json        四题加权 150 分（现行协议：46 配置 × 24 批次）
 tests/                  Vitest 单测与组件测试 + fixtures
 ```
 
 ## 数据源
 
-| 用途 | 地址 | 必需 |
+**上游在 2026-10-27 换了评测协议**：旧的 10 题 / 64 题口径被 `codex-four-weighted-150-v2`（四题加权 150 分）取代。旧接口随后下线，新数据改用静态 JSON 提供。项目因此同时维护两条管道。
+
+### 现行协议（四题加权）
+
+| 用途 | 地址 |
+|---|---|
+| 24 批次历史分数 | `https://codexradar.com/data/intelligence-trends.json` |
+| 当前轮逐任务明细 | `https://codexradar.com/data/codex-four-task-results.json` |
+
+四个任务：**秦始皇 60 + 庞贝 45 + 鹈鹕 22.5 + 糖果 22.5 = 150**。单项内部 0–100，乘权重计入总分。
+
+### 旧协议（已冻结，仅作存档）
+
+| 用途 | 地址 | 状态 |
 |---|---|---|
-| 候选目录 | `https://codexradar.com/data/radar-bench-binding.json` | 是 |
-| 单候选分数 + 历史 | `https://codexradar.com/api/radar-bench-score?model=&effort=&view=summary&selection=user-selected-v1` | 是 |
-| 本轮看板 | `https://codexradar.com/degradation-codex-latest.json` | 是 |
-| 社区体感（24h 星级） | `https://codexradar.com/api/model-ratings?view=public&window=24h` | 否 |
+| 候选目录 | `/data/radar-bench-binding.json` | 200，但内容停在 10 月 |
+| 单候选分数 + 历史 | `/api/radar-bench-score?view=summary` | **502**（不带 view 是 410 `score_full_view_retired`） |
+| 本轮看板 | `/degradation-codex-latest.json` | 200，round 停在 `2026-10-24` |
+
+`/iq/full/` 页面上游自己写着「还没有发布过全量测试结果」——全量 64 题这条路已经废弃，不是在维护中。
+
+### 可选源
+
+| 用途 | 地址 |
+|---|---|
+| 社区体感（24h 星级） | `https://codexradar.com/api/model-ratings?view=public&window=24h` |
 
 社区体感是**可选源**：抓不到时整轮照常成功，只是不写 `ratings.json`，前端那张卡片显示不可用，不把 `status.ok` 打成 false。它也不进 `status.errors` —— 可选功能的故障不该升格成全站告警。
 
-不使用的接口（上游已废弃或不可用，留作备忘）：
-`/data/intelligence-efficiency.json`（旧 fallback）、`/api/v1/table`（410）、`/api/intelligence-efficiency-metrics`（502）。
+### 停用
+
+`/data/intelligence-efficiency.json`（旧 fallback）、`/api/v1/table`（410）、`/api/intelligence-efficiency-metrics`（502）、`/api/radar-insights`（502）。
 
 全部匿名可拉，**不需要任何密钥**。
 
@@ -138,7 +160,7 @@ npm run refresh -- --force  # 内容没变也强制重写（重置时间戳）
 
 ## 数据契约
 
-四份 JSON 都由 `scripts/refresh.mjs` 生成（`ratings.json` 为可选项，抓不到就不写），结构由 `scripts/contract.mjs` 校验（前端 loader 加载时复用同一份），前端 `src/types.ts` 与之对应。
+五份 JSON 都由 `scripts/refresh.mjs` 生成（`ratings.json` 为可选项，抓不到就不写），结构由 `scripts/contract.mjs` 校验（前端 loader 加载时复用同一份），前端 `src/types.ts` 与之对应。
 
 ### `radar-bench.json`
 
@@ -249,6 +271,49 @@ npm run refresh -- --force  # 内容没变也强制重写（重置时间戳）
 - 星级刻度是 **1–10**，与 RadarBench 的 0–150 是两套口径，**不参与任何排序或换算**。
 - `id` 是 `model-effort` 的扁平串，档位从右往左取（model 自己带连字符）。未知档位退回最后一个连字符，新档位不会整条消失。
 - 契约允许 `ratings` 为空数组：窗口内没人投票是「没有体感」，不是「数据坏了」。
+
+### `four-task.json`（现行四题协议）
+
+```jsonc
+{
+  "schema_version": 1,
+  "protocol": "codex-four-weighted-150-v2",
+  "score_max": 150,
+  "round": {
+    "id": "codex-four-20261116-current-auth-5c",
+    "label": "2026-11-16",
+    "completed_at": "ISO8601",
+    "expected": 184, "graded": 184,      // 题级：184 个任务全部评分
+    "asset_prefix": "/assets/codex-four-task-20261116-current--"
+  },
+  "tasks": [
+    { "id": "combined", "title_zh": "秦始皇", "weight": 60, "max": 100 }
+    // pompeii 庞贝 45 / pelican 鹈鹕 22.5 / candy 糖果 22.5
+  ],
+  "candidates": [
+    { "model": "gpt-6.1-sol", "effort": "low", "score": 113.175,
+      "score_status": "complete", "latest_at": "ISO8601",
+      "tasks": [
+        { "id": "combined", "score": 69, "raw_total": 80.5, "capped": true,
+          "seconds": 254.19, "cost_usd": 0.166 }
+        // candy 额外带 correct: true/false，score 恒为 100 或 0
+      ],
+      "totals": { "seconds": 1193.5, "cost_usd": 0.53 },
+      "history": [ { "at": "ISO8601", "score": 113.175 } ] }
+  ],
+  "batches": [ { "id": "…", "label": "2026-11-16", "completed_at": "…", "points": 46 } ]
+}
+```
+
+不变量（`assertFourTaskShape` 逐条校验）：
+
+- `tasks` 必须**正好**是这四个 id，且 `weight` 之和 `=== score_max`。上游增删任务必然改变总分口径，静默放行会让「分数跳变」被误读成「模型降智」。
+- `candidates[].score` 必须等于 `history` 末点，否则表格和曲线讲的不是同一件事。
+- `history` 按时间**升序**（趋势图按数组顺序连线，乱序会画出折返锯齿）。
+- `score` 落在 `[0, score_max]`；`capped: true` 表示原始分被规则上限压过（如核心关系不全）。
+- 转换层拒绝 `all_graded !== true` 的轮次：缺题时总分是「不完整」，不是「低」。
+
+与 `radar-bench.json` 的 **0–150 不可横向比较**——两套题不同。前端把它们放在两个独立 tab 里，不合并、不换算。
 - 抓取失败时**不写文件**，盘上保留上一轮结果；前端按它自己的 `checked_at` 显示陈旧。
 
 ### 动画资产：已本地化并渲染

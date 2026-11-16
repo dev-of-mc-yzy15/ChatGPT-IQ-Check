@@ -1,5 +1,12 @@
-import type { RadarBenchData, RatingsData, RoundData, StatusData } from "../types";
+import type {
+  FourTaskData,
+  RadarBenchData,
+  RatingsData,
+  RoundData,
+  StatusData,
+} from "../types";
 import {
+  assertFourTaskShape,
   assertRadarBenchShape,
   assertRatingsShape,
   assertRoundShape,
@@ -15,6 +22,8 @@ export type LoadedSlots = {
   status: Slot<StatusData>;
   /** 社区体感是 P1 可选源：这一槽失败只该让那张卡片显示不可用。 */
   ratings: Slot<RatingsData>;
+  /** 四题协议（2026-10 起的现行口径）：与旧 RadarBench 并列，互不依赖。 */
+  fourTask: Slot<FourTaskData>;
 };
 
 export function urlFor(rel: string, base = import.meta.env.BASE_URL || "/"): string {
@@ -90,6 +99,16 @@ export async function loadStatus(): Promise<StatusData> {
   return data;
 }
 
+export function validateFourTask(data: FourTaskData): void {
+  guard("four-task.json", assertFourTaskShape, data);
+}
+
+export async function loadFourTask(): Promise<FourTaskData> {
+  const data = await getJson<FourTaskData>("data/four-task.json");
+  validateFourTask(data);
+  return data;
+}
+
 export async function loadRatings(): Promise<RatingsData> {
   const data = await getJson<RatingsData>("data/ratings.json");
   validateRatings(data);
@@ -109,18 +128,20 @@ export const slotRadarBench = () => toSlot(loadRadarBench());
 export const slotRound = () => toSlot(loadRound());
 export const slotStatus = () => toSlot(loadStatus());
 export const slotRatings = () => toSlot(loadRatings());
+export const slotFourTask = () => toSlot(loadFourTask());
 
 /**
- * 四份数据各走各的：任何一份 404 / 结构异常，其余槽照常可用。
+ * 五份数据各走各的：任何一份 404 / 结构异常，其余槽照常可用。
  * 用 Promise.all（不是 allSettled + 裸 Promise）是因为 toSlot 已经吃掉异常，
  * 这里不会 reject，顺序也稳定。
  */
 export async function loadAll(): Promise<LoadedSlots> {
-  const [radarBench, round, status, ratings] = await Promise.all([
+  const [radarBench, round, status, ratings, fourTask] = await Promise.all([
     slotRadarBench(),
     slotRound(),
     slotStatus(),
     slotRatings(),
+    slotFourTask(),
   ]);
-  return { radarBench, round, status, ratings };
+  return { radarBench, round, status, ratings, fourTask };
 }

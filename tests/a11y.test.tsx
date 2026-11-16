@@ -9,7 +9,9 @@ import type { RadarBenchData, RatingsData, RoundData, StatusData } from "../src/
 // 这些已经修过的 a11y 行为钉死在自动化里，回归不许静默溜过去。
 // loader 的 mock 形状照抄 App.test.tsx：只在外层切一刀，组件树全用真的。
 
-vi.mock("../src/data/loader", () => {
+vi.mock("../src/data/loader", async () => {
+  // vi.mock 的工厂会被提升到文件顶部，不能引用顶层的 import，只能在这里动态取。
+  const { makeFourTask } = await import("./fixtures/fourTask");
   const ok = <T,>(data: T) => ({ data, error: null });
 
   // 三个候选的 history 分别造出涨 / 平 / 跌的相邻两日，供 Δ 符号断言用。
@@ -142,17 +144,21 @@ vi.mock("../src/data/loader", () => {
     ],
   };
 
+  const fourTask = makeFourTask();
+
   return {
     loadAll: vi.fn(async () => ({
       round: ok(round),
       radarBench: ok(radarBench),
       status: ok(status),
       ratings: ok(ratings),
+      fourTask: ok(fourTask),
     })),
     slotRound: vi.fn(async () => ok(round)),
     slotRadarBench: vi.fn(async () => ok(radarBench)),
     slotStatus: vi.fn(async () => ok(status)),
     slotRatings: vi.fn(async () => ok(ratings)),
+    slotFourTask: vi.fn(async () => ok(fourTask)),
     toSlot: vi.fn(),
   };
 });
