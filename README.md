@@ -19,6 +19,7 @@
 - 展示 CodexRadar 的 RadarBench 加权分数（0–`score_max`，当前 150）与覆盖率、评分状态。
 - 给出「本轮雷达」：模型 × 档位（低 / 中 / 高 / 极高 / 最高 / 极限）的分数矩阵，点开可看逐题得分、耗时、成本。
 - 给出「RadarBench 趋势」：按日桶聚合的历史曲线，缺口断开、空心点表示 provisional、红点标出降智信号。
+- 给出「社区体感」：近 24 小时 1–10 星人工评分的水平条与票数，只列出有票的档位，票数 < 3 的淡化；与基准分不混算。
 - 顶部新鲜度横幅：数据检查时间、最近评分时间、本轮更新时间，超 48h / 7d 两级告警。
 - 深浅色主题、键盘可达（跳过链接 / 焦点样式）、错误边界与空态。
 
@@ -39,8 +40,8 @@ Node 版本要求：**>= 24**。
 ```
 src/
   App.tsx               页面组合：本轮雷达 / 趋势 / 关于 三个 tab
-  components/           RoundMatrix RoundDetail CandidateTable TrendChart
-                        TrendControls FreshnessBanner ThemeToggle SkipLink ErrorBoundary
+  components/           RoundMatrix RoundDetail CommunityRatings CandidateTable
+                        TrendChart TrendControls FreshnessBanner ThemeToggle SkipLink ErrorBoundary
   data/loader.ts        拉取 + 校验 public/data/*.json，带超时与错误态
   lib/derive.ts         纯函数：排序 / Δ / 降智点 / 日桶 / 矩阵
   lib/format.ts         格式化：分数、耗时、成本、时间
@@ -55,16 +56,20 @@ public/data/
   radar-bench.json      候选分数 + 历史序列
   round.json            本轮逐题明细
   status.json           抓取状态与新鲜度
+  ratings.json          社区体感（1–10 星，可选项，缺了不影响其它区块）
 tests/                  Vitest 单测与组件测试 + fixtures
 ```
 
 ## 数据源
 
-| 用途 | 地址 |
-|---|---|
-| 候选目录 | `https://codexradar.com/data/radar-bench-binding.json` |
-| 单候选分数 + 历史 | `https://codexradar.com/api/radar-bench-score?model=&effort=&view=summary&selection=user-selected-v1` |
-| 本轮看板 | `https://codexradar.com/degradation-codex-latest.json` |
+| 用途 | 地址 | 必需 |
+|---|---|---|
+| 候选目录 | `https://codexradar.com/data/radar-bench-binding.json` | 是 |
+| 单候选分数 + 历史 | `https://codexradar.com/api/radar-bench-score?model=&effort=&view=summary&selection=user-selected-v1` | 是 |
+| 本轮看板 | `https://codexradar.com/degradation-codex-latest.json` | 是 |
+| 社区体感（24h 星级） | `https://codexradar.com/api/model-ratings?view=public&window=24h` | 否 |
+
+社区体感是**可选源**：抓不到时整轮照常成功，只是不写 `ratings.json`，前端那张卡片显示不可用，不把 `status.ok` 打成 false。它也不进 `status.errors` —— 可选功能的故障不该升格成全站告警。
 
 不使用的接口（上游已废弃或不可用，留作备忘）：
 `/data/intelligence-efficiency.json`（旧 fallback）、`/api/v1/table`（410）、`/api/intelligence-efficiency-metrics`（502）。
@@ -133,7 +138,7 @@ npm run refresh -- --force  # 内容没变也强制重写（重置时间戳）
 
 ## 数据契约
 
-三份 JSON 都由 `scripts/refresh.mjs` 生成，结构由 `scripts/contract.mjs` 校验（前端 loader 加载时复用同一份），前端 `src/types.ts` 与之对应。
+四份 JSON 都由 `scripts/refresh.mjs` 生成（`ratings.json` 为可选项，抓不到就不写），结构由 `scripts/contract.mjs` 校验（前端 loader 加载时复用同一份），前端 `src/types.ts` 与之对应。
 
 ### `radar-bench.json`
 
@@ -220,6 +225,31 @@ npm run refresh -- --force  # 内容没变也强制重写（重置时间戳）
   "errors": []
 }
 ```
+
+### `ratings.json`（可选）
+
+```jsonc
+{
+  "schema_version": 1,
+  "generated_at": "ISO8601",
+  "checked_at": "ISO8601",
+  "window": "rolling_24h",
+  "window_hours": 24,
+  "source_updated_at": "ISO8601",   // 上游 updated_at；缺失为 null
+  "timezone": "Asia/Shanghai",
+  "total_slots": 56,                // 上游声明的档位总数（含无人投票的）
+  "ratings": [
+    { "id": "gpt-6-astra-max", "model": "gpt-6-astra", "effort": "max",
+      "label": "GPT-6 Astra max", "average": 8.4, "count": 9 }
+  ]
+}
+```
+
+- **只落有票的档位**：上游对 56 个 model-effort 各发一行，无票的是 `average: null, count: 0`，全量落盘只会变成几十行「—」，还会把 `rated/total` 的比例埋掉。
+- 星级刻度是 **1–10**，与 RadarBench 的 0–150 是两套口径，**不参与任何排序或换算**。
+- `id` 是 `model-effort` 的扁平串，档位从右往左取（model 自己带连字符）。未知档位退回最后一个连字符，新档位不会整条消失。
+- 契约允许 `ratings` 为空数组：窗口内没人投票是「没有体感」，不是「数据坏了」。
+- 抓取失败时**不写文件**，盘上保留上一轮结果；前端按它自己的 `checked_at` 显示陈旧。
 
 ### 动画资产：已本地化并渲染
 

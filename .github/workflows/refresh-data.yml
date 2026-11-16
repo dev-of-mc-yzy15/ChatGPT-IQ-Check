@@ -37,7 +37,7 @@ jobs:
 
       - name: Commit data if changed
         env:
-          DATA_PATHS: public/data/radar-bench.json public/data/round.json public/data/status.json
+          DATA_PATHS: public/data/radar-bench.json public/data/round.json public/data/status.json public/data/ratings.json
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
