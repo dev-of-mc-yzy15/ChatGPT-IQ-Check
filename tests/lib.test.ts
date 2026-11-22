@@ -1,10 +1,14 @@
 import { describe, it, expect } from "vitest";
 import bindingRaw from "./fixtures/binding.sample.json";
 import summaryRaw from "./fixtures/summary.sample.json";
+import ratingsRaw from "./fixtures/ratings.sample.json";
 import {
   transformBinding,
   transformSummary,
   mergeRadarBench,
+  splitRatingId,
+  transformFourTask,
+  transformRatings,
   validateRadarBench,
   parseHomeOverview,
   buildRadarBenchFromOverview,
@@ -449,5 +453,214 @@ describe("overviewToSummaries 越界分数", () => {
     });
     expect(doc.candidates[0].score).toBe(150);
     expect(() => validateRadarBench(doc, { minCandidates: 1 })).not.toThrow();
+  });
+});
+
+describe("splitRatingId", () => {
+  it("从右往左切出档位，模型名里的连字符/点号原样保留", () => {
+    expect(splitRatingId("gpt-6-astra-xhigh")).toEqual({ model: "gpt-6-astra", effort: "xhigh" });
+    expect(splitRatingId("gpt-6.1-sol-off")).toEqual({ model: "gpt-6.1-sol", effort: "off" });
+    expect(splitRatingId("dsv4-pro-high")).toEqual({ model: "dsv4-pro", effort: "high" });
+  });
+
+  it("未知档位退回最后一个连字符，不把整条丢掉", () => {
+    // 上游将来加 nano 之类的新档，后缀表认不出也得拿到 effort，否则整个新档位会消失
+    expect(splitRatingId("gpt-7-nano")).toEqual({ model: "gpt-7", effort: "nano" });
+  });
+
+  it("拆不开的串返回 null（没有连字符 / 连字符在首尾）", () => {
+    expect(splitRatingId("gpt6")).toBeNull();
+    expect(splitRatingId("-high")).toBeNull();
+    expect(splitRatingId("gpt-6-")).toBeNull();
+    expect(splitRatingId("")).toBeNull();
+  });
+});
+
+describe("transformRatings", () => {
+  const stamps = { generatedAt: "2026-11-17T00:00:00Z", checkedAt: "2026-11-17T00:00:00Z" };
+
+  it("只留有票档位，按星级降序、同分按票数降序", () => {
+    const doc = transformRatings(ratingsRaw, stamps);
+    expect(doc.total_slots).toBe(6);
+    expect(doc.ratings.map((r) => r.id)).toEqual([
+      "gpt-6-astra-xhigh", // 10
+      "gpt-6-astra-max", // 8.4
+      "dsv4-pro-high", // 7.25 → 7.3
+      "gpt-6.1-sol-off", // 5.5
+      "gpt-5.6-luna-low", // 2
+    ]);
+    expect(doc.window).toBe("rolling_24h");
+    expect(doc.window_hours).toBe(24);
+    expect(doc.timezone).toBe("Asia/Shanghai");
+    expect(doc.source_updated_at).toBe("2026-11-16T17:44:18.712Z");
+    expect(doc.schema_version).toBe(1);
+  });
+
+  it("平均分收口到一位小数，identity 三个字段都来自上游", () => {
+    const doc = transformRatings(ratingsRaw, stamps);
+    const dsv4 = doc.ratings.find((r) => r.id === "dsv4-pro-high");
+    expect(dsv4).toMatchObject({ model: "dsv4-pro", effort: "high", average: 7.3, count: 2 });
+  });
+
+  it("count>0 但 average=null 的中间态也丢掉：落盘会让契约打红", () => {
+    const raw = {
+      ...ratingsRaw,
+      models: [{ id: "gpt-6-astra-max", label: "x", average: null, count: 3 }],
+    };
+    expect(transformRatings(raw, stamps).ratings).toEqual([]);
+  });
+
+  it("重复 id 只收一次", () => {
+    const raw = {
+      ...ratingsRaw,
+      models: [
+        { id: "a-high", label: "a", average: 5, count: 1 },
+        { id: "a-high", label: "a", average: 5, count: 1 },
+      ],
+    };
+    expect(transformRatings(raw, stamps).ratings).toHaveLength(1);
+  });
+
+  it("models 为空 / 非对象直接抛，不落一份空文件顶替", () => {
+    expect(() => transformRatings({ models: [] }, stamps)).toThrow(/models is empty/);
+    expect(() => transformRatings(null, stamps)).toThrow(/invalid payload/);
+  });
+
+  it("缺 updated_at / timezone 时落 null，不编造时间", () => {
+    const doc = transformRatings({ models: [{ id: "a-high", label: "a", average: 5, count: 1 }] }, stamps);
+    expect(doc.source_updated_at).toBeNull();
+    expect(doc.timezone).toBeNull();
+    expect(doc.window).toBe("rolling_24h"); // 缺 window 用默认值
+  });
+});
+
+describe("transformFourTask", () => {
+  const W = { combined: 60, pompeii: 45, pelican: 22.5, candy: 22.5 };
+  const stamps = { generatedAt: "2026-11-16T02:00:00Z", checkedAt: "2026-11-16T02:00:00Z" };
+
+  const trendsStub = (scores: (number | null)[] = [120, 133.5]) => ({
+    score_max: 150,
+    batches: scores.map((score, i) => ({
+      id: "b" + (i + 1),
+      label: "2026-11-1" + (4 + i * 2),
+      completed_at: `2026-11-${14 + i * 2}T00:00:00Z`,
+      protocol: "codex-four-weighted-150-v2",
+      task_weights: W,
+      points: score == null ? [] : [{ model: "A", effort: "high", score }],
+    })),
+  });
+
+  const fourStub = (over: Record<string, unknown> = {}) => ({
+    round_id: "r1",
+    protocol: "codex-four-weighted-150-v2",
+    verified_at: "2026-11-16T01:42:05Z",
+    expected: 4,
+    graded: 4,
+    all_graded: true,
+    score_max: 150,
+    task_weights: W,
+    rows: [
+      {
+        model: "A",
+        effort: "high",
+        combined: {
+          score: 80,
+          raw_score_total: 84.5,
+          applied_caps: [{ id: "CORE_COMPLETENESS", limit: 69 }],
+          model_elapsed_seconds: 100,
+          cost_usd: 0.1,
+          model_completed_at: "2026-11-16T00:30:00Z",
+        },
+        pompeii: {
+          score100: 90,
+          reward: 0.9,
+          model_elapsed_seconds: 200,
+          cost_usd: 0.2,
+          model_completed_at: "2026-11-16T00:10:00Z",
+        },
+        pelican: {
+          score: 100,
+          raw_score_total: 100,
+          applied_caps: [],
+          model_elapsed_seconds: 300,
+          cost_usd: 0.3,
+          model_completed_at: "2026-11-16T00:20:00Z",
+        },
+        candy: {
+          correct: true,
+          model_elapsed_seconds: 50,
+          cost_usd: 0.05,
+          model_completed_at: "2026-11-16T00:40:00Z",
+        },
+      },
+    ],
+    ...over,
+  });
+
+  it("四个任务按权重合成总分，且与上游给的 score 对得上", () => {
+    const doc = transformFourTask(trendsStub(), fourStub(), stamps);
+    const c = doc.candidates[0];
+    // 80×0.6 + 90×0.45 + 100×0.225 + 100×0.225 = 133.5
+    const weighted = c.tasks.reduce((acc: number, t: any) => {
+      const w = doc.tasks.find((x: any) => x.id === t.id).weight;
+      return acc + (t.score * w) / 100;
+    }, 0);
+    expect(Math.round(weighted * 1000) / 1000).toBe(133.5);
+    expect(c.score).toBe(133.5);
+    expect(c.history.map((p: any) => p.score)).toEqual([120, 133.5]);
+  });
+
+  it("糖果只出对错，映射成 100 / 0", () => {
+    const ok = transformFourTask(trendsStub(), fourStub(), stamps).candidates[0];
+    expect(ok.tasks.find((t: any) => t.id === "candy")).toMatchObject({ score: 100, correct: true });
+
+    const row = fourStub().rows[0];
+    row.candy.correct = false;
+    const bad = transformFourTask(trendsStub([120, 87]), fourStub({ rows: [row] }), stamps).candidates[0];
+    expect(bad.tasks.find((t: any) => t.id === "candy")).toMatchObject({ score: 0, correct: false });
+  });
+
+  it("封顶要留痕：原始分高于计入分时 capped=true", () => {
+    const c = transformFourTask(trendsStub(), fourStub(), stamps).candidates[0];
+    const combined = c.tasks.find((t: any) => t.id === "combined");
+    expect(combined).toMatchObject({ score: 80, raw_total: 84.5, capped: true });
+    expect(c.tasks.find((t: any) => t.id === "pelican").capped).toBe(false);
+  });
+
+  it("耗时与成本按四个任务求和，latest_at 取最晚的那个任务", () => {
+    const c = transformFourTask(trendsStub(), fourStub(), stamps).candidates[0];
+    expect(c.totals.seconds).toBe(650);
+    expect(c.totals.cost_usd).toBe(0.65);
+    expect(c.latest_at).toBe("2026-11-16T00:40:00Z");
+  });
+
+  it("未全评的轮次直接拒绝：缺题时总分是「不完整」而不是「低」", () => {
+    expect(() => transformFourTask(trendsStub(), fourStub({ all_graded: false }), stamps)).toThrow(
+      /not fully graded/,
+    );
+  });
+
+  it("趋势里没有该组合的历史直接抛：不补点，补出来的测量是伪造", () => {
+    const orphan = trendsStub([120, 133.5]);
+    for (const b of orphan.batches) b.points = [{ model: "Z", effort: "low", score: 100 }];
+    expect(() => transformFourTask(orphan, fourStub(), stamps)).toThrow(/no history/);
+  });
+
+  it("无批次的趋势源拒绝", () => {
+    expect(() => transformFourTask({ batches: [] }, fourStub(), stamps)).toThrow(/no batches/);
+  });
+
+  it("缺 correct 的糖果行拒绝：布尔值才能决定 100 还是 0", () => {
+    const row = fourStub().rows[0];
+    delete (row.candy as any).correct;
+    expect(() => transformFourTask(trendsStub(), fourStub({ rows: [row] }), stamps)).toThrow(
+      /candy\.correct/,
+    );
+  });
+
+  it("score 为 null 的批次被跳过，不向前补点", () => {
+    const doc = transformFourTask(trendsStub([120, null, 133.5]), fourStub(), stamps);
+    expect(doc.candidates[0].history).toHaveLength(2);
+    expect(doc.batches).toHaveLength(3);
   });
 });

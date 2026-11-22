@@ -46,10 +46,31 @@
  * @property {number} coverage
  * @property {number} required_tasks
  * @property {number} graded_runs_count
+ *
+ * @typedef {object} RatingRow
+ * @property {string} id
+ * @property {string} model
+ * @property {string} effort
+ * @property {string} label
+ * @property {number} average
+ * @property {number} count
+ *
+ * @typedef {object} RatingsDoc
+ * @property {number} schema_version
+ * @property {string} generated_at
+ * @property {string} checked_at
+ * @property {string} window
+ * @property {number} window_hours
+ * @property {string|null} source_updated_at
+ * @property {string|null} timezone
+ * @property {number} total_slots
+ * @property {RatingRow[]} ratings
  */
 import {
+  FOUR_TASK_IDS,
   assertMinCandidates,
   assertRadarBenchShape,
+  assertRatingsShape,
   assertRoundShape,
   candidateKey,
   parseCandidateKey,
@@ -512,5 +533,254 @@ export function buildRadarBenchFromOverview({ overview, generatedAt, checkedAt, 
     catalog_version: overview.roundId || OVERVIEW_BENCHMARK,
     task_set_sha256: overview.roundId || OVERVIEW_BENCHMARK,
     candidates,
+  };
+}
+
+/** 上游 id 是 `model-effort` 的扁平串，档位从右往左取——model 自己带连字符，不能用 split 取第二段。 */
+const KNOWN_EFFORTS = ["low", "medium", "high", "xhigh", "max", "ultra", "off"];
+
+/**
+ * 把 `gpt-6-astra-xhigh` 拆成 `{ model: "gpt-6-astra", effort: "xhigh" }`。
+ *
+ * 优先按已知档位后缀匹配，命中不了才退回「最后一个连字符」。两条路都必要：
+ * 上游将来加 `nano` 这类新档时，后缀表认不出，退回切分仍能拿到 effort（`gpt-7-nano` → model `gpt-7`），
+ * 只是模型名恰好以档位词结尾时（虚构：`gpt-6-max`）第一种匹配更准。
+ * 整个串没有连字符就没法拆，返回 null 交给调用方丢弃。
+ * @param {string} id
+ * @returns {{model: string, effort: string} | null}
+ */
+export function splitRatingId(id) {
+  const text = String(id ?? "").trim();
+  if (!text) return null;
+  for (const effort of KNOWN_EFFORTS) {
+    const suffix = "-" + effort;
+    if (text.length > suffix.length && text.endsWith(suffix)) {
+      return { model: text.slice(0, -suffix.length), effort };
+    }
+  }
+  const at = text.lastIndexOf("-");
+  if (at <= 0 || at === text.length - 1) return null;
+  return { model: text.slice(0, at), effort: text.slice(at + 1) };
+}
+
+/**
+ * 上游 `api/model-ratings?view=public&window=24h` → 内部 ratings.json。
+ *
+ * 只保留有票的档位。上游对每个 model-effort 都发一行，56 行里通常只有十几个有票，
+ * 其余是 `average: null, count: 0`——全量落盘等于让前端画几十行「—」，
+ * 还会把 `rated/total` 的真实比例埋掉。无票不是坏数据，是「还没人体感过」。
+ *
+ * @param {any} raw
+ * @param {{generatedAt: string, checkedAt: string}} stamps
+ * @returns {RatingsDoc}
+ */
+export function transformRatings(raw, { generatedAt, checkedAt }) {
+  if (!raw || typeof raw !== "object") throw new Error("ratings: invalid payload");
+  const models = Array.isArray(raw.models) ? raw.models : [];
+  if (!models.length) throw new Error("ratings: models is empty");
+  const seen = new Set();
+  const ratings = [];
+  for (const item of models) {
+    const id = String(item?.id ?? "").trim();
+    const parsed = splitRatingId(id);
+    // 有票的判定同时看 count 与 average：上游出现过 count>0 但 average=null 的中间态
+    // （票在统计窗口里还没结算），那种行落盘会让契约的 average 非空断言直接红。
+    const count = Number(item?.count);
+    const average = item?.average == null ? null : Number(item?.average);
+    if (!parsed || !Number.isFinite(count) || count < 1) continue;
+    if (average == null || !Number.isFinite(average) || average <= 0) continue;
+    if (seen.has(id)) continue;
+    seen.add(id);
+    ratings.push({
+      id,
+      model: parsed.model,
+      effort: parsed.effort,
+      label: String(item?.label ?? id),
+      // 一位小数就够：1–10 的刻度上再细也读不出来，落盘统一收口也便于比对幂等。
+      average: Math.round(average * 10) / 10,
+      count,
+    });
+  }
+  // 平均分高的在前；同分按票数多的在前，票数少的高分不该压住有共识的。
+  ratings.sort((a, b) => b.average - a.average || b.count - a.count);
+  return {
+    schema_version: 1,
+    generated_at: generatedAt,
+    checked_at: checkedAt,
+    window: String(raw.window ?? "rolling_24h"),
+    window_hours: Number(raw.window_hours ?? 24),
+    source_updated_at: typeof raw.updated_at === "string" ? raw.updated_at : null,
+    timezone: typeof raw.timezone === "string" ? raw.timezone : null,
+    total_slots: models.length,
+    ratings,
+  };
+}
+
+/**
+ * @param {any} data
+ * @returns {RatingsDoc}
+ */
+export function validateRatings(data) {
+  assertRatingsShape(data);
+  return data;
+}
+
+/** 上游没有结构化输出任务中文名，从首页 tab 取的展示名。 */
+const FOUR_TASK_TITLES = /** @type {Record<string, string>} */ ({
+  combined: "秦始皇",
+  pompeii: "庞贝",
+  pelican: "鹈鹕",
+  candy: "糖果",
+});
+
+/**
+ * 把四题的两个上游文件合成一份前端可直读的文档。
+ *
+ * 为什么是两个源：`intelligence-trends.json` 只有历史分数（每个点一个数），
+ * `codex-four-task-results.json` 只有当前轮的逐任务明细（含产物 sha256、判分模型、成本）。
+ * 单看前者做不出「这一分是怎么来的」，单看后者画不出趋势。
+ *
+ * @param {any} trends
+ * @param {any} fourTask
+ * @param {{ generatedAt: string, checkedAt: string }} stamps
+ * @returns {any}
+ */
+export function transformFourTask(trends, fourTask, { generatedAt, checkedAt }) {
+  if (!trends || !Array.isArray(trends.batches) || trends.batches.length === 0) {
+    throw new Error("four-task: intelligence-trends has no batches");
+  }
+  if (!fourTask || !Array.isArray(fourTask.rows) || fourTask.rows.length === 0) {
+    throw new Error("four-task: codex-four-task-results has no rows");
+  }
+  // 只发布全评轮次：缺题时总分不是「低」而是「不完整」，落盘会让它和完整轮同图比较。
+  if (fourTask.all_graded !== true) {
+    throw new Error("four-task: round is not fully graded (graded=" + fourTask.graded + "/" + fourTask.expected + ")");
+  }
+  const scoreMax = Number(fourTask.score_max ?? trends.score_max);
+  if (!Number.isFinite(scoreMax) || scoreMax <= 0) throw new Error("four-task: invalid score_max");
+
+  const latest = trends.batches[trends.batches.length - 1];
+  const weights = latest.task_weights ?? fourTask.task_weights ?? {};
+  for (const id of FOUR_TASK_IDS) {
+    const w = Number(weights[id]);
+    if (!Number.isFinite(w)) throw new Error("four-task: missing weight for " + id);
+  }
+
+  // 历史：每个 (model, effort) 收集一条按时间升序的序列。score 为 null 的批次直接跳过，
+  // 不补点——补一个「沿用上次」会伪造出上游根本没有的测量。
+  /** @type {Map<string, { at: string, score: number }[]>} */
+  const history = new Map();
+  /** @type {any[]} */
+  const batches = [];
+  for (const batch of trends.batches) {
+    const at = batch.completed_at ?? batch.started_at;
+    if (!at) continue;
+    let counted = 0;
+    for (const point of batch.points ?? []) {
+      const score = Number(point?.score);
+      if (!Number.isFinite(score)) continue;
+      counted += 1;
+      const key = candidateKey(point.model, point.effort);
+      const list = history.get(key) ?? [];
+      list.push({ at, score });
+      history.set(key, list);
+    }
+    batches.push({
+      id: String(batch.id),
+      label: String(batch.label ?? batch.id),
+      completed_at: String(at),
+      points: counted,
+    });
+  }
+  // 上游批次顺序不保证升序；趋势图靠数组顺序连线，这里兜底排一次。
+  for (const list of history.values()) {
+    list.sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime());
+  }
+
+  /** @param {any} row */
+  const at = (row) => {
+    // 同一次执行里四个任务时间不同，取最晚的那个作为「这行完成于」。
+    const times = FOUR_TASK_IDS.map((id) => row[id]?.model_completed_at).filter(Boolean);
+    return times.length ? times.sort().at(-1) : null;
+  };
+
+  const candidates = fourTask.rows.map((/** @type {any} */ row) => {
+    const key = candidateKey(row.model, row.effort);
+    const series = history.get(key);
+    if (!series || series.length === 0) {
+      throw new Error("four-task: no history for " + key);
+    }
+    const cells = FOUR_TASK_IDS.map((id) => {
+      const raw = row[id] ?? {};
+      let score;
+      let extra = {};
+      if (id === "candy") {
+        // 糖果只有对错，按满分/零分计；没有中间态。
+        if (typeof raw.correct !== "boolean") throw new Error("four-task: " + key + " candy.correct missing");
+        score = raw.correct ? 100 : 0;
+        extra = { correct: raw.correct };
+      } else if (id === "pompeii") {
+        score = Number(raw.score100);
+        extra = { reward: Number(raw.reward) };
+      } else {
+        score = Number(raw.score);
+      }
+      if (!Number.isFinite(score)) throw new Error("four-task: " + key + " " + id + " score missing");
+      const caps = Array.isArray(raw.applied_caps) ? raw.applied_caps : [];
+      return {
+        id,
+        score,
+        raw_total: Number(raw.raw_score_total ?? score),
+        // 有封顶说明原始分被规则压过，UI 要能看出来「这个分不是它自己拿的」。
+        capped: caps.length > 0,
+        seconds: Number(raw.model_elapsed_seconds ?? NaN),
+        cost_usd: Number(raw.cost_usd ?? NaN),
+        ...extra,
+      };
+    });
+    /** @param {(cell: any) => number} pick */
+    const sum = (pick) => cells.reduce((acc, c) => (Number.isFinite(pick(c)) ? acc + pick(c) : acc), 0);
+    const last = series[series.length - 1];
+    return {
+      model: String(row.model),
+      effort: String(row.effort),
+      score: last.score,
+      score_status: "complete",
+      latest_at: at(row) ?? last.at,
+      tasks: cells,
+      totals: {
+        seconds: sum((/** @type {any} */ c) => c.seconds),
+        cost_usd: Math.round(sum((/** @type {any} */ c) => c.cost_usd) * 1e6) / 1e6,
+      },
+      history: series,
+    };
+  });
+
+  if (candidates.length !== fourTask.rows.length) {
+    throw new Error("four-task: candidate count mismatch");
+  }
+
+  return {
+    schema_version: 1,
+    generated_at: generatedAt,
+    checked_at: checkedAt,
+    protocol: String(fourTask.protocol ?? latest.protocol ?? ""),
+    score_max: scoreMax,
+    round: {
+      id: String(fourTask.round_id ?? latest.id),
+      label: String(latest.label ?? ""),
+      completed_at: String(fourTask.verified_at ?? latest.completed_at ?? ""),
+      expected: Number(fourTask.expected),
+      graded: Number(fourTask.graded),
+      asset_prefix: fourTask.asset_prefix ? String(fourTask.asset_prefix) : null,
+    },
+    tasks: FOUR_TASK_IDS.map((id) => ({
+      id,
+      title_zh: FOUR_TASK_TITLES[id],
+      weight: Number(weights[id]),
+      max: 100,
+    })),
+    candidates,
+    batches,
   };
 }

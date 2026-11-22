@@ -832,3 +832,24 @@ code {
   background: var(--bg-overlay);
   color: var(--fg);
 }
+
+/* 社区体感：条形只做视觉辅助（1–10 归一），数值本身走文本节点，
+   读屏与色觉障碍都不依赖这根条。轨道用 --line，填充用 --brass，深浅色自动跟随。 */
+.rating-cell { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+.rating-bar {
+  display: block;
+  width: 72px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+.rating-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--brass);
+  border-radius: inherit;
+}
+/* 票数 < 3 的行淡化：1 票的 10.0 与 10 票的 8.4 视觉等重会误导。
+   只降不透明度、不改字号与颜色编码，数值本身仍是文本。 */
+[data-low-sample="true"] { opacity: 0.62; }

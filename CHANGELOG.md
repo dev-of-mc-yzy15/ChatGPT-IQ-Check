@@ -8,6 +8,10 @@
 
 - 设计令牌层 `src/styles/tokens.css`：色板、字阶、间距、圆角、阴影、动效全部定死成变量，深浅双主题对偶，配套规范 `docs/superpowers/specs/2026-11-01-visual-design-tokens.md`。
 - 自托管字体：Inter 与 JetBrains Mono 的 latin 子集 woff2（5 个文件，约 94 KB）落在 `src/styles/fonts/`，`@font-face` 带 `unicode-range` 与 `font-display: swap`。
+
+- **接入四题协议（`codex-four-weighted-150-v2`）**。上游 2026-10-27 起用 4 题加权取代 10 题 / 64 题口径，旧的 `/api/radar-bench-score` 随后下线（502；不带 `view` 是 410 `score_full_view_retired`），`/iq/full/` 上明确写着「还没有发布过全量测试结果」。新增两个静态源：`intelligence-trends.json`（24 批次 × 46 点历史）与 `codex-four-task-results.json`（当前轮 184/184 逐任务明细），合成 `four-task.json`；前端新增「四题竞技场」tab（46 条趋势线 + 排名表 + 任务明细）。权重 **秦始皇 60 + 庞贝 45 + 鹈鹕 22.5 + 糖果 22.5 = 150**，与旧 RadarBench 的 0–150 **不可横向比较**（`scripts/contract.mjs` 的 `assertFourTaskShape`、`scripts/lib.mjs` 的 `transformFourTask`、`src/components/FourTaskPanel.tsx`）。
+- **刷新入口改为双链独立**。旧雷达链在上游换协议后是确定性失败，原先会让整个 `refresh` 在第一步就抛错、四题数据一天都落不了盘。现在两条链各自兜错：只剩旧链挂时按成功退出（继续 `exit 1` 只会每天开一张无人能修的 issue），两条都挂才算整轮失败。
+
 - 从零搭建前端骨架：React 19 + Vite 8 + Vitest 5，base 固定为 `/ChatGPT-IQ-Check/`（`src/`、`tests/setup.ts`、`vite.config.ts`、`tsconfig.json`；代表 commit `88b5360`）。
 - 数据抓取管线：binding / summary 归一化、本轮雷达转换与评分、`refresh` CLI 抓取三源并原子写入（`scripts/lib.mjs`、`scripts/refresh.mjs`；代表 commit `13b87dd`、`d39cc27`、`1e10201`）。
 - 静态 JSON 加载层，含超时、结构校验与三槽错误态（`src/data/loader.ts`；代表 commit `210a907`）。
@@ -21,8 +25,11 @@
 - 新鲜度横幅消费 `binding_total` / `min_latest` / `stale_count` 三个此前无人读的字段（`FreshnessBanner.tsx`；`f6dd262`）。
 - 首次落库真实数据快照，34/34 候选抓取成功、`stale_days = 0`（`public/data/`；`5811630`）。
 - 移交前重抓上游数据刷新 `public/data/`，`checked_at` 更新至 2026-10-30，`reused_count` / `missing_count` 均为 0（`813e6d0`）。
+
 - 站点概览兜底源，两种触发：binding 拉不到，以及分数整体已停更 ≥7 天（`fallbackWhenStale` 可关）。抓首页内嵌 `home-overview-data`（`parseHomeOverview` / `buildRadarBenchFromOverview`，`scripts/lib.mjs`；接入见 `scripts/refresh.mjs`），概览与 API 分属两套评分协议，落盘时用 `benchmark` 与 `score_source` 区分，缺的 coverage / 历史 / 分类分填 0 与空，横幅明示「分数取自站点概览兜底」。
 - round 抓取失败时不再整轮失败：形状与分母都合规的旧 round 可沿用，`round_ok` 如实落 false 并记 `round:` 告警。
+
+- 补齐设计规格 v2 §3.3 遗留的 P1「社区体感」：新增第四份可选数据 `public/data/ratings.json`（上游 `api/model-ratings?view=public&window=24h` 的 1–10 星人工评分），管道侧 `transformRatings` / `splitRatingId` / `assertRatingsShape`，前端 `CommunityRatings` 卡片与 `slotRatings` 第四槽。卡片只展示、不参与排序或换算——星级与 RadarBench 的 0–150 是两套刻度，混算会让「体感 8 分」被读成「8/150」；票数 < 3 的行淡化显示，避免 1 票的 10.0 与 10 票的 8.4 视觉等重。可选源失败不进 `status.errors`、不打黄 `status.ok`，只让这张卡片降级（`scripts/lib.mjs`、`scripts/refresh.mjs`、`src/components/CommunityRatings.tsx`、`src/App.tsx`、`src/data/loader.ts`）。
 
 ### 变更
 
@@ -85,9 +92,11 @@
 - 钉死无时区 ISO 串按本地时区解释的用例（`tests/format.test.ts`；`c5dd8ab`）。
 - 各组件回归用例随修复同步补齐（`tests/` 下 15 个测试文件；贯穿 `d764ebc`、`4e2eca3`、`256b36b`、`5083cf2`、`3119def`）。
 - 资产哈希闸门：`scripts/verify-assets.mjs` 逐条比对 `round.json` 钉的 `asset_sha256` 与 `public/assets/` 实际内容，missing / mismatch / unpinned 一律红，孤儿文件只报不判失败；已挂进 `ci.yml` 排在 `check:base` 之后（`tests/verify-assets.test.ts`、`package.json` 的 `verify:assets`）。
+- 社区体感的四层用例：契约（越界星级 / count=0 / 重复 id / `ratings` 长于 `total_slots` / 空数组合法）、纯函数（`splitRatingId` 三条路径、`transformRatings` 的过滤/排序/收口/缺字段）、管道（落盘、502 时整轮成功且不写文件、有旧文件时一个字节不改、内容未变不重写）、组件（比例文案、条形宽度归一、空态、`off` 档中文名、`updated_at` 缺失退回 `checked_at`）。e2e 的数据请求数从「恰 3 次」改为「恰 4 次」，把新槽钉进真实浏览器基线（`tests/contract.test.ts`、`tests/lib.test.ts`、`tests/refresh.test.ts`、`tests/CommunityRatings.test.tsx`、`tests/e2e/base-path.spec.ts`）。
 
 ## 已知问题
 
+- **上游 `/api/radar-bench-score` 自 2026-11-16 起返回 502，每日刷新已连续失败（issue #1）。** 实测 `?view=summary` 一律 502、响应体只有 16 字节 `error code: 502`；同域的 binding、`degradation-codex-latest`、`model-ratings` 都还是 200。不带 `view` 参数仍返回 410 `score_full_view_retired`，说明路由没变，是 summary 这条读路径的后端挂了。影响：`refreshAll` 在「候选数低于下限」处抛错 → 一个字都不落盘 → 线上数据冻结在 2026-11-15 那份，`status.checked_at` 不再前进。**代码侧不必改**：现有「失败即不写、保留旧数据、自动开 issue」就是正确行为，恢复后下一次 cron 会自己补齐；长期不恢复才需要考虑降频或暂停 cron。
 - **`npm audit` 走本机默认 registry 会直接失败。** 本仓库默认 registry 是 `https://registry.npmmirror.com/`，它没实现 audit API，实跑返回 `404 [NOT_IMPLEMENTED] /-/npm/v1/security/* not implemented yet`——不显式指定就会误以为「没有漏洞」，其实是这一步空跑了。**CI 里已经自带** `--registry=https://registry.npmjs.org/`，本机手工跑必须照抄同一串：`npm audit --omit=dev --audit-level=high --registry=https://registry.npmjs.org/`（实跑结果为 0 漏洞）。
 - **上游 round 数据本身仍陈旧。** 移交前虽已重抓一次（`bd877cd`，`checked_at` 刷新至 2026-10-30），但那只是刷新了检查时间：`round_updated_at` 仍停在 `2026-10-24T14:30:39Z`（约 6.2 天），`min_latest` 是 `2026-10-21T02:39:21Z`（约 9 天），`stale_count` 为 **28/34**。上游迟迟不发新的评分轮次，改代码解决不了，得等上游或把刷新频率与告警阈值一起重估。
 - **整改计划中被驳回的 minor 条目仍维持原状。** 计划 §5 明确不做：`task_count` 写回 7（上游已扩到 9 题集，故未回退）、合并双校验（已由 `contract.mjs` 单一化替代）、引入 `react-error-boundary`（仍用自研 `ErrorBoundary`）。另 `fmtRelativeTime`、`loadStatus` 超时两条已在实现中落地，无需再动。

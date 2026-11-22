@@ -5,7 +5,9 @@ import App from "../src/App";
 import { useTheme } from "../src/lib/useTheme";
 import type { StatusData } from "../src/types";
 
-vi.mock("../src/data/loader", () => {
+vi.mock("../src/data/loader", async () => {
+  // vi.mock 的工厂会被提升到文件顶部，不能引用顶层的 import，只能在这里动态取。
+  const { makeFourTask } = await import("./fixtures/fourTask");
   const ok = <T,>(data: T) => ({ data, error: null });
   const payload = {
     round: {
@@ -88,17 +90,36 @@ vi.mock("../src/data/loader", () => {
       stale_days: 0,
       errors: [],
     },
+    ratings: {
+      schema_version: 1,
+      generated_at: "2026-10-24T00:00:00Z",
+      checked_at: "2026-10-24T00:00:00Z",
+      window: "rolling_24h",
+      window_hours: 24,
+      source_updated_at: "2026-10-24T00:00:00Z",
+      timezone: "Asia/Shanghai",
+      total_slots: 2,
+      ratings: [
+        { id: "A-high", model: "A", effort: "high", label: "A high", average: 8.5, count: 3 },
+      ],
+    },
   };
+
+  const fourTask = makeFourTask();
 
   return {
     loadAll: vi.fn(async () => ({
       round: ok(payload.round),
       radarBench: ok(payload.radarBench),
       status: ok(payload.status),
+      ratings: ok(payload.ratings),
+      fourTask: ok(fourTask),
     })),
     slotRound: vi.fn(async () => ok(payload.round)),
     slotRadarBench: vi.fn(async () => ok(payload.radarBench)),
     slotStatus: vi.fn(async () => ok(payload.status)),
+    slotRatings: vi.fn(async () => ok(payload.ratings)),
+    slotFourTask: vi.fn(async () => ok(fourTask)),
     toSlot: vi.fn(),
   };
 });
@@ -216,7 +237,7 @@ describe("App", () => {
     await screen.findByRole("heading", { name: /降智雷达/ });
 
     const tabs = screen.getAllByRole("tab");
-    expect(tabs).toHaveLength(3);
+    expect(tabs).toHaveLength(4);
     for (const tab of tabs) {
       const controls = tab.getAttribute("aria-controls");
       expect(controls).toBeTruthy();
@@ -236,11 +257,17 @@ describe("App", () => {
     await screen.findByRole("heading", { name: /降智雷达/ });
 
     const roundTab = screen.getByRole("tab", { name: /本轮雷达/ });
+    const fourTab = screen.getByRole("tab", { name: /四题竞技场/ });
     const trendTab = screen.getByRole("tab", { name: /RadarBench 趋势/ });
     const aboutTab = screen.getByRole("tab", { name: /关于/ });
 
+    // 顺序：本轮雷达 → 四题竞技场 → RadarBench 趋势 → 关于
     roundTab.focus();
     fireEvent.keyDown(roundTab, { key: "ArrowRight" });
+    expect(fourTab).toHaveAttribute("aria-selected", "true");
+    expect(fourTab).toHaveFocus();
+
+    fireEvent.keyDown(fourTab, { key: "ArrowRight" });
     expect(trendTab).toHaveAttribute("aria-selected", "true");
     expect(trendTab).toHaveFocus();
 

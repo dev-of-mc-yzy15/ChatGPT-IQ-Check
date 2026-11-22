@@ -19,6 +19,7 @@
 - 展示 CodexRadar 的 RadarBench 加权分数（0–`score_max`，当前 150）与覆盖率、评分状态。
 - 给出「本轮雷达」：模型 × 档位（低 / 中 / 高 / 极高 / 最高 / 极限）的分数矩阵，点开可看逐题得分、耗时、成本。
 - 给出「RadarBench 趋势」：按日桶聚合的历史曲线，缺口断开、空心点表示 provisional、红点标出降智信号。
+- 给出「社区体感」：近 24 小时 1–10 星人工评分的水平条与票数，只列出有票的档位，票数 < 3 的淡化；与基准分不混算。
 - 顶部新鲜度横幅：数据检查时间、最近评分时间、本轮更新时间，超 48h / 7d 两级告警。
 - 深浅色主题、键盘可达（跳过链接 / 焦点样式）、错误边界与空态。
 
@@ -41,8 +42,8 @@ Node 版本要求：**>= 24**。
 ```
 src/
   App.tsx               页面组合：本轮雷达 / 趋势 / 关于 三个 tab
-  components/           RoundMatrix RoundDetail CandidateTable TrendChart
-                        TrendControls FreshnessBanner ThemeToggle SkipLink ErrorBoundary
+  components/           RoundMatrix RoundDetail CommunityRatings CandidateTable
+                        TrendChart TrendControls FreshnessBanner ThemeToggle SkipLink ErrorBoundary
   data/loader.ts        拉取 + 校验 public/data/*.json，带超时与错误态
   lib/derive.ts         纯函数：排序 / Δ / 降智点 / 日桶 / 矩阵
   lib/format.ts         格式化：分数、耗时、成本、时间
@@ -57,29 +58,46 @@ public/data/
   radar-bench.json      候选分数 + 历史序列
   round.json            本轮逐题明细
   status.json           抓取状态与新鲜度
+  ratings.json          社区体感（1–10 星，可选项，缺了不影响其它区块）
+  four-task.json        四题加权 150 分（现行协议：46 配置 × 24 批次）
 tests/                  Vitest 单测与组件测试 + fixtures
 ```
 
 ## 数据源
+
+**上游在 2026-10-27 换了评测协议**：旧的 10 题 / 64 题口径被 `codex-four-weighted-150-v2`（四题加权 150 分）取代。旧接口随后下线，新数据改用静态 JSON 提供。项目因此同时维护两条管道。
+
+### 旧 RadarBench 与站点概览兜底
 
 | 用途 | 地址 |
 |---|---|
 | 候选目录 | `https://codexradar.com/data/radar-bench-binding.json` |
 | 单候选分数 + 历史 | `https://codexradar.com/api/radar-bench-score?model=&effort=&view=summary&selection=user-selected-v1` |
 | 本轮看板 | `https://codexradar.com/degradation-codex-latest.json` |
-| **兜底源**（binding 不可用时） | `https://codexradar.com/` 首页内嵌的 `<script id="home-overview-data">` |
+| **兜底源**（binding 不可用或分数停更 ≥7 天） | `https://codexradar.com/` 首页内嵌的 `<script id="home-overview-data">` |
 
-前三个端点共用一套评分协议（`radar-bench-final64-*`、64 题任务集），带 coverage、历史与分类分。首页概览是**另一套协议**（`codex-four-weighted-150-v2`，同为 150 分制但权重口径不同），只有分数、成本与耗时，且覆盖的模型更多（含 `/data/` 不跟踪的 `*-terra` 档）。
+旧协议候选、分数与本轮端点带 coverage、历史与分类分。首页概览是另一套四题评分协议，只有分数、成本与耗时；落盘时使用 `site-overview-codex-four` 标识，不与旧协议混算。
 
-所以兜底分两种触发，出口一致：
+### 现行协议（四题加权）
 
-1. **端点挂了** —— binding 拉不到就整轮失败的话太脆，直接改走概览。
-2. **端点活着但分数停更** —— 分数整体已 ≥7 天没更新（与横幅的告警阈值同一个数）就主动改走概览；否则「过期」会被一轮轮刷新固化下去。
+| 用途 | 地址 |
+|---|---|
+| 24 批次历史分数 | `https://codexradar.com/data/intelligence-trends.json` |
+| 当前轮逐任务明细 | `https://codexradar.com/data/codex-four-task-results.json` |
 
-触发后落盘文档的 `benchmark` 会变成 `site-overview-codex-four`、`score_source` 记成 `site-overview`、`errors` 留一条 `overview:` 记录、`ok` 落 false，缺的 coverage / 历史 / 分类分一律填 0 与空（0/0 看得见，比编一个像样的值诚实），概览轮次完成时间充当 `latest_graded_at`。分数新鲜时仍走结构化端点，概览只是并行发一次、不参与主流程。`refreshAll({ fallbackWhenStale: false })` 可关掉第 2 种触发。
+四个任务：**秦始皇 60 + 庞贝 45 + 鹈鹕 22.5 + 糖果 22.5 = 150**。单项内部 0–100，乘权重计入总分。与旧 RadarBench 的 0–150 **不可横向比较**。
 
-不使用的接口（上游已废弃或不可用，留作备忘）：
-`/data/intelligence-efficiency.json`（旧 fallback）、`/api/v1/table`（410）、`/api/intelligence-efficiency-metrics`（502）。
+### 可选源
+
+| 用途 | 地址 |
+|---|---|
+| 社区体感（24h 星级） | `https://codexradar.com/api/model-ratings?view=public&window=24h` |
+
+社区体感是**可选源**：抓不到时整轮照常成功，只是不写 `ratings.json`，前端那张卡片显示不可用，不把 `status.ok` 打成 false。它也不进 `status.errors` —— 可选功能的故障不该升格成全站告警。
+
+### 停用
+
+`/data/intelligence-efficiency.json`（旧 fallback）、`/api/v1/table`（410）、`/api/intelligence-efficiency-metrics`（502）、`/api/radar-insights`（502）。
 
 全部匿名可拉，**不需要任何密钥**。
 
@@ -145,7 +163,7 @@ npm run refresh -- --force  # 内容没变也强制重写（重置时间戳）
 
 ## 数据契约
 
-三份 JSON 都由 `scripts/refresh.mjs` 生成，结构由 `scripts/contract.mjs` 校验（前端 loader 加载时复用同一份），前端 `src/types.ts` 与之对应。
+五份 JSON 都由 `scripts/refresh.mjs` 生成（`ratings.json` 为可选项，抓不到就不写），结构由 `scripts/contract.mjs` 校验（前端 loader 加载时复用同一份），前端 `src/types.ts` 与之对应。
 
 ### `radar-bench.json`
 
@@ -237,6 +255,74 @@ npm run refresh -- --force  # 内容没变也强制重写（重置时间戳）
 ```
 
 `stale_days` 是历史字段，取分数与轮次的**较大值**。只看它会把「轮次 8 天没开新轮、分数昨天刚涨」也说成"数据过期"，所以横幅改读拆开的两个口径，分数过期与轮次待更新分别定性。
+
+### `ratings.json`（可选）
+
+```jsonc
+{
+  "schema_version": 1,
+  "generated_at": "ISO8601",
+  "checked_at": "ISO8601",
+  "window": "rolling_24h",
+  "window_hours": 24,
+  "source_updated_at": "ISO8601",   // 上游 updated_at；缺失为 null
+  "timezone": "Asia/Shanghai",
+  "total_slots": 56,                // 上游声明的档位总数（含无人投票的）
+  "ratings": [
+    { "id": "gpt-6-astra-max", "model": "gpt-6-astra", "effort": "max",
+      "label": "GPT-6 Astra max", "average": 8.4, "count": 9 }
+  ]
+}
+```
+
+- **只落有票的档位**：上游对 56 个 model-effort 各发一行，无票的是 `average: null, count: 0`，全量落盘只会变成几十行「—」，还会把 `rated/total` 的比例埋掉。
+- 星级刻度是 **1–10**，与 RadarBench 的 0–150 是两套口径，**不参与任何排序或换算**。
+- `id` 是 `model-effort` 的扁平串，档位从右往左取（model 自己带连字符）。未知档位退回最后一个连字符，新档位不会整条消失。
+- 契约允许 `ratings` 为空数组：窗口内没人投票是「没有体感」，不是「数据坏了」。
+
+### `four-task.json`（现行四题协议）
+
+```jsonc
+{
+  "schema_version": 1,
+  "protocol": "codex-four-weighted-150-v2",
+  "score_max": 150,
+  "round": {
+    "id": "codex-four-20261116-current-auth-5c",
+    "label": "2026-11-16",
+    "completed_at": "ISO8601",
+    "expected": 184, "graded": 184,      // 题级：184 个任务全部评分
+    "asset_prefix": "/assets/codex-four-task-20261116-current--"
+  },
+  "tasks": [
+    { "id": "combined", "title_zh": "秦始皇", "weight": 60, "max": 100 }
+    // pompeii 庞贝 45 / pelican 鹈鹕 22.5 / candy 糖果 22.5
+  ],
+  "candidates": [
+    { "model": "gpt-6.1-sol", "effort": "low", "score": 113.175,
+      "score_status": "complete", "latest_at": "ISO8601",
+      "tasks": [
+        { "id": "combined", "score": 69, "raw_total": 80.5, "capped": true,
+          "seconds": 254.19, "cost_usd": 0.166 }
+        // candy 额外带 correct: true/false，score 恒为 100 或 0
+      ],
+      "totals": { "seconds": 1193.5, "cost_usd": 0.53 },
+      "history": [ { "at": "ISO8601", "score": 113.175 } ] }
+  ],
+  "batches": [ { "id": "…", "label": "2026-11-16", "completed_at": "…", "points": 46 } ]
+}
+```
+
+不变量（`assertFourTaskShape` 逐条校验）：
+
+- `tasks` 必须**正好**是这四个 id，且 `weight` 之和 `=== score_max`。上游增删任务必然改变总分口径，静默放行会让「分数跳变」被误读成「模型降智」。
+- `candidates[].score` 必须等于 `history` 末点，否则表格和曲线讲的不是同一件事。
+- `history` 按时间**升序**（趋势图按数组顺序连线，乱序会画出折返锯齿）。
+- `score` 落在 `[0, score_max]`；`capped: true` 表示原始分被规则上限压过（如核心关系不全）。
+- 转换层拒绝 `all_graded !== true` 的轮次：缺题时总分是「不完整」，不是「低」。
+
+与 `radar-bench.json` 的 **0–150 不可横向比较**——两套题不同。前端把它们放在两个独立 tab 里，不合并、不换算。
+- 抓取失败时**不写文件**，盘上保留上一轮结果；前端按它自己的 `checked_at` 显示陈旧。
 
 ### 动画资产：已本地化并渲染
 

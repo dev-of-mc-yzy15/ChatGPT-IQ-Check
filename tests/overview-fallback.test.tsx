@@ -55,6 +55,8 @@ vi.mock("../src/data/loader", () => {
     slotRadarBench: async () => ok(radarDoc),
     slotRound: async () => ok(roundDoc),
     slotStatus: async () => ok(statusDoc),
+    slotRatings: async () => ({ data: null, error: "ratings.json unavailable" }),
+    slotFourTask: async () => ({ data: null, error: "four-task.json unavailable" }),
   };
 });
 

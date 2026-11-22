@@ -130,7 +130,7 @@ test.describe("子路径部署与 CSP 的真实浏览器基线", () => {
 
   // 防：「200 了但其实没渲染」。资源全绿 + 白屏是最难查的一类，必须有内容级断言。
   // 顺带守住数据请求的数量与落点：改动 loader 导致多打/少打、或拼回根路径，这里会红。
-  test("真实业务内容渲染，且数据请求恰 3 次并全落在子路径下", async ({ page }) => {
+  test("真实业务内容渲染，且数据请求恰 5 次并全落在子路径下", async ({ page }) => {
     const dataRequests: string[] = [];
     page.on("request", (request) => {
       if (request.url().includes("/data/")) dataRequests.push(request.url());
@@ -140,11 +140,12 @@ test.describe("子路径部署与 CSP 的真实浏览器基线", () => {
     const probe = readStatusProbe();
     // 覆盖行直出 status.json 的 candidates_ok/candidates_total，等于证明 fetch→校验→渲染全链路通。
     await expect(page.locator("#root")).toContainText(`${probe.candidates_ok}/${probe.candidates_total} 候选`);
-    // 三份数据缺一不可，README 也写着三槽互不连坐。
+    // 四份数据缺一不可，README 也写着四槽互不连坐。
     await expect(page.getByRole("tablist")).toBeVisible();
     await expect(page.getByRole("tab", { name: "本轮雷达" })).toHaveAttribute("aria-selected", "true");
 
-    expect(dataRequests.length, `/data/ 请求应恰 3 次，实际 ${dataRequests.join(", ")}`).toBe(3);
+    // 五份：radar-bench / round / status / ratings / four-task
+    expect(dataRequests.length, `/data/ 请求应恰 5 次，实际 ${dataRequests.join(", ")}`).toBe(5);
     for (const url of dataRequests) {
       expect(url, `${url} 必须落在 ${BASE_PATH}data/ 下`).toContain(`${BASE_PATH}data/`);
     }

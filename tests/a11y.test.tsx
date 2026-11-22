@@ -3,13 +3,15 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "vitest-axe";
 import App from "../src/App";
-import type { RadarBenchData, RoundData, StatusData } from "../src/types";
+import type { RadarBenchData, RatingsData, RoundData, StatusData } from "../src/types";
 
 // 闸门目的：把「滚动容器可聚焦 / aria-labelledby / live region / Δ 符号 / tabs 键盘约定」
 // 这些已经修过的 a11y 行为钉死在自动化里，回归不许静默溜过去。
 // loader 的 mock 形状照抄 App.test.tsx：只在外层切一刀，组件树全用真的。
 
-vi.mock("../src/data/loader", () => {
+vi.mock("../src/data/loader", async () => {
+  // vi.mock 的工厂会被提升到文件顶部，不能引用顶层的 import，只能在这里动态取。
+  const { makeFourTask } = await import("./fixtures/fourTask");
   const ok = <T,>(data: T) => ({ data, error: null });
 
   // 三个候选的 history 分别造出涨 / 平 / 跌的相邻两日，供 Δ 符号断言用。
@@ -127,15 +129,36 @@ vi.mock("../src/data/loader", () => {
     errors: [],
   };
 
+  const ratings: RatingsData = {
+    schema_version: 1,
+    generated_at: "2026-10-24T00:00:00Z",
+    checked_at: "2026-10-24T00:00:00Z",
+    window: "rolling_24h",
+    window_hours: 24,
+    source_updated_at: "2026-10-24T00:00:00Z",
+    timezone: "Asia/Shanghai",
+    total_slots: 3,
+    ratings: [
+      { id: "A-high", model: "A", effort: "high", label: "A high", average: 8.5, count: 3 },
+      { id: "B-high", model: "B", effort: "high", label: "B high", average: 6, count: 1 },
+    ],
+  };
+
+  const fourTask = makeFourTask();
+
   return {
     loadAll: vi.fn(async () => ({
       round: ok(round),
       radarBench: ok(radarBench),
       status: ok(status),
+      ratings: ok(ratings),
+      fourTask: ok(fourTask),
     })),
     slotRound: vi.fn(async () => ok(round)),
     slotRadarBench: vi.fn(async () => ok(radarBench)),
     slotStatus: vi.fn(async () => ok(status)),
+    slotRatings: vi.fn(async () => ok(ratings)),
+    slotFourTask: vi.fn(async () => ok(fourTask)),
     toSlot: vi.fn(),
   };
 });

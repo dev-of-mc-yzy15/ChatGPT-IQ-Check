@@ -1,5 +1,17 @@
-import type { RadarBenchData, RoundData, StatusData } from "../types";
-import { assertRadarBenchShape, assertRoundShape, assertStatusShape } from "../../scripts/contract.mjs";
+import type {
+  FourTaskData,
+  RadarBenchData,
+  RatingsData,
+  RoundData,
+  StatusData,
+} from "../types";
+import {
+  assertFourTaskShape,
+  assertRadarBenchShape,
+  assertRatingsShape,
+  assertRoundShape,
+  assertStatusShape,
+} from "../../scripts/contract.mjs";
 
 /** 单份数据的加载结果。失败只塌掉自己这一槽，不连坐整页。 */
 export type Slot<T> = { data: T | null; error: string | null };
@@ -8,6 +20,10 @@ export type LoadedSlots = {
   radarBench: Slot<RadarBenchData>;
   round: Slot<RoundData>;
   status: Slot<StatusData>;
+  /** 社区体感是 P1 可选源：这一槽失败只该让那张卡片显示不可用。 */
+  ratings: Slot<RatingsData>;
+  /** 四题协议（2026-10 起的现行口径）：与旧 RadarBench 并列，互不依赖。 */
+  fourTask: Slot<FourTaskData>;
 };
 
 export function urlFor(rel: string, base = import.meta.env.BASE_URL || "/"): string {
@@ -61,6 +77,10 @@ export function validateStatus(data: StatusData): void {
   guard("status.json", assertStatusShape, data);
 }
 
+export function validateRatings(data: RatingsData): void {
+  guard("ratings.json", assertRatingsShape, data);
+}
+
 export async function loadRadarBench(): Promise<RadarBenchData> {
   const data = await getJson<RadarBenchData>("data/radar-bench.json");
   validateRadarBench(data);
@@ -79,6 +99,22 @@ export async function loadStatus(): Promise<StatusData> {
   return data;
 }
 
+export function validateFourTask(data: FourTaskData): void {
+  guard("four-task.json", assertFourTaskShape, data);
+}
+
+export async function loadFourTask(): Promise<FourTaskData> {
+  const data = await getJson<FourTaskData>("data/four-task.json");
+  validateFourTask(data);
+  return data;
+}
+
+export async function loadRatings(): Promise<RatingsData> {
+  const data = await getJson<RatingsData>("data/ratings.json");
+  validateRatings(data);
+  return data;
+}
+
 /** 把一次加载压成槽结果：成功留 data，失败留 message，绝不抛。 */
 export async function toSlot<T>(pending: Promise<T>): Promise<Slot<T>> {
   try {
@@ -91,17 +127,21 @@ export async function toSlot<T>(pending: Promise<T>): Promise<Slot<T>> {
 export const slotRadarBench = () => toSlot(loadRadarBench());
 export const slotRound = () => toSlot(loadRound());
 export const slotStatus = () => toSlot(loadStatus());
+export const slotRatings = () => toSlot(loadRatings());
+export const slotFourTask = () => toSlot(loadFourTask());
 
 /**
- * 三份数据各走各的：任何一份 404 / 结构异常，其余两槽照常可用。
+ * 五份数据各走各的：任何一份 404 / 结构异常，其余槽照常可用。
  * 用 Promise.all（不是 allSettled + 裸 Promise）是因为 toSlot 已经吃掉异常，
  * 这里不会 reject，顺序也稳定。
  */
 export async function loadAll(): Promise<LoadedSlots> {
-  const [radarBench, round, status] = await Promise.all([
+  const [radarBench, round, status, ratings, fourTask] = await Promise.all([
     slotRadarBench(),
     slotRound(),
     slotStatus(),
+    slotRatings(),
+    slotFourTask(),
   ]);
-  return { radarBench, round, status };
+  return { radarBench, round, status, ratings, fourTask };
 }

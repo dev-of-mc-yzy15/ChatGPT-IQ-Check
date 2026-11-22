@@ -6,13 +6,21 @@ import {
   transformBinding,
   transformSummary,
   transformRound,
+  transformRatings,
+  transformFourTask,
   mergeRadarBench,
   validateRadarBench,
   validateRound,
+  validateRatings,
   parseHomeOverview,
   buildRadarBenchFromOverview,
 } from "./lib.mjs";
-import { assertRadarBenchShape, assertRoundShape, candidateKey } from "./contract.mjs";
+import {
+  assertFourTaskShape,
+  assertRadarBenchShape,
+  assertRoundShape,
+  candidateKey,
+} from "./contract.mjs";
 
 export const BINDING_URL = "https://codexradar.com/data/radar-bench-binding.json";
 export const SUMMARY_URL = "https://codexradar.com/api/radar-bench-score";
@@ -27,6 +35,14 @@ export const SITE_URL = "https://codexradar.com/";
 export const OVERVIEW_TIMEOUT_MS = 8000;
 /** 概览最多试两次：一次 5xx/网络抖动就丢掉整条兜底路太脆，再多就又变成拖累。 */
 const OVERVIEW_TRIES = 2;
+/** 社区体感：1–10 星人工打分，24h 滚动窗口。P1 可选源，抓不到不影响主流程。 */
+export const RATINGS_URL = "https://codexradar.com/api/model-ratings?view=public&window=24h";
+/**
+ * 四题协议（codex-four-weighted-150-v2）取代了 10 月底之前的 10/64 题口径。
+ * 这两个是静态文件，不在挂掉的那批 /api/* 里——旧接口 410/502 时它们照常 200。
+ */
+export const TRENDS_URL = "https://codexradar.com/data/intelligence-trends.json";
+export const FOUR_TASK_URL = "https://codexradar.com/data/codex-four-task-results.json";
 function defaultDataDir() {
   try {
     return fileURLToPath(new URL("../public/data/", import.meta.url));
@@ -500,6 +516,7 @@ function staleDays(iso, now) {
  *   fallbackWhenStale?: boolean,
  *   minRadarCandidates?: number,
  *   minRoundCandidates?: number,
+ *   timestamp?: string,
  * }} [opts]
  */
 export async function refreshAll({
@@ -512,6 +529,7 @@ export async function refreshAll({
   fallbackWhenStale = true,
   minRadarCandidates,
   minRoundCandidates,
+  timestamp,
 } = {}) {
   // 整轮抓取有硬上限：spawn 侧 workflow 的 timeout-minutes 是 10，没有总时限时最坏
   // 耗时 ≈ 34 候选 / 并发 4 × 单 URL 63s + binding 与 round 各 63s ≈ 11.6 分钟，
@@ -569,11 +587,15 @@ export async function refreshAll({
   /** radar-bench-api = 走结构化端点；site-overview = 兜底到站点概览。 */
   let scoreSource = "radar-bench-api";
   // 整轮共用一个落盘时间戳：两个分支各取一次会让 generated_at 与 checked_at 差出
-  // 几十毫秒，contentEqual 又特意 strip 掉它们，白留噪声。
-  const stamp = now().toISOString();
+  // 几十毫秒，contentEqual 又特意 strip 掉它们，白留噪声。调用方可以传进来一份，
+  // 让四题与五份雷达数据共用同一秒（重试时尤其不该各漂一次）。
+  const stamp = timestamp ?? now().toISOString();
 
+  // 主源成功数不足时的报错要用的分母（只在内层赋值，外层按它判），故提前声明。
+  /** @type {any[]} */
+  let results = [];
   if (binding) {
-    const results = await mapLimit(binding.candidates, 4, async (/** @type {any} */ candidate) => {
+    results = await mapLimit(binding.candidates, 4, async (/** @type {any} */ candidate) => {
       const key = candidateKey(candidate.model, candidate.effort);
       try {
         const raw = await fetchJson(
@@ -671,6 +693,24 @@ export async function refreshAll({
         bindingError instanceof Error ? bindingError.message : String(bindingError)
       }），已回落到站点概览 ${bindingTotal} 条`,
     );
+  }
+
+  // radarBench 在 if/else 里都已赋值。API 分支只用成功的候选重建，避免把被丢弃项占位；
+  // 兜底分支直接沿用概览文档。此处不再重复合并（会生成第二个 fetch_id），也不对
+  // overview 分支用主源 freshCount 再校验一次——该分支按定义 freshCount 为 0。
+
+  // 社区体感是 P1 可选源：任何失败都只降级成「这张卡片这一轮没有新数据」。
+  // 刻意不写进 status.errors —— errors 会让 status.ok 变 false，进而让顶部横幅
+  // 为一张「不参与主排序」的卡片变黄，等于把可选功能的故障升格成全站告警。
+  /** @type {import("./lib.mjs").RatingsDoc | null} */
+  let ratings = null;
+  try {
+    const ratingsRaw = await fetchJson(RATINGS_URL, { deadline }, fetchImpl);
+    ratings = transformRatings(ratingsRaw, { generatedAt: stamp, checkedAt: stamp });
+    validateRatings(ratings);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn(`社区体感抓取失败（不影响主数据）：${message}`);
   }
 
   // 旧文件先读完再定 status：损坏的旧数据要计入 errors，不能等 status 定格后才发现。
@@ -813,34 +853,132 @@ export async function refreshAll({
     statusChanged = !carryVolatile(status, oldStatus, STATUS_VOLATILE_FIELDS);
   }
 
+  // 可选源单独判定：抓不到就一个字节都不动，盘上留上一轮的结果，
+  // 前端靠它自己的 checked_at 显示陈旧，而不是突然变成 404 白卡。
+  let ratingsChanged = false;
+  if (ratings) {
+    ratingsChanged = true;
+    if (!force) {
+      // 这里的 errors 数组是临时的一次性容器：旧体感文件损坏只该当作「没有旧数据」，
+      // 不能混进 status.errors（理由同上面的 try/catch）。
+      const oldRatings = await readJsonIfExists(join(outDir, "ratings.json"), []);
+      if (oldRatings && contentEqual(oldRatings, ratings)) {
+        ratingsChanged = !carryVolatile(ratings, oldRatings, VOLATILE_FIELDS);
+      }
+    }
+    if (ratingsChanged) await writeJson(join(outDir, "ratings.json"), ratings);
+  }
+
   if (radarChanged) await writeJson(join(outDir, "radar-bench.json"), radarBench);
   // roundData 为 null 说明这一轮既抓不到也没有旧数据可复用：不写盘，留旧的（如果有）。
   if (roundData && roundChanged) await writeJson(join(outDir, "round.json"), roundData);
   // status 以前是无条件写，checked_at 每次都变，git diff 恒脏 → 每天一条空提交。
   if (statusChanged) await writeJson(join(outDir, "status.json"), status);
-  return { radarBench, round: roundData, status };
+  return { radarBench, round: roundData, status, ratings };
+}
+
+/**
+ * 四题协议刷新：一条与 refreshAll 完全独立的管道。
+ *
+ * 独立的原因不是洁癖，是上游真的换协议了：旧的 `/api/radar-bench-score`
+ * 从 2026-11-16 起 502（不带 view 是 410 score_full_view_retired），
+ * 全量测试页 `/iq/full/` 直接写着「还没有发布过全量测试结果」。
+ * 把新源塞进 refreshAll 会让它被旧链的「候选不足」异常挡住，一天都落不了盘。
+ *
+ * 落盘仍然走幂等路径：内容没变就只回填 checked_at，不做无意义的提交。
+ *
+ * @param {{ fetchImpl?: typeof fetch, outDir?: string, now?: () => Date, nowMs?: () => number, budgetMs?: number, force?: boolean, timestamp?: string }} [options]
+ * @returns {Promise<any>}
+ */
+export async function refreshFourTask({
+  fetchImpl = fetch,
+  outDir = DATA_DIR,
+  now = () => new Date(),
+  nowMs = Date.now,
+  budgetMs = 3 * 60 * 1000,
+  force = false,
+  timestamp,
+} = {}) {
+  // 两个文件加起来约 1.1MB，给 3 分钟足够；单独设预算是因为它不该吃主链的 7 分钟额度。
+  const deadline = nowMs() + budgetMs;
+  const trendsRaw = await fetchJson(TRENDS_URL, { deadline }, fetchImpl);
+  const fourRaw = await fetchJson(FOUR_TASK_URL, { deadline }, fetchImpl);
+  const stamp = timestamp ?? now().toISOString();
+  const doc = transformFourTask(trendsRaw, fourRaw, { generatedAt: stamp, checkedAt: stamp });
+  assertFourTaskShape(doc);
+
+  let changed = true;
+  if (!force) {
+    // 旧文件损坏只该当作「没有旧数据」，不升级成失败：坏文件本来就要被覆盖。
+    const old = await readJsonIfExists(join(outDir, "four-task.json"), []);
+    if (old && contentEqual(old, doc)) {
+      changed = !carryVolatile(doc, old, VOLATILE_FIELDS);
+    }
+  }
+  if (changed) await writeJson(join(outDir, "four-task.json"), doc);
+  return doc;
 }
 
 async function main() {
   const options = parseArgs(process.argv.slice(2));
-  const result = await refreshAll({ force: options.force });
-  console.log(
-    `wrote ${result.radarBench.candidates.length} candidates, ${
-      result.round?.candidates.length ?? 0
-    } round candidates`,
-  );
-  if (!result.status.round_ok) {
-    console.warn("round trend not refreshed this round");
-  }
-  if (result.status.reused_count) {
-    console.warn(`${result.status.reused_count} candidate(s) reused previous data`);
-  }
-  if (result.status.missing_count) {
-    console.warn(
-      `${result.status.missing_count} candidate(s) dropped (no previous data), ` +
-        `${result.status.candidates_ok}/${result.status.binding_total} still fresh`,
+
+  // 四题先跑，且单独兜错。旧雷达链在上游换协议后是必然失败（34/34 候选全 502），
+  // 让它先抛会把四题数据一起挡在门外——那样每天都是「跑了但一个字都没写」。
+  /** @type {any} */
+  let fourTask = null;
+  /** @type {any} */
+  let fourTaskError = null;
+  // 重试时沿用同一份时间戳：四题与四份雷达数据放在同一秒里，看得出是同一次运行。
+  const stamp = new Date().toISOString();
+  try {
+    fourTask = await refreshFourTask({ force: options.force, timestamp: stamp });
+    console.log(
+      `wrote four-task: ${fourTask.candidates.length} candidates x ${fourTask.batches.length} batches ` +
+        `(${fourTask.protocol}, round ${fourTask.round.label})`,
     );
+  } catch (error) {
+    fourTaskError = error;
+    console.warn("四题协议刷新失败：" + (error instanceof Error ? error.message : String(error)));
   }
+
+  /** @type {any} */
+  let result = null;
+  /** @type {any} */
+  let radarError = null;
+  try {
+    result = await refreshAll({ force: options.force, timestamp: stamp });
+  } catch (error) {
+    radarError = error;
+    console.warn("旧雷达链刷新失败：" + (error instanceof Error ? error.message : String(error)));
+  }
+
+  if (result) {
+    console.log(
+      `wrote ${result.radarBench.candidates.length} candidates, ${result.round.candidates.length} round candidates`,
+    );
+    if (result.ratings) {
+      console.log(`wrote ${result.ratings.ratings.length}/${result.ratings.total_slots} rated slots`);
+    } else {
+      console.warn("社区体感本轮未更新（沿用盘上已有的 ratings.json）");
+    }
+    if (result.status.reused_count) {
+      console.warn(`${result.status.reused_count} candidate(s) reused previous data`);
+    }
+    if (result.status.missing_count) {
+      console.warn(
+        `${result.status.missing_count} candidate(s) dropped (no previous data), ` +
+          `${result.status.candidates_ok}/${result.status.binding_total} still fresh`,
+      );
+    }
+  }
+
+  // 两条链都挂才算整轮失败。只剩旧链挂时按成功退出：它已经确定性地死了
+  // （上游删了接口，不是抖动），继续 exit 1 只会每天开一张无人能修的 issue。
+  if (radarError && !fourTask) throw radarError;
+  if (radarError && fourTask) {
+    console.warn("旧雷达链仍未恢复（上游已换协议），本轮按新协议成功处理。");
+  }
+  if (fourTaskError && !result) throw fourTaskError;
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

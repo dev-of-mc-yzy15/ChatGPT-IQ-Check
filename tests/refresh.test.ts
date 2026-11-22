@@ -11,10 +11,11 @@ import {
   roundCandidateFloor,
   parseArgs,
 } from "../scripts/refresh.mjs";
-import { assertRadarBenchShape, assertRoundShape, assertStatusShape } from "../scripts/contract.mjs";
+import { assertRadarBenchShape, assertRatingsShape, assertRoundShape, assertStatusShape } from "../scripts/contract.mjs";
 import bindingRaw from "./fixtures/binding.sample.json";
 import summaryRaw from "./fixtures/summary.sample.json";
 import roundRaw from "./fixtures/round.sample.json";
+import ratingsRaw from "./fixtures/ratings.sample.json";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const script = resolve(repoRoot, "scripts/refresh.mjs");
@@ -502,7 +503,6 @@ describe("fetchJson 总预算", () => {
     expect(scoreCalls).toHaveLength(3);
   });
 });
-
 
 // 缺陷 1：readJsonIfExists 只保证「JSON 可解析」，不保证形状。旧实现直接
 // (oldRadar?.candidates ?? []).map(...)，于是 candidates 是对象/字符串、或元素是 null 时
@@ -1143,5 +1143,107 @@ describe("round 抓取失败不得陪葬 radar", () => {
     expect(result.round).toBeNull();
     expect(result.status.round_ok).toBe(false);
     expect(result.status.errors.join("\n")).toMatch(/没有可复用的上一轮数据/);
+  });
+});
+
+describe("社区体感（可选源）", () => {
+  const ratingsFetch = (opts: { failRatings?: boolean } = {}) =>
+    vi.fn(async (url: string) => {
+      if (url.includes("radar-bench-binding")) return jsonResponse(bindingRaw);
+      if (url.includes("radar-bench-score")) {
+        const u = new URL(url);
+        return jsonResponse({
+          ...summaryRaw,
+          model: u.searchParams.get("model"),
+          effort: u.searchParams.get("effort"),
+        });
+      }
+      if (url.includes("degradation-codex-latest")) return jsonResponse(roundRaw);
+      if (url.includes("model-ratings")) {
+        // 502 是上游当前的真实形态（2026-11-16 起 summary 与体感同域故障时出现过），
+        // 走 HttpError 分支，恰好验证「非 2xx 也只降级不抛」。
+        if (opts.failRatings) return jsonResponse({ error: "bad gateway" }, 502);
+        return jsonResponse(ratingsRaw);
+      }
+      throw new Error("unexpected url " + url);
+    });
+
+  const baseOpts = (dir: string) => ({
+    fetchImpl: null as unknown as typeof fetch,
+    outDir: dir,
+    minRadarCandidates: 2,
+    minRoundCandidates: 2,
+  });
+
+  it("独立落盘：只留有票档位，按星级降序，且不污染 status.errors", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "iq-ratings-"));
+    const result = await refreshAll({
+      ...baseOpts(dir),
+      fetchImpl: ratingsFetch() as unknown as typeof fetch,
+      now: () => new Date("2026-11-17T00:00:00Z"),
+    });
+    const doc = JSON.parse(await readFile(join(dir, "ratings.json"), "utf8"));
+    // fixture 6 个槽里 1 个 average=null/count=0，落盘只能剩 5 条
+    expect(doc.total_slots).toBe(6);
+    expect(doc.ratings.map((r: { id: string }) => r.id)).toEqual([
+      "gpt-6-astra-xhigh",
+      "gpt-6-astra-max",
+      "dsv4-pro-high",
+      "gpt-6.1-sol-off",
+      "gpt-5.6-luna-low",
+    ]);
+    // 7.25 收口到一位小数
+    expect(doc.ratings[2].average).toBe(7.3);
+    expect(doc.window).toBe("rolling_24h");
+    expect(doc.source_updated_at).toBe("2026-11-16T17:44:18.712Z");
+    expect(() => assertRatingsShape(doc)).not.toThrow();
+    // 可选源成功不该改变主数据的健康状态
+    expect(result.status.errors).toEqual([]);
+    expect(result.status.ok).toBe(true);
+    expect(result.ratings?.ratings).toHaveLength(5);
+  });
+
+  it("体感源 502：整轮照常成功，只是没有 ratings.json", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "iq-ratings-"));
+    const result = await refreshAll({
+      ...baseOpts(dir),
+      fetchImpl: ratingsFetch({ failRatings: true }) as unknown as typeof fetch,
+      now: () => new Date("2026-11-17T00:00:00Z"),
+    });
+    expect(result.ratings).toBeNull();
+    // 关键：可选源失败不进 errors、不打黄 status.ok
+    expect(result.status.errors).toEqual([]);
+    expect(result.status.ok).toBe(true);
+    await expect(readFile(join(dir, "ratings.json"), "utf8")).rejects.toThrow();
+    // 三份主数据照常落盘
+    const bench = JSON.parse(await readFile(join(dir, "radar-bench.json"), "utf8"));
+    expect(() => assertRadarBenchShape(bench)).not.toThrow();
+  });
+
+  it("体感源 502 但盘上已有旧文件：一个字节都不改", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "iq-ratings-"));
+    await refreshAll({
+      ...baseOpts(dir),
+      fetchImpl: ratingsFetch() as unknown as typeof fetch,
+      now: () => new Date("2026-11-17T00:00:00Z"),
+    });
+    const before = await readFile(join(dir, "ratings.json"), "utf8");
+    await refreshAll({
+      ...baseOpts(dir),
+      fetchImpl: ratingsFetch({ failRatings: true }) as unknown as typeof fetch,
+      now: () => new Date("2026-11-18T00:00:00Z"),
+    });
+    expect(await readFile(join(dir, "ratings.json"), "utf8")).toBe(before);
+  });
+
+  it("内容没变：第二次不重写，checked_at 保持首次的值", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "iq-ratings-"));
+    const fetchImpl = ratingsFetch() as unknown as typeof fetch;
+    await refreshAll({ ...baseOpts(dir), fetchImpl, now: () => new Date("2026-11-17T00:00:00Z") });
+    const file = join(dir, "ratings.json");
+    const before = await readFile(file, "utf8");
+    await refreshAll({ ...baseOpts(dir), fetchImpl, now: () => new Date("2026-11-18T00:00:00Z") });
+    expect(await readFile(file, "utf8")).toBe(before);
+    expect(JSON.parse(before).checked_at).toBe("2026-11-17T00:00:00.000Z");
   });
 });
