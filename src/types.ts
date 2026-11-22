@@ -142,8 +142,13 @@ export interface StatusData {
   score_stale_days?: number | null;
   /** 只看降智轮次的陈旧天数；轮次久未更新不等于分数过期。 */
   round_stale_days?: number | null;
-  /** 分数取自结构化端点，还是兜底到站点概览；旧 status.json 无此键。 */
-  score_source?: "radar-bench-api" | "site-overview";
+  /**
+   * 分数取自哪条链：radar-bench-api（旧结构化端点）、site-overview（首页兜底，无历史）、
+   * four-task（现行四题链，分数 + 历史 + 轮次同源）。旧 status.json 无此键。
+   */
+  score_source?: "radar-bench-api" | "site-overview" | "four-task";
+  /** 旧评分接口退役时的原始错误，仅取证；数据由现行链发布，不参与新鲜度判定。 */
+  legacy_error?: string | null;
   /** 独立的活动轮次进度快照，不代表上方 completed round 的完成时间。 */
   round_progress?: {
     round_id: string;

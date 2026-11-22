@@ -867,3 +867,72 @@ export function transformFourTask(trends, fourTask, { generatedAt, checkedAt }) 
     batches,
   };
 }
+
+/**
+ * 现行四题链（intelligence-trends + codex-four-task-results）→ radar-bench 落盘形状。
+ *
+ * 为什么要有这条：旧 `radar-bench-score` 接口已经退役（binding 声明的
+ * `api.codexradar.com/api/v1/...` 返回 404 RadarBench is not installed），
+ * 首页概览兜底虽然还有分数，却**没有历史**——趋势图画不出线，等于不可用。
+ * 四题链是上游现在唯一持续更新的口径：58 个候选、30 个批次、真实起止时间。
+ *
+ * 只搬真实字段：score / history / paused 的批次时间都来自上游；上游没给的成本与耗时
+ * 用候选自身的 totals（同一轮实测值），没有就落 null，绝不造数。
+ * coverage 用该候选已评任务数（四题协议恒为 4），不是「覆盖率百分比」。
+ *
+ * @param {any} fourTask transformFourTask 的产物
+ * @param {{generatedAt: string, checkedAt: string, fetchId: string}} stamps
+ * @returns {RadarBenchDoc}
+ */
+export function buildRadarBenchFromFourTask(fourTask, { generatedAt, checkedAt, fetchId }) {
+  if (!fourTask || !Array.isArray(fourTask.candidates) || fourTask.candidates.length === 0) {
+    throw new Error("radar-bench(four-task): no candidates");
+  }
+  const scoreMax = Number(fourTask.score_max);
+  if (!Number.isFinite(scoreMax) || scoreMax <= 0) throw new Error("radar-bench(four-task): invalid score_max");
+  const protocol = String(fourTask.protocol ?? "");
+  if (!protocol) throw new Error("radar-bench(four-task): missing protocol");
+
+  const candidates = fourTask.candidates.map((/** @type {any} */ c) => {
+    const taskCount = Array.isArray(c.tasks) ? c.tasks.length : 0;
+    const history = (Array.isArray(c.history) ? c.history : []).map((/** @type {any} */ p) => ({
+      at: String(p.at),
+      score: Number(p.score),
+      coverage: taskCount,
+      required_tasks: taskCount,
+      score_status: "complete",
+    }));
+    const last = history.at(-1);
+    return {
+      model: String(c.model),
+      effort: String(c.effort),
+      score: Number(c.score),
+      coverage: taskCount,
+      required_tasks: taskCount,
+      score_status: "complete",
+      graded_runs_count: 1,
+      source_scores: {},
+      statistics: {
+        sample_count: 1,
+        elapsed_ms_mean: Number.isFinite(c.totals?.seconds) ? Math.round(c.totals.seconds * 1000) : null,
+        api_equivalent_usd_mean: Number.isFinite(c.totals?.cost_usd) ? c.totals.cost_usd : null,
+      },
+      latest_graded_at: c.latest_at ?? last?.at ?? null,
+      history,
+    };
+  });
+
+  return {
+    schema_version: 1,
+    fetch_id: fetchId,
+    generated_at: generatedAt,
+    checked_at: checkedAt,
+    benchmark: protocol,
+    score_version: protocol,
+    score_max: scoreMax,
+    catalog_version: String(fourTask.round?.id ?? protocol),
+    // 合同只要求非空标识；这里用上游轮次 id，不伪造 sha256 的样子。
+    task_set_sha256: String(fourTask.round?.id ?? protocol),
+    candidates,
+  };
+}

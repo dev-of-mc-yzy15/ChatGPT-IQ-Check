@@ -10,6 +10,7 @@ import {
   fetchJson,
   roundCandidateFloor,
   parseArgs,
+  promoteLiveChain,
 } from "../scripts/refresh.mjs";
 import { assertRadarBenchShape, assertRatingsShape, assertRoundShape, assertStatusShape } from "../scripts/contract.mjs";
 import bindingRaw from "./fixtures/binding.sample.json";
@@ -1301,5 +1302,79 @@ describe("社区体感（可选源）", () => {
     await refreshAll({ ...baseOpts(dir), fetchImpl, now: () => new Date("2026-11-18T00:00:00Z") });
     expect(await readFile(file, "utf8")).toBe(before);
     expect(JSON.parse(before).checked_at).toBe("2026-11-17T00:00:00.000Z");
+  });
+});
+
+describe("promoteLiveChain 主源切换", () => {
+  const fourTask = {
+    protocol: "codex-four-weighted-150-v2",
+    score_max: 150,
+    round: { id: "codex-four-repeat-oauth-20261121", completed_at: "2026-11-21T17:05:43Z" },
+    candidates: [
+      {
+        model: "A",
+        effort: "high",
+        score: 120,
+        latest_at: "2026-11-21T16:00:00Z",
+        tasks: [{ id: "combined" }, { id: "pompeii" }, { id: "pelican" }, { id: "candy" }],
+        totals: { seconds: 10, cost_usd: 0.2 },
+        history: [{ at: "2026-11-14T00:00:00Z", score: 110 }, { at: "2026-11-21T16:00:00Z", score: 120 }],
+      },
+    ],
+  };
+  const baseStatus = {
+    checked_at: "2026-11-22T00:00:00Z",
+    ok: false,
+    benchmark: "site-overview-codex-four",
+    score_source: "site-overview",
+    candidates_ok: 0,
+    candidates_total: 1,
+    binding_total: 1,
+    reused_count: 0,
+    missing_count: 0,
+    round_ok: true,
+    latest_graded_at: "2026-11-21T16:00:00Z",
+    min_latest: "2026-11-21T16:00:00Z",
+    stale_count: 0,
+    round_updated_at: "2026-10-24T14:30:39Z",
+    stale_days: 28,
+    score_stale_days: 0,
+    round_stale_days: 28,
+    errors: ["overview: 主摘要端点失败（HTTP 404 not_found: RadarBench is not installed.）"],
+  };
+
+  it("兜底源没有历史时，用现行四题链发布分数、历史与轮次", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "iq-promote-"));
+    const status = await promoteLiveChain({
+      result: { radarBench: { fetch_id: "f1", candidates: [] }, status: baseStatus },
+      fourTask,
+      outDir: dir,
+      stamp: "2026-11-22T00:00:00Z",
+      now: new Date("2026-11-22T00:00:00Z"),
+    });
+    expect(status.score_source).toBe("four-task");
+    expect(status.ok).toBe(true);
+    expect(status.errors).toEqual([]);
+    expect(status.candidates_total).toBe(1);
+    // 轮次跟着同一条链走，不再拿 10-24 的旧 degradation 轮充数。
+    expect(status.round_stale_days).toBe(0);
+    // 最新点 11-21 16:00Z，距注入的 now 8 小时 → 0 天；陈旧度按真实时间算，不按"看起来旧"。
+    expect(status.score_stale_days).toBe(0);
+    // 死接口的原始证据保留，但不是"坏文件"。
+    expect(status.legacy_error).toMatch(/RadarBench is not installed/);
+    const radar = JSON.parse(await readFile(join(dir, "radar-bench.json"), "utf8"));
+    expect(radar.candidates[0].history).toHaveLength(2);
+    expect(() => assertRadarBenchShape(radar)).not.toThrow();
+    expect(() => assertStatusShape(status)).not.toThrow();
+    const onDisk = JSON.parse(await readFile(join(dir, "status.json"), "utf8"));
+    expect(onDisk.score_source).toBe("four-task");
+  });
+
+  it("结构化端点仍可用时一个字都不改", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "iq-promote-"));
+    const result = { radarBench: { fetch_id: "f2", candidates: [] }, status: { ...baseStatus, score_source: "radar-bench-api" } };
+    const out = await promoteLiveChain({ result, fourTask, outDir: dir, stamp: "2026-11-22T00:00:00Z" });
+    expect(out).toBe(result);
+    await expect(readFile(join(dir, "radar-bench.json"), "utf8")).rejects.toThrow();
   });
 });

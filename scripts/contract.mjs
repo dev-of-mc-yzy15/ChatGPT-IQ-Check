@@ -425,12 +425,16 @@ export function assertStatusShape(data) {
     progress.observed_at = strictIso(progress.observed_at, "status.round_progress.observed_at");
     progress.changed_at = strictIso(progress.changed_at, "status.round_progress.changed_at");
   }
+  // 旧评分接口退役时的原始错误：数据已由现行链发布，这条只是取证，不影响 ok。
+  if (data.legacy_error !== undefined) {
+    data.legacy_error = strictString(data.legacy_error, "status.legacy_error", { nullable: true });
+  }
   if (data.round_progress_error !== undefined) {
     data.round_progress_error = strictString(data.round_progress_error, "status.round_progress_error", { nullable: true });
   }
   // 分数来自哪条路：结构化端点，或站点概览兜底。旧 status.json 没有此键。
   if (data.score_source !== undefined) {
-    data.score_source = strictEnum(data.score_source, "status.score_source", ["radar-bench-api", "site-overview"]);
+    data.score_source = strictEnum(data.score_source, "status.score_source", ["radar-bench-api", "site-overview", "four-task"]);
   }
   // 先写回数组，再按索引写回每个元素：forEach 的参数赋值回不到数组。
   data.errors = strictArray(data.errors, "status.errors");

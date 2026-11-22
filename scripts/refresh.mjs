@@ -9,6 +9,7 @@ import {
   transformRatings,
   transformFourTask,
   transformRoundProgress,
+  buildRadarBenchFromFourTask,
   mergeRadarBench,
   validateRadarBench,
   validateRound,
@@ -20,6 +21,7 @@ import {
   assertFourTaskShape,
   assertRadarBenchShape,
   assertRoundShape,
+  assertStatusShape,
   candidateKey,
 } from "./contract.mjs";
 
@@ -979,6 +981,67 @@ export async function refreshFourTask({
   return doc;
 }
 
+/**
+ * 旧 RadarBench API 退役后的主源切换：把现行四题链的分数与历史扶正为页面的评论文档。
+ *
+ * 只改「分数从哪来」，不改任何数值：候选、分数、历史点、轮次时间全部来自四题落盘文档。
+ * 触发条件只有一个——本轮没走到结构化端点（上游 404/502），继续留一份无历史的概览兜底
+ * 等于让趋势图永远画不出线。四题链本身失败时不进入这里，盘上保留上一轮。
+ *
+ * @param {{result: any, fourTask: any, outDir?: string, stamp: string, now?: Date}} args
+ * @returns {Promise<any>} 更新后的 status（已落盘时不额外返回文档）
+ */
+export async function promoteLiveChain({ result, fourTask, outDir = DATA_DIR, stamp, now = new Date() }) {
+  if (!result || !fourTask) return result;
+  // 结构化端点还能用就不动它：旧协议仍有 coverage/分类分，是更细的口径。
+  if (result.status.score_source === "radar-bench-api") return result;
+
+  const radarBench = buildRadarBenchFromFourTask(fourTask, {
+    generatedAt: stamp,
+    checkedAt: stamp,
+    fetchId: result.radarBench.fetch_id,
+  });
+  assertRadarBenchShape(radarBench);
+  validateRadarBench(radarBench, {
+    minCandidates: Math.max(1, Math.min(radarBench.candidates.length, Math.ceil(radarBench.candidates.length * 0.8))),
+  });
+
+  const latestInfo = scanLatest(radarBench.candidates, now);
+  const scoreStaleDays = staleDays(latestInfo.latest, now);
+  // 轮次时间取现行协议的已完成轮：与分数同一条链，不再拿 10-24 的旧 degradation 轮充数。
+  const roundUpdatedAt = fourTask.round?.completed_at ?? null;
+  const roundStaleDays = staleDays(roundUpdatedAt, now);
+  const known = [scoreStaleDays, roundStaleDays].filter((d) => d !== null);
+
+  const retired = result.status.errors.find((/** @type {string} */ e) => String(e).startsWith("overview: ")) ?? null;
+  const status = {
+    ...result.status,
+    benchmark: radarBench.benchmark,
+    score_source: "four-task",
+    candidates_ok: radarBench.candidates.length,
+    candidates_total: radarBench.candidates.length,
+    binding_total: radarBench.candidates.length,
+    reused_count: 0,
+    missing_count: 0,
+    round_ok: true,
+    latest_graded_at: latestInfo.latest,
+    min_latest: latestInfo.earliest,
+    stale_count: latestInfo.staleCount,
+    round_updated_at: roundUpdatedAt,
+    stale_days: known.length ? Math.max(...known) : null,
+    score_stale_days: scoreStaleDays,
+    round_stale_days: roundStaleDays,
+    // 主源是真的拿全了：这里 ok 说 true 不是在洗白死接口，而是本轮发布的数据完整来自现行链。
+    ok: true,
+    errors: [],
+    legacy_error: retired,
+  };
+  assertStatusShape(status);
+  await writeJson(join(outDir, "radar-bench.json"), radarBench);
+  await writeJson(join(outDir, "status.json"), status);
+  return status;
+}
+
 async function main() {
   const options = parseArgs(process.argv.slice(2));
 
@@ -1016,6 +1079,16 @@ async function main() {
   }
 
   if (result) {
+    // 旧 API 退役时把现行四题链扶正：没有历史分数的概览兜底不可用，不能当成品发布。
+    try {
+      const promoted = await promoteLiveChain({ result, fourTask, stamp });
+      if (promoted !== result) {
+        result = { ...result, radarBench: { ...result.radarBench, benchmark: promoted.benchmark }, status: promoted };
+        console.log(`promoted live chain: ${promoted.candidates_total} candidates (${promoted.score_source})`);
+      }
+    } catch (error) {
+      console.warn("主源切换失败，保留本轮兜底结果：" + (error instanceof Error ? error.message : String(error)));
+    }
     console.log(
       `wrote ${result.radarBench.candidates.length} candidates, ${result.round.candidates.length} round candidates`,
     );

@@ -9,11 +9,13 @@ import {
   splitRatingId,
   transformFourTask,
   transformRoundProgress,
+  buildRadarBenchFromFourTask,
   transformRatings,
   validateRadarBench,
   parseHomeOverview,
   buildRadarBenchFromOverview,
 } from "../scripts/lib.mjs";
+import { assertRadarBenchShape } from "../scripts/contract.mjs";
 
 describe("transformBinding", () => {
   it("dedupes and keeps model/effort pairs", () => {
@@ -702,5 +704,58 @@ describe("transformFourTask", () => {
     const doc = transformFourTask(trendsStub([120, null, 133.5]), fourStub(), stamps);
     expect(doc.candidates[0].history).toHaveLength(2);
     expect(doc.batches).toHaveLength(3);
+  });
+});
+
+describe("buildRadarBenchFromFourTask", () => {
+  // 现行四题链是旧 RadarBench API 退役后唯一还在更新的口径：这里守两件事——
+  // 历史点必须真的搬过来（概览兜底没有历史，趋势图因此画不出线），
+  // 以及上游没给的字段只能落 null，不许编 0 冒充实测。
+  const doc = {
+    protocol: "codex-four-weighted-150-v2",
+    score_max: 150,
+    round: { id: "r1", completed_at: "2026-11-21T17:05:43Z" },
+    candidates: [
+      {
+        model: "A",
+        effort: "high",
+        score: 133.5,
+        latest_at: "2026-11-21T16:00:00Z",
+        tasks: [{ id: "combined" }, { id: "pompeii" }, { id: "pelican" }, { id: "candy" }],
+        totals: { seconds: 12.5, cost_usd: 0.35 },
+        history: [
+          { at: "2026-11-14T00:00:00Z", score: 120 },
+          { at: "2026-11-16T00:00:00Z", score: 133.5 },
+        ],
+      },
+    ],
+  };
+  const stamps = { generatedAt: "2026-11-22T00:00:00Z", checkedAt: "2026-11-22T00:00:00Z", fetchId: "f" };
+
+  it("把分数、历史与实测成本搬进雷达形状", () => {
+    const radar = buildRadarBenchFromFourTask(doc, stamps);
+    const c = radar.candidates[0];
+    expect(radar.benchmark).toBe("codex-four-weighted-150-v2");
+    expect(radar.score_max).toBe(150);
+    expect(c.history.map((p: any) => p.score)).toEqual([120, 133.5]);
+    expect(c.history.every((p: any) => p.coverage === 4)).toBe(true);
+    expect(c.statistics.elapsed_ms_mean).toBe(12500);
+    expect(c.statistics.api_equivalent_usd_mean).toBe(0.35);
+    expect(c.latest_graded_at).toBe("2026-11-21T16:00:00Z");
+    expect(() => assertRadarBenchShape(radar)).not.toThrow();
+  });
+
+  it("上游没给耗时/成本时落 null，不写 0", () => {
+    const radar = buildRadarBenchFromFourTask(
+      { ...doc, candidates: [{ ...doc.candidates[0], totals: { seconds: NaN, cost_usd: NaN } }] },
+      stamps,
+    );
+    expect(radar.candidates[0].statistics.elapsed_ms_mean).toBeNull();
+    expect(radar.candidates[0].statistics.api_equivalent_usd_mean).toBeNull();
+  });
+
+  it("没有候选或分数上限非法时直接失败", () => {
+    expect(() => buildRadarBenchFromFourTask({ ...doc, candidates: [] }, stamps)).toThrow(/no candidates/);
+    expect(() => buildRadarBenchFromFourTask({ ...doc, score_max: 0 }, stamps)).toThrow(/score_max/);
   });
 });
