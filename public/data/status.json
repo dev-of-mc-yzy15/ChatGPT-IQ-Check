@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-11-22T06:58:51.648Z",
+  "checked_at": "2026-11-22T07:10:16.605Z",
   "ok": true,
   "benchmark": "codex-four-weighted-150-v2",
   "score_source": "four-task",
@@ -15,13 +15,13 @@
   "round_updated_at": "2026-11-21T17:05:43.773444+00:00",
   "round_progress": {
     "round_id": "codex-four-repeat-oauth-20261122",
-    "revision": 6178,
+    "revision": 6222,
     "state": "running",
     "total": 232,
-    "answered": 148,
-    "graded": 146,
-    "observed_at": "2026-11-22T06:58:13.859Z",
-    "changed_at": "2026-11-22T06:57:40.181Z"
+    "answered": 157,
+    "graded": 154,
+    "observed_at": "2026-11-22T07:10:12.976Z",
+    "changed_at": "2026-11-22T07:10:12.976Z"
   },
   "round_progress_error": null,
   "stale_days": 0,
