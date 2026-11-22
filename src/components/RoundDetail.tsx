@@ -51,7 +51,14 @@ export function RoundDetail({
   // hooks 必须在 null 分支之前：candidate 由空转有值时不能改变 hook 调用顺序。
   const [assetOpen, setAssetOpen] = useState(false);
   useEffect(() => setAssetOpen(false), [candidate]);
-  if (!candidate) return <section className="card muted">选择上方格子查看逐题详情。</section>;
+  if (!candidate) return (
+    <section className="card detail-empty">
+      <span className="detail-empty__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M4 5h16M4 12h10M4 19h13" /><path d="m17 10 3 2-3 2" /></svg>
+      </span>
+      <div><strong>逐题详情</strong><p className="muted">选择上方格子查看逐题详情。</p></div>
+    </section>
+  );
   const byId = new Map(candidate.tasks.map((t) => [t.task_id, t]));
   const animation = candidate.animation;
   // 上游 asset_url 是站点根绝对路径，必须经 assetUrl 换成带 base 的站内路径。

@@ -144,6 +144,19 @@ export interface StatusData {
   round_stale_days?: number | null;
   /** 分数取自结构化端点，还是兜底到站点概览；旧 status.json 无此键。 */
   score_source?: "radar-bench-api" | "site-overview";
+  /** 独立的活动轮次进度快照，不代表上方 completed round 的完成时间。 */
+  round_progress?: {
+    round_id: string;
+    revision: number;
+    state: "not_started" | "running" | "paused" | "failed" | "waiting_publication" | "published";
+    total: number;
+    answered: number;
+    graded: number;
+    observed_at: string;
+    changed_at: string;
+  } | null;
+  /** 活动进度端点失败时单独呈现，不影响其他数据槽。 */
+  round_progress_error?: string | null;
   errors: string[];
 }
 

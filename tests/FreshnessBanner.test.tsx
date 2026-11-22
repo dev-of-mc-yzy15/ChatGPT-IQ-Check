@@ -166,6 +166,35 @@ describe("FreshnessBanner", () => {
   });
 });
 
+describe("FreshnessBanner 活动轮次进度", () => {
+  it("独立显示运行中进度，不冒充已完成轮次", () => {
+    renderBanner({
+      round_progress: {
+        round_id: "codex-four-repeat-oauth-20261122",
+        revision: 2,
+        state: "running",
+        total: 232,
+        answered: 120,
+        graded: 118,
+        observed_at: "2026-10-24T01:00:00.000Z",
+        changed_at: "2026-10-24T01:00:00.000Z",
+      },
+    });
+    const progress = screen.getByText(/活动轮次进度/, { selector: "strong" }).closest("p")!;
+    expect(progress).toHaveTextContent("进行中");
+    expect(progress).toHaveTextContent("118/232");
+    expect(progress).toHaveTextContent("120/232");
+    expect(progress).toHaveTextContent("2026-10-24 09:00");
+    expect(progress).not.toHaveTextContent("已完成");
+  });
+
+  it("进度端点错误单独显示，不抹掉其他状态", () => {
+    renderBanner({ round_progress_error: "HTTP 503" });
+    expect(screen.getByText("活动轮次进度暂不可用：HTTP 503")).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("34/34 候选");
+  });
+});
+
 describe("FreshnessBanner 未知态", () => {
   it("warns when stale_days is null instead of silently taking the fresh path", () => {
     renderBanner({ stale_days: null });

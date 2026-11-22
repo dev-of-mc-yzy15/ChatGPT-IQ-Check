@@ -24,7 +24,7 @@ export function CommunityRatings({ data }: { data: RatingsData }) {
       {rows.length === 0 ? (
         <p className="muted">这个窗口内还没有人打分。</p>
       ) : (
-        <div className="table-wrap" role="region" aria-label="社区体感（可横向滚动）" tabIndex={0}>
+        <div className="table-wrap ratings-wrap" role="region" aria-label="社区体感（可横向滚动）" tabIndex={0}>
           <table>
             <caption className="muted">按平均星级降序，同分按票数多的在前；票数 &lt; 3 的分数波动大，已淡化显示</caption>
             <thead>

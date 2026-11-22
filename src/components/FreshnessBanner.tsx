@@ -1,6 +1,15 @@
 import type { StatusData } from "../types";
 import { fmtDateTime, fmtRelativeTime } from "../lib/format";
 
+const PROGRESS_STATE: Record<NonNullable<StatusData["round_progress"]>["state"], string> = {
+  not_started: "未开始",
+  running: "进行中",
+  paused: "已暂停",
+  failed: "失败",
+  waiting_publication: "待发布",
+  published: "已发布",
+};
+
 /**
  * status 是外部 JSON，可能缺字段、可能整个槽都没取到：
  * - stale_days 可能是 null（未知），不能让它落进 > 7 的假分支
@@ -120,6 +129,18 @@ export function FreshnessBanner({
           <p className="muted">候选被丢弃（无旧数据可复用）：{missingCount} 条</p>
         )}
         {brokenCount > 0 && <p className="muted">数据文件异常：{brokenCount} 项</p>}
+        {status.round_progress && (
+          <p className="muted round-progress">
+            <strong>活动轮次进度 · {PROGRESS_STATE[status.round_progress.state]}</strong>{" "}
+            <span lang="en">{status.round_progress.round_id}</span> · 已评分{" "}
+            {status.round_progress.graded}/{status.round_progress.total} · 已响应{" "}
+            {status.round_progress.answered}/{status.round_progress.total} · 观测于{" "}
+            {fmtDateTime(status.round_progress.observed_at)}
+          </p>
+        )}
+        {status.round_progress_error && (
+          <p className="muted round-progress-error">活动轮次进度暂不可用：{status.round_progress_error}</p>
+        )}
       </div>
       {coverage !== null && (
         <p className="muted">

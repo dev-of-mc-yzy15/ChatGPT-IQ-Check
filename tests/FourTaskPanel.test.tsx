@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { FourTaskPanel } from "../src/components/FourTaskPanel";
 import { makeFourTask } from "./fixtures/fourTask";
@@ -71,6 +71,42 @@ describe("FourTaskPanel", () => {
     renderPanel();
     const modelToggle = screen.getByRole("button", { name: /^A$/ });
     expect(modelToggle).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("点击任意历史批次点，显示模型、批次、时间和总分", async () => {
+    const user = userEvent.setup();
+    renderPanel();
+    await user.click(screen.getByRole("button", { name: "A 高，2026-11-14，总分 110.0" }));
+    const readout = screen.getByRole("status", { name: "选中批次数值" });
+    expect(readout).toHaveTextContent("A");
+    expect(readout).toHaveTextContent("2026-11-14");
+    expect(readout).toHaveTextContent("110.0 / 150");
+    expect(readout).toHaveTextContent("2026-11-14 08:00");
+
+    await user.click(screen.getByRole("button", { name: "B 高，2026-11-16，总分 90.0" }));
+    expect(readout).toHaveTextContent("B");
+    expect(readout).toHaveTextContent("90.0 / 150");
+    await user.click(screen.getByRole("button", { name: "清除选中批次" }));
+    expect(screen.queryByRole("status", { name: "选中批次数值" })).not.toBeInTheDocument();
+  });
+
+  it("图表只保留一个 Tab 入口，支持方向键、Enter 与 Esc", async () => {
+    const user = userEvent.setup();
+    renderPanel();
+    const points = screen.getAllByRole("button").filter((element) => element.tagName.toLowerCase() === "g");
+    expect(points.length).toBe(4);
+    expect(points.filter((point) => point.tabIndex === 0)).toHaveLength(1);
+
+    const entry = points.find((point) => point.tabIndex === 0)!;
+    act(() => entry.focus());
+    await user.keyboard("{ArrowLeft}");
+    expect(screen.getByRole("status", { name: "选中批次数值" })).toHaveTextContent("110.0 / 150");
+    await user.keyboard("{ArrowRight}");
+    expect(screen.getByRole("status", { name: "选中批次数值" })).toHaveTextContent("120.0 / 150");
+    await user.keyboard("{Enter}");
+    expect(screen.getByRole("status", { name: "选中批次数值" })).toBeInTheDocument();
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("status", { name: "选中批次数值" })).not.toBeInTheDocument();
   });
 
   it("明细里的加权分与总分刻度一致（得分 × 权重 ÷ 100）", async () => {

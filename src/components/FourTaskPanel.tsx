@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import type { FourTaskCandidate, FourTaskData } from "../types";
 import { fmtDateTime, fmtEffort, fmtScore } from "../lib/format";
 import { ModelName } from "./ModelName";
@@ -56,10 +56,18 @@ function fmtMinutes(seconds: number) {
   return (seconds / 60).toFixed(1) + " 分钟";
 }
 
+type PointAddress = { key: string; index: number };
+
+function pointId({ key, index }: PointAddress) {
+  return `four-task-point-${key}-${index}`;
+}
+
 export function FourTaskPanel({ data }: { data: FourTaskData }) {
   // 默认全可见：46 条曲线一起看才有「谁在掉」的整体感，单看 Top N 会漏掉中段的异常。
   const [hidden, setHidden] = useState<Set<string>>(() => new Set());
   const [selected, setSelected] = useState<string | null>(null);
+  const [selectedPoint, setSelectedPoint] = useState<PointAddress | null>(null);
+  const [focusedPoint, setFocusedPoint] = useState<PointAddress | null>(null);
 
   const models = useMemo(() => {
     const order = new Map<string, number>();
@@ -132,6 +140,61 @@ export function FourTaskPanel({ data }: { data: FourTaskData }) {
     ? data.candidates.find((c) => candidateKey(c.model, c.effort) === selected) ?? null
     : null;
 
+  const selectedPointDetails = selectedPoint
+    ? (() => {
+        if (hidden.has(selectedPoint.key)) return null;
+        const candidate = data.candidates.find((c) => candidateKey(c.model, c.effort) === selectedPoint.key);
+        const point = candidate?.history[selectedPoint.index];
+        if (!candidate || !point) return null;
+        const batch = data.batches.find((item) => item.completed_at === point.at);
+        return { candidate, point, batch };
+      })()
+    : null;
+
+  // 整张图只占一个 Tab 位；方向键在全部点之间移动，避免一千多个批次点把键盘用户困住。
+  const visibleWithHistory = visible.filter((candidate) => candidate.history.length > 0);
+  const focusedIsVisible = focusedPoint && visibleWithHistory.some((candidate) =>
+    candidateKey(candidate.model, candidate.effort) === focusedPoint.key && candidate.history[focusedPoint.index],
+  );
+  const initialCandidate = visibleWithHistory[0];
+  const tabStop: PointAddress | null = focusedIsVisible
+    ? focusedPoint
+    : initialCandidate
+      ? { key: candidateKey(initialCandidate.model, initialCandidate.effort), index: initialCandidate.history.length - 1 }
+      : null;
+
+  const selectPoint = (address: PointAddress, moveFocus = false) => {
+    setSelectedPoint(address);
+    if (moveFocus) {
+      setFocusedPoint(address);
+      // 目标点已经存在，直接移动焦点即可；React 稍后会同步 roving tabindex。
+      document.getElementById(pointId(address))?.focus();
+    }
+  };
+
+  const onPointKeyDown = (event: ReactKeyboardEvent<SVGGElement>, address: PointAddress) => {
+    if (event.key === "Escape") {
+      setSelectedPoint(null);
+      return;
+    }
+    const candidateIndex = visibleWithHistory.findIndex((candidate) => candidateKey(candidate.model, candidate.effort) === address.key);
+    const candidate = visibleWithHistory[candidateIndex];
+    if (!candidate) return;
+    let nextCandidate = candidateIndex;
+    let nextIndex = address.index;
+    if (event.key === "ArrowLeft") nextIndex = Math.max(0, address.index - 1);
+    else if (event.key === "ArrowRight") nextIndex = Math.min(candidate.history.length - 1, address.index + 1);
+    else if (event.key === "ArrowUp") nextCandidate = Math.max(0, candidateIndex - 1);
+    else if (event.key === "ArrowDown") nextCandidate = Math.min(visibleWithHistory.length - 1, candidateIndex + 1);
+    else if (event.key === "Home") nextIndex = 0;
+    else if (event.key === "End") nextIndex = candidate.history.length - 1;
+    else return;
+    event.preventDefault();
+    const nextSeries = visibleWithHistory[nextCandidate];
+    nextIndex = Math.min(nextIndex, nextSeries.history.length - 1);
+    selectPoint({ key: candidateKey(nextSeries.model, nextSeries.effort), index: nextIndex }, true);
+  };
+
   return (
     <>
       <section className="card">
@@ -162,14 +225,16 @@ export function FourTaskPanel({ data }: { data: FourTaskData }) {
         <h2 id="four-task-trend-heading">四题总分趋势</h2>
         <figure>
           <figcaption className="muted">
-            每个点是一个批次。同模型同色，档位越高越不透明（low → ultra）。点击图例可隐藏。
+            每个点是一个批次，点击查看数值；方向键逐点切换，Esc 取消选择。同模型同色，点击图例可隐藏。
+            <span className="four-task-chart-mobile-hint">手机端可横向滑动图表。</span>
           </figcaption>
+          <div className="four-task-chart-scroll" role="region" aria-label="四题趋势图（可横向滚动）" tabIndex={0}>
           <svg
-            role="img"
-            aria-label="四题总分趋势"
+            role="group"
+            aria-label="四题总分趋势，方向键切换批次点"
             viewBox={`0 0 ${W} ${H}`}
             width="100%"
-            style={{ height: "auto", display: "block" }}
+            className="four-task-chart"
           >
             <title>四题总分趋势</title>
             <desc>
@@ -188,7 +253,7 @@ export function FourTaskPanel({ data }: { data: FourTaskData }) {
                   x={PAD.left - 8}
                   y={yOf(t, data.score_max) + 4}
                   textAnchor="end"
-                  fill="var(--muted)"
+                  fill="var(--fg-muted)"
                   fontSize="11"
                 >
                   {t}
@@ -201,7 +266,7 @@ export function FourTaskPanel({ data }: { data: FourTaskData }) {
                 x={xOf(t, min, max)}
                 y={H - 12}
                 textAnchor="middle"
-                fill="var(--muted)"
+                fill="var(--fg-muted)"
                 fontSize="11"
               >
                 {label}
@@ -212,13 +277,12 @@ export function FourTaskPanel({ data }: { data: FourTaskData }) {
               const color = MODEL_COLORS[modelIndex % MODEL_COLORS.length];
               const effortIndex = Math.max(0, EFFORT_ORDER.indexOf(c.effort));
               const key = candidateKey(c.model, c.effort);
-              const isSelected = key === selected;
+              const isSelected = key === selected || key === selectedPoint?.key;
               // 同模型 6 档：0.42 起步，每档 +0.11，最高约 0.97。
               const opacity = 0.42 + effortIndex * 0.11;
               const points = c.history
                 .map((p) => `${xOf(new Date(p.at).getTime(), min, max)},${yOf(p.score, data.score_max)}`)
                 .join(" ");
-              const last = c.history[c.history.length - 1];
               return (
                 <g key={key}>
                   <polyline
@@ -228,20 +292,69 @@ export function FourTaskPanel({ data }: { data: FourTaskData }) {
                     strokeOpacity={isSelected ? 1 : opacity}
                     points={points}
                   />
-                  <circle
-                    cx={xOf(new Date(last.at).getTime(), min, max)}
-                    cy={yOf(last.score, data.score_max)}
-                    r={isSelected ? 4.5 : 2.4}
-                    fill={color}
-                    fillOpacity={isSelected ? 1 : opacity}
-                  >
-                    <title>{`${c.model} ${fmtEffort(c.effort)} · ${fmtScore(last.score)} · ${fmtMonthDay(new Date(last.at).getTime())}`}</title>
-                  </circle>
+                  {c.history.map((point, index) => {
+                    const address = { key, index };
+                    const active = selectedPoint?.key === key && selectedPoint.index === index;
+                    const batch = data.batches.find((item) => item.completed_at === point.at);
+                    const label = `${c.model} ${fmtEffort(c.effort)}，${batch?.label ?? fmtDateTime(point.at)}，总分 ${fmtScore(point.score)}`;
+                    const x = xOf(new Date(point.at).getTime(), min, max);
+                    const y = yOf(point.score, data.score_max);
+                    return (
+                      <g
+                        id={pointId(address)}
+                        key={point.at}
+                        className={`four-task__point ${active ? "is-active" : ""}`}
+                        role="button"
+                        tabIndex={tabStop?.key === key && tabStop.index === index ? 0 : -1}
+                        aria-label={label}
+                        aria-pressed={active}
+                        onFocus={() => setFocusedPoint(address)}
+                        onClick={() => selectPoint(address)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            selectPoint(address);
+                          } else onPointKeyDown(event, address);
+                        }}
+                      >
+                        <title>{label}</title>
+                        <circle className="four-task__point-hit" cx={x} cy={y} r={10} fill="transparent" />
+                        {active && <circle className="four-task__point-halo" cx={x} cy={y} r={8} />}
+                        <circle
+                          className="four-task__point-dot"
+                          cx={x}
+                          cy={y}
+                          r={active ? 4.5 : 2.5}
+                          fill={color}
+                          fillOpacity={isSelected ? 1 : Math.max(0.7, opacity)}
+                        />
+                      </g>
+                    );
+                  })}
                 </g>
               );
             })}
           </svg>
+          </div>
         </figure>
+
+        {selectedPointDetails && (
+          <div className="four-point-readout" role="status" aria-live="polite" aria-atomic="true" aria-label="选中批次数值">
+            <div className="four-point-readout__identity">
+              <span className="eyebrow">SELECTED BATCH</span>
+              <strong><ModelName name={selectedPointDetails.candidate.model} /></strong>
+              <span>{fmtEffort(selectedPointDetails.candidate.effort)}</span>
+            </div>
+            <div className="four-point-readout__batch">
+              <span>{selectedPointDetails.batch?.label ?? "未命名批次"}</span>
+              <time>{fmtDateTime(selectedPointDetails.point.at)}</time>
+            </div>
+            <div className="four-point-readout__score">
+              <strong>{fmtScore(selectedPointDetails.point.score)}</strong><span> / {data.score_max}</span>
+            </div>
+            <button type="button" className="four-point-readout__close" aria-label="清除选中批次" onClick={() => setSelectedPoint(null)}>×</button>
+          </div>
+        )}
 
         {/* 图例按模型分组：46 个平铺按钮看不过来，按模型成束更好找。 */}
         <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }}>

@@ -40,7 +40,12 @@ export function RoundMatrix({
   const unknownCostTasks = round.candidates.reduce((sum, c) => sum + (c.totals.cost_unknown_tasks || 0), 0);
   return (
     <section className="card round-matrix" aria-labelledby="round-matrix-heading">
-      <h2 id="round-matrix-heading">本轮雷达</h2>
+      <div className="section-heading">
+        <div><p className="eyebrow">LATEST ROUND</p><h2 id="round-matrix-heading">本轮雷达</h2></div>
+        <span className={`status-pill ${round.round.status === "completed" ? "status-pill--ok" : ""}`}>
+          <span className="live-dot" aria-hidden="true" />{round.round.status === "completed" ? "本轮已完成" : round.round.status}
+        </span>
+      </div>
       <p className="muted">
         {round.round.status === "completed" ? "本轮已完成" : `本轮状态：${round.round.status}`} ·{" "}
         {verifiedTasks}/{requiredTasks} 题已核验（{verifiedPct}%） · 本轮用时{" "}
@@ -78,7 +83,7 @@ export function RoundMatrix({
                       {cell ? (
                         <button
                           type="button"
-                          className="card"
+                          className="score-cell"
                           data-band={band}
                           aria-pressed={selectedKey === key}
                           onClick={() => onSelect(key)}

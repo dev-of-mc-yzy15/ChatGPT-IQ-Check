@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
+  type ReactNode,
 } from "react";
 import { slotFourTask, slotRadarBench, slotRatings, slotRound, slotStatus, type Slot } from "./data/loader";
 import type { StatusData } from "./types";
@@ -22,6 +23,7 @@ import { FourTaskPanel } from "./components/FourTaskPanel";
 import { ThemeToggle } from "./components/ThemeToggle";
 import { SkipLink } from "./components/SkipLink";
 import { fmtDateTime } from "./lib/format";
+import { OverviewHero } from "./components/OverviewHero";
 
 type Tab = "round" | "four" | "trend" | "about";
 
@@ -33,6 +35,16 @@ const TABS: readonly (readonly [Tab, string])[] = [
   ["trend", "RadarBench 趋势"],
   ["about", "关于"],
 ];
+
+function TabIcon({ tab }: { tab: Tab }) {
+  const paths: Record<Tab, ReactNode> = {
+    round: <><circle cx="12" cy="12" r="8" /><circle cx="12" cy="12" r="4" /><path d="M12 2v4M22 12h-4M12 22v-4M2 12h4" /></>,
+    four: <><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></>,
+    trend: <><path d="M3 18 9 12l4 4 8-10" /><path d="M15 6h6v6" /></>,
+    about: <><circle cx="12" cy="12" r="9" /><path d="M12 11v6M12 7h.01" /></>,
+  };
+  return <svg className="seg__icon" viewBox="0 0 24 24" aria-hidden="true">{paths[tab]}</svg>;
+}
 
 /**
  * 一槽一状态：loading / 失败 / 成功互不影响，重试只重试自己。
@@ -164,26 +176,53 @@ export default function App() {
       <main id="main" tabIndex={-1}>
         <header className="masthead">
           <div className="masthead__brand">
-            {/* 纯 CSS 斜线标识：装饰，读屏不需要。 */}
-            <span className="masthead__mark" aria-hidden="true" />
+            <svg className="masthead__mark" viewBox="0 0 44 44" aria-hidden="true">
+              <circle cx="22" cy="22" r="15" /><circle cx="22" cy="22" r="9" />
+              <path d="M22 3v7M41 22h-7M22 41v-7M3 22h7" />
+              <path className="masthead__sweep" d="m22 22 11-11A15 15 0 0 1 37 22Z" />
+              <circle className="masthead__point" cx="29" cy="18" r="2" />
+            </svg>
             <div>
               <h1>降智雷达</h1>
-              <p className="masthead__sub">非官方项目 · 分数是第三方基准测试分数，不是心理学 IQ</p>
+              <p className="masthead__sub" lang="en">CHATGPT IQ CHECK</p>
             </div>
           </div>
-          <ThemeToggle />
+          <div className="masthead__actions">
+            <a className="source-link" href="https://codexradar.com/" target="_blank" rel="noreferrer">
+              <span className="live-dot" aria-hidden="true" /> 数据来自 CodexRadar <span aria-hidden="true">↗</span>
+            </a>
+            <span className="masthead__divider" aria-hidden="true" />
+            <a
+              className="icon-link"
+              aria-label="GitHub 源代码"
+              href="https://github.com/dev-of-mc-yzy15/ChatGPT-IQ-Check"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3.3-.4 6.8-1.6 6.8-7.4A5.8 5.8 0 0 0 19.3 3 5.4 5.4 0 0 0 19.1-1S17.9-1.4 15 1a13.4 13.4 0 0 0-7 0C5.1-1.4 4-1 4-1a5.4 5.4 0 0 0-.2 4A5.8 5.8 0 0 0 2.2 7c0 5.8 3.5 7 6.8 7.4A4.8 4.8 0 0 0 8 18v4M8 19c-3 .9-3-1.5-4-2" transform="translate(1 2) scale(.86)" /></svg>
+            </a>
+            <ThemeToggle />
+          </div>
         </header>
 
-        <ErrorBoundary inline label="数据状态">
-          {status.loading && !statusData ? (
-            <Loading label="数据状态" />
-          ) : status.slot.error ? (
-            <SlotFallback label="数据状态" error={status.slot.error} onRetry={status.retry} />
-          ) : (
-            <FreshnessBanner status={statusData!} roundUpdatedAt={roundData?.round.updated_at ?? null} />
-          )}
-        </ErrorBoundary>
+        <OverviewHero round={roundData} status={statusData} />
 
+        <div className="freshness-slot">
+          <ErrorBoundary inline label="数据状态">
+            {status.loading && !statusData ? (
+              <Loading label="数据状态" />
+            ) : status.slot.error ? (
+              <SlotFallback label="数据状态" error={status.slot.error} onRetry={status.retry} />
+            ) : (
+              <FreshnessBanner status={statusData!} roundUpdatedAt={roundData?.round.updated_at ?? null} />
+            )}
+          </ErrorBoundary>
+        </div>
+
+        <div className="workspace-heading">
+          <div><p className="eyebrow">EXPLORE THE DATA</p><h2>数据观测台</h2></div>
+          <p>切换视图，深入每一次评测结果</p>
+        </div>
         <div role="tablist" aria-label="视图" className="seg" onKeyDown={onTabKeyDown}>
           {TABS.map(([key, label], index) => (
             <button
@@ -199,7 +238,7 @@ export default function App() {
               tabIndex={tab === key ? 0 : -1}
               onClick={() => setTab(key)}
             >
-              {label}
+              <TabIcon tab={key} /><span>{label}</span>
             </button>
           ))}
         </div>
@@ -311,7 +350,8 @@ export default function App() {
           hidden={tab !== "about"}
         >
           {tab === "about" && (
-            <section className="card">
+            <section className="card about-card">
+              <p className="eyebrow">ABOUT THE PROJECT</p>
               <h2>关于</h2>
               <p>
                 数据来源：
@@ -345,11 +385,13 @@ export default function App() {
         </div>
 
         <footer>
-          数据检查于 {statusData ? fmtDateTime(statusData.checked_at) : "（未取到）"} · 北京时间（UTC+8）· 来源
-          codexradar.com · 非官方项目 ·{" "}
-          <a href="https://github.com/dev-of-mc-yzy15/ChatGPT-IQ-Check" target="_blank" rel="noreferrer">
-            源代码
-          </a>
+          <div className="footer__brand"><strong>降智雷达</strong><span>保持观察，而非断言。</span></div>
+          <div className="footer__meta">
+            <span>数据检查于 {statusData ? fmtDateTime(statusData.checked_at) : "（未取到）"} · UTC+8 · 非官方项目</span>
+            <a href="https://github.com/dev-of-mc-yzy15/ChatGPT-IQ-Check" target="_blank" rel="noreferrer">
+              源代码 <span aria-hidden="true">↗</span>
+            </a>
+          </div>
         </footer>
       </main>
     </>
