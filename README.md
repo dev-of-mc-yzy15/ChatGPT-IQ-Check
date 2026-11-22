@@ -72,7 +72,7 @@ tests/                  Vitest 单测与组件测试 + fixtures
 | 用途 | 地址 |
 |---|---|
 | 候选目录 | `https://codexradar.com/data/radar-bench-binding.json` |
-| 单候选分数 + 历史 | `https://codexradar.com/api/radar-bench-score?model=&effort=&view=summary&selection=user-selected-v1` |
+| 单候选分数 + 历史 | 以 `radar-bench-binding.json` 声明的 `transport_origin` + `endpoint_path` 为准；当前声明为 `https://api.codexradar.com/api/v1/radar-bench-score` |
 | 本轮看板 | `https://codexradar.com/degradation-codex-latest.json` |
 | **兜底源**（binding 不可用或分数停更 ≥7 天） | `https://codexradar.com/` 首页内嵌的 `<script id="home-overview-data">` |
 
@@ -123,7 +123,7 @@ npm run refresh -- --force  # 内容没变也强制重写（重置时间戳）
 
 行为要点：
 
-- 上游三个接口：`radar-bench-binding.json`（候选清单）、`api/radar-bench-score`（单候选分数，并发 4）、`degradation-codex-latest.json`（本轮明细）。
+- 旧链路按 `radar-bench-binding.json` 的 `transport_origin` + `endpoint_path` 请求单候选分数（并发 4），并读取 `degradation-codex-latest.json`（降智轮明细）。binding 缺失 endpoint 声明时才兼容旧路径 `/api/radar-bench-score`。当前声明的 API 返回 `404 RadarBench is not installed`，因此不能把旧评分 API 说成可用。
 - 最多尝试 3 次（指数退避），仅网络错误与 429 / 5xx 重试，其余 4xx 立即失败；单个候选失败时**回退到上一次已提交的数据**，不写坏数据。
 - 成功数低于 `min(候选数, max(30, 候选数 × 80%))`（下限不超过候选总数）时整体失败、退出码 1，不会覆盖已有 JSON。
 - 写入是**原子的**（临时文件 + rename），不会出现半截 JSON。

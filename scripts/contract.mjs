@@ -412,6 +412,22 @@ export function assertStatusShape(data) {
   // 拆出来的两个口径同样是 optional（旧 status.json 里没有），但写歪了照样打红。
   data.score_stale_days = strictNumber(data.score_stale_days, "status.score_stale_days", { nullable: true, optional: true, min: 0 });
   data.round_stale_days = strictNumber(data.round_stale_days, "status.round_stale_days", { nullable: true, optional: true, min: 0 });
+  if (data.round_progress !== undefined && data.round_progress !== null) {
+    const progress = data.round_progress;
+    if (!progress || typeof progress !== "object" || Array.isArray(progress)) fail("status.round_progress", "object or null", progress);
+    progress.round_id = strictString(progress.round_id, "status.round_progress.round_id");
+    progress.revision = strictNumber(progress.revision, "status.round_progress.revision", { min: 1 });
+    progress.state = strictEnum(progress.state, "status.round_progress.state", ["not_started", "running", "paused", "failed", "waiting_publication", "published"]);
+    progress.total = strictNumber(progress.total, "status.round_progress.total", { min: 1 });
+    progress.answered = strictNumber(progress.answered, "status.round_progress.answered", { min: 0 });
+    progress.graded = strictNumber(progress.graded, "status.round_progress.graded", { min: 0 });
+    if (progress.graded > progress.answered || progress.answered > progress.total) fail("status.round_progress", "consistent counts", progress);
+    progress.observed_at = strictIso(progress.observed_at, "status.round_progress.observed_at");
+    progress.changed_at = strictIso(progress.changed_at, "status.round_progress.changed_at");
+  }
+  if (data.round_progress_error !== undefined) {
+    data.round_progress_error = strictString(data.round_progress_error, "status.round_progress_error", { nullable: true });
+  }
   // 分数来自哪条路：结构化端点，或站点概览兜底。旧 status.json 没有此键。
   if (data.score_source !== undefined) {
     data.score_source = strictEnum(data.score_source, "status.score_source", ["radar-bench-api", "site-overview"]);

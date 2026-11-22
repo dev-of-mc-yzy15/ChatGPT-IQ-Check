@@ -41,6 +41,16 @@
  * @property {any[]} tasks
  * @property {any[]} candidates
  *
+ * @typedef {object} RoundProgress
+ * @property {string} round_id
+ * @property {number} revision
+ * @property {string} state
+ * @property {number} total
+ * @property {number} answered
+ * @property {number} graded
+ * @property {string} observed_at
+ * @property {string} changed_at
+ *
  * @typedef {object} SourceScore
  * @property {number} score
  * @property {number} coverage
@@ -99,7 +109,7 @@ export const ROUND_MULTIPLIER = 1.5;
 
 /**
  * @param {any} raw 上游 radar-bench-binding.json
- * @returns {{benchmark: string, score_version: string, score_max: number, catalog_version: string, task_set_sha256: string, candidates: {model: string, effort: string}[]}}
+ * @returns {{benchmark: string, score_version: string, score_max: number, catalog_version: string, task_set_sha256: string, score_endpoint: string, candidates: {model: string, effort: string}[]}}
  */
 export function transformBinding(raw) {
   const modelEfforts = Array.isArray(raw?.model_efforts) ? raw.model_efforts : [];
@@ -117,12 +127,31 @@ export function transformBinding(raw) {
   if (!candidates.length) throw new Error("binding: model_efforts is empty");
   const scoreMax =
     strictNumber(raw?.score_max, "binding.score_max", { nullable: true, min: 1 }) ?? SCORE_MAX;
+  let scoreEndpoint = "https://codexradar.com/api/radar-bench-score";
+  if (raw?.transport_origin != null || raw?.endpoint_path != null) {
+    const origin = String(raw.transport_origin ?? "");
+    const path = String(raw.endpoint_path ?? "");
+    let parsedOrigin;
+    try {
+      parsedOrigin = new URL(origin);
+    } catch {
+      throw new Error("binding.transport_origin: expected HTTPS origin");
+    }
+    if (parsedOrigin.protocol !== "https:" || parsedOrigin.username || parsedOrigin.password || parsedOrigin.pathname !== "/" || parsedOrigin.search || parsedOrigin.hash) {
+      throw new Error("binding.transport_origin: expected HTTPS origin");
+    }
+    if (!path.startsWith("/") || path.startsWith("//") || /[?#]/.test(path)) {
+      throw new Error("binding.endpoint_path: expected absolute path without query or fragment");
+    }
+    scoreEndpoint = new URL(path, parsedOrigin).href;
+  }
   return {
     benchmark: String(raw?.benchmark ?? ""),
     score_version: String(raw?.score_version ?? ""),
     score_max: scoreMax,
     catalog_version: String(raw?.catalog_version ?? ""),
     task_set_sha256: String(raw?.task_set_sha256 ?? ""),
+    score_endpoint: scoreEndpoint,
     candidates,
   };
 }
@@ -272,6 +301,60 @@ export function computeRoundScore(results, tasks) {
     scored_tasks: scored,
     total_tasks: tasks.length,
     status: scored === tasks.length ? "complete" : "partial",
+  };
+}
+
+/**
+ * 当前活动轮进度。它不是已完成轮次的成绩，调用方必须分开存放与展示。
+ * @param {any} raw 上游 /api/iq-progress/current
+ * @param {Date} now 验证观测时间不可在未来
+ * @returns {RoundProgress}
+ */
+export function transformRoundProgress(raw, now = new Date()) {
+  /** @param {string} path @param {string} expected */
+  const fail = (path, expected) => {
+    throw new Error(`round-progress.${path}: expected ${expected}`);
+  };
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) fail("payload", "object");
+  if (raw.schema !== 1) fail("schema", "1");
+  const roundId = String(raw.round_id ?? "");
+  if (!/^[a-z0-9][a-z0-9-]{0,63}$/.test(roundId)) fail("round_id", "valid id");
+  if (!Number.isSafeInteger(raw.revision) || raw.revision < 1) fail("revision", "positive integer");
+  if (!["not_started", "running", "paused", "failed", "waiting_publication", "published"].includes(raw.state)) {
+    fail("state", "known progress state");
+  }
+  /** @param {unknown} value @param {string} path @returns {number} */
+  const count = (value, path) => {
+    const n = /** @type {number} */ (value);
+    if (!Number.isSafeInteger(n) || n < 0) fail(path, "non-negative integer");
+    return n;
+  };
+  const total = count(raw.total, "total");
+  const answered = count(raw.answered, "answered");
+  const graded = count(raw.graded, "graded");
+  if (total < 1 || total > 10000 || graded > answered || answered > total) fail("counts", "consistent progress counts");
+  if (raw.state === "not_started" && answered !== 0) fail("answered", "0 when not started");
+  if (["waiting_publication", "published"].includes(raw.state) && graded !== total) fail("graded", "total for terminal state");
+  /** @param {unknown} value @param {string} path @returns {string} */
+  const instant = (value, path) => {
+    if (typeof value !== "string" || !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(value) || !Number.isFinite(Date.parse(value))) {
+      fail(path, "UTC ISO timestamp with milliseconds");
+    }
+    return /** @type {string} */ (value);
+  };
+  const observedAt = instant(raw.observed_at, "observed_at");
+  const changedAt = instant(raw.changed_at, "changed_at");
+  const observedMs = Date.parse(observedAt);
+  if (Date.parse(changedAt) > observedMs || observedMs > now.getTime() + 15000) fail("timestamps", "consistent timestamps");
+  return {
+    round_id: roundId,
+    revision: raw.revision,
+    state: raw.state,
+    total,
+    answered,
+    graded,
+    observed_at: observedAt,
+    changed_at: changedAt,
   };
 }
 

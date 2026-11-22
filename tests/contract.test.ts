@@ -165,8 +165,26 @@ describe("双端契约一致", () => {
   // 后果不是文案问题：9999 能整份过校验，前端 yOf(9999, 150) 算出 -18627.4，而绘图区
   // y 只有 20~304，该点飞出视口、外层无 try 且 overflow 裁掉，那一截折线直接消失；
   // computeDelta / findDegradationPoints 的 delta 同样被污染成上千分。
-  it("radar shape 拒绝 history score 超过 score_max 的点", () => {
+  // 真数据可能来自站点概览兜底：那条源只有当前分，history 为空是合法形状，
+  // 所以这三个用例自己造一个历史点，而不是假设 public/data 里一定有。
+  const withHistory = () => {
     const radar = read("public/data/radar-bench.json");
+    const candidate = radar.candidates[0];
+    const scoreMax = radar.score_max as number;
+    candidate.history = [
+      {
+        at: "2026-10-01T00:00:00.000Z",
+        score: scoreMax - 10,
+        coverage: candidate.required_tasks,
+        required_tasks: candidate.required_tasks,
+        score_status: "complete",
+      },
+    ];
+    return radar;
+  };
+
+  it("radar shape 拒绝 history score 超过 score_max 的点", () => {
+    const radar = withHistory();
     radar.candidates[0].history[0].score = 9999;
     // 一条正则同时钉住键路径和两个值：路径要能定位到具体历史点，两个值都要露在文案里。
     const expected = /candidates\[0\]\.history\[0\]\.score: expected <= score_max 150, got 9999/;
@@ -178,7 +196,7 @@ describe("双端契约一致", () => {
 
   // 边界：正好等于 score_max 必须放行。上界写成 >= 会把满分点误判成越界，把这条打红。
   it("radar shape 放行 history score 正好等于 score_max 的点", () => {
-    const radar = read("public/data/radar-bench.json");
+    const radar = withHistory();
     const max = radar.score_max as number;
     expect(radar.candidates[0].history[0].score).not.toBe(max);
     radar.candidates[0].history[0].score = max;
@@ -188,7 +206,7 @@ describe("双端契约一致", () => {
   // 回归：补上界不能顺手顶掉下界。负分仍由 strictNumber 的 min: 0 拒绝，
   // 错文案也要保持原来的下界口径，不能被"没超过上限"放过去。
   it("radar shape 仍按 min 0 拒绝 history 负分", () => {
-    const radar = read("public/data/radar-bench.json");
+    const radar = withHistory();
     radar.candidates[0].history[0].score = -1;
     expect(() => assertRadarBenchShape(radar)).toThrow(
       /candidates\[0\]\.history\[0\]\.score: expected number >= 0, got -1/,

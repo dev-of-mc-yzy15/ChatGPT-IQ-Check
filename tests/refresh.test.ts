@@ -25,6 +25,15 @@ function jsonResponse(body: unknown, status = 200) {
 }
 
 describe("summaryUrl", () => {
+  it("builds the required query from the binding-declared endpoint", () => {
+    const url = summaryUrl("gpt-6-astra", "high", "https://api.codexradar.com/api/v1/radar-bench-score");
+    expect(url).toContain("https://api.codexradar.com/api/v1/radar-bench-score?");
+    expect(url).toContain("model=gpt-6-astra");
+    expect(url).toContain("effort=high");
+    expect(url).toContain("view=summary");
+    expect(url).toContain("selection=user-selected-v1");
+  });
+
   it("builds the required query", () => {
     const url = summaryUrl("gpt-6-astra", "high");
     expect(url).toContain("model=gpt-6-astra");
@@ -97,6 +106,19 @@ describe("refreshAll 状态与空转", () => {
         return jsonResponse({ ...summaryRaw, model, effort: u.searchParams.get("effort") });
       }
       if (url.includes("degradation-codex-latest")) return jsonResponse(opts.round ?? roundRaw);
+      if (url.includes("api/iq-progress/current")) {
+        return jsonResponse({
+          schema: 1,
+          round_id: "codex-four-repeat-oauth-20261122",
+          revision: 7,
+          state: "running",
+          total: 232,
+          answered: 128,
+          graded: 126,
+          observed_at: "2026-10-24T00:00:00.000Z",
+          changed_at: "2026-10-24T00:00:00.000Z",
+        });
+      }
       throw new Error("unexpected url " + url);
     });
 
@@ -805,6 +827,40 @@ describe("refreshAll 站点概览兜底", () => {
     expect(onDisk.score_version).toBe("codex-four-weighted-150-v2");
     expect(() => assertRadarBenchShape(onDisk)).not.toThrow();
     expect(() => assertStatusShape(JSON.parse(JSON.stringify(result.status)))).not.toThrow();
+  });
+
+  it("falls back to the site overview when binding works but too few summaries succeed", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "iq-refresh-"));
+    const fetchImpl = vi.fn(async (url: string) => {
+      if (url.includes("radar-bench-binding")) return jsonResponse(bindingRaw);
+      if (url.includes("radar-bench-score")) {
+        return jsonResponse({ error: { code: "not_found", message: "RadarBench is not installed." } }, 404);
+      }
+      if (url.endsWith("codexradar.com/")) {
+        return textResponse(
+          overviewHtml([
+            { model: "gpt-6.1-sol", effort: "low", score150: 114.375 },
+            { model: "gpt-6-luna", effort: "max", score150: 84.189 },
+          ]),
+        );
+      }
+      if (url.includes("degradation-codex-latest")) return jsonResponse(roundRaw);
+      throw new Error("unexpected url " + url);
+    });
+    const result = await refreshAll({
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+      outDir: dir,
+      now: () => new Date("2026-11-01T00:00:00Z"),
+      minRadarCandidates: 2,
+      minRoundCandidates: 2,
+    });
+    expect(result.status.score_source).toBe("site-overview");
+    expect(result.radarBench.candidates).toHaveLength(2);
+    expect(result.status.errors.join("\n")).toMatch(/RadarBench is not installed/);
+    expect(result.status.errors.join("\n")).toMatch(/api\.codexradar\.com\/api\/v1\/radar-bench-score/);
+    expect(result.status.errors.join("\n")).toMatch(/HTTP 404/);
+    expect(result.status.errors.join("\n")).toMatch(/not_found: RadarBench is not installed/);
+    expect(result.status.ok).toBe(false);
   });
 
   it("throws when both binding and the site overview are unavailable", async () => {

@@ -8,6 +8,7 @@ import {
   transformRound,
   transformRatings,
   transformFourTask,
+  transformRoundProgress,
   mergeRadarBench,
   validateRadarBench,
   validateRound,
@@ -25,6 +26,8 @@ import {
 export const BINDING_URL = "https://codexradar.com/data/radar-bench-binding.json";
 export const SUMMARY_URL = "https://codexradar.com/api/radar-bench-score";
 export const ROUND_URL = "https://codexradar.com/degradation-codex-latest.json";
+/** 活动评测执行进度；只展示运行态，不拿它冒充已完成的降智轮次。 */
+export const ROUND_PROGRESS_URL = "https://codexradar.com/api/iq-progress/current";
 /** 兜底源：站点首页内嵌的 home-overview-data（结构化端点挂掉时用它取当前轮分数）。 */
 export const SITE_URL = "https://codexradar.com/";
 /**
@@ -58,8 +61,8 @@ class HttpError extends Error {
    * @param {number} status
    * @param {string} url
    */
-  constructor(status, url) {
-    super(`HTTP ${status} for ${url}`);
+  constructor(status, url, detail = "") {
+    super(`HTTP ${status} for ${url}${detail ? ` (${detail})` : ""}`);
     this.status = status;
   }
 }
@@ -117,7 +120,18 @@ export async function fetchJson(
         signal: ctrl.signal,
         headers: { "user-agent": "iq-radar/2.0", accept: "application/json", ...headers },
       });
-      if (!res.ok) throw new HttpError(res.status, url);
+      if (!res.ok) {
+        let detail = "";
+        try {
+          const body = await res.json();
+          const code = typeof body?.error?.code === "string" ? body.error.code : "";
+          const message = typeof body?.error?.message === "string" ? body.error.message : "";
+          detail = [code, message].filter(Boolean).join(": ").slice(0, 240);
+        } catch {
+          // HTML gateway errors (e.g. Cloudflare) may not be JSON; status and URL remain diagnostic.
+        }
+        throw new HttpError(res.status, url, detail);
+      }
       return await res.json();
     } catch (error) {
       const retryable =
@@ -218,16 +232,17 @@ export function roundCandidateFloor(candidateCount) {
 /**
  * @param {string} model
  * @param {string} effort
+ * @param {string} [endpoint]
  * @returns {string}
  */
-export function summaryUrl(model, effort) {
+export function summaryUrl(model, effort, endpoint = SUMMARY_URL) {
   const query = new URLSearchParams({
     model,
     effort,
     view: "summary",
     selection: "user-selected-v1",
   });
-  return `${SUMMARY_URL}?${query.toString()}`;
+  return `${endpoint}?${query.toString()}`;
 }
 
 /**
@@ -599,7 +614,7 @@ export async function refreshAll({
       const key = candidateKey(candidate.model, candidate.effort);
       try {
         const raw = await fetchJson(
-          summaryUrl(candidate.model, candidate.effort),
+          summaryUrl(candidate.model, candidate.effort, binding.score_endpoint),
           { headers: { "x-radar-bench-selection": "user-selected-v1" }, deadline },
           fetchImpl,
         );
@@ -653,21 +668,53 @@ export async function refreshAll({
     minimum =
       minRadarCandidates ??
       Math.max(1, Math.min(bindingTotal, Math.max(30, Math.ceil(bindingTotal * 0.8))));
-    if (freshCount < minimum) {
-      throw new Error(`only ${freshCount}/${bindingTotal} summaries succeeded (minimum ${minimum})`);
+    if (freshCount >= minimum) {
+      const available = results.filter((r) => r.summary);
+      summaries = available.map((r) => r.summary);
+      const availableBinding = { ...bindingRaw, model_efforts: available.map((r) => r.candidate) };
+      radarBench = mergeRadarBench({
+        binding: availableBinding,
+        summaries,
+        generatedAt: stamp,
+        checkedAt: stamp,
+        fetchId: randomUUID(),
+      });
+      validateRadarBench(radarBench, { minCandidates: minimum });
+    } else {
+      // binding 仍可访问但 summary 已整体/大面积失效时，也走首页兜底；只在 binding
+      // 挂掉时回退会让这类 502 固化旧数据，status.checked_at 却看似在正常前进。
+      // 诊断必须带真实上游错误：复用旧数据的候选也算主源失败，不能因为 summary 被
+      // 旧值填上就把 HTTP 502/404 的细节吃掉——那样 status 只会说"0 条成功"，看不出原因。
+      const failedSummaries = results
+        .filter((r) => r.outcome !== "fresh" && typeof r.error === "string")
+        .slice(0, 3)
+        .map((r) => r.error);
+      const summaryError = new Error(
+        `only ${freshCount}/${bindingTotal} summaries succeeded (minimum ${minimum})` +
+          (failedSummaries.length ? `; ${failedSummaries.join("; ")}` : ""),
+      );
+      const overview = await overviewPromise;
+      if (!overview) throw summaryError;
+      scoreSource = "site-overview";
+      bindingTotal = overview.rows.length;
+      freshCount = 0;
+      reusedCount = 0;
+      missingCount = 0;
+      // 不把主源部分成功/失败明细当作兜底候选缺失；保留早先读旧文件时的诊断。
+      errors.length = loadErrors.length;
+      radarBench = buildRadarBenchFromOverview({
+        overview,
+        generatedAt: stamp,
+        checkedAt: stamp,
+        fetchId: randomUUID(),
+      });
+      minimum = minRadarCandidates ?? Math.max(1, Math.min(bindingTotal, Math.ceil(bindingTotal * 0.8)));
+      validateRadarBench(radarBench, { minCandidates: minimum });
+      summaries = radarBench.candidates;
+      errors.push(
+        `overview: 主摘要端点失败（${summaryError.message}），已回落到站点概览 ${bindingTotal} 条`,
+      );
     }
-
-    const available = results.filter((r) => r.summary);
-    summaries = available.map((r) => r.summary);
-    const availableBinding = { ...bindingRaw, model_efforts: available.map((r) => r.candidate) };
-    radarBench = mergeRadarBench({
-      binding: availableBinding,
-      summaries,
-      generatedAt: stamp,
-      checkedAt: stamp,
-      fetchId: randomUUID(),
-    });
-    validateRadarBench(radarBench, { minCandidates: minimum });
   } else {
     // binding 挂了：回落到站点概览。概览与 API 不是同一评分协议，benchmark 会标成
     // site-overview-codex-four，看板据此区分；缺的字段在 lib 侧一律给 0，不编值。
@@ -756,6 +803,16 @@ export async function refreshAll({
     );
   }
 
+  let roundProgress = null;
+  let roundProgressError = null;
+  try {
+    const progressRaw = await fetchJson(ROUND_PROGRESS_URL, { deadline, tries: 1, timeoutMs: 4000 }, fetchImpl);
+    if (progressRaw != null) roundProgress = transformRoundProgress(progressRaw, now());
+  } catch (error) {
+    roundProgressError = error instanceof Error ? error.message : String(error);
+    console.warn(`站点活动评测进度不可用（不影响已完成数据）：${roundProgressError}`);
+  }
+
   const nowDate = now();
   let latestInfo = scanLatest(summaries, nowDate);
   // 时间解析失败是「未知」，不能落 0 冒充刚刷新过。
@@ -765,7 +822,8 @@ export async function refreshAll({
   // 而分数可能隔天还在涨 —— 横幅于是在说谎。这里拆成两个各自归位的口径；stale_days 仍取较大值，
   // 保持既有语义（外部与用例已依赖它），拆出的两个值供横幅分别定性。
   let scoreStaleDays = staleDays(latestInfo.latest, nowDate);
-  const roundStaleDays = staleDays(roundData?.round?.updated_at ?? null, nowDate);
+  const statusRoundUpdatedAt = roundData?.round?.updated_at ?? null;
+  const roundStaleDays = staleDays(statusRoundUpdatedAt, nowDate);
   const knownStale = [scoreStaleDays, roundStaleDays].filter((d) => d !== null);
 
   // 结构化端点"活着但不再新鲜"，其实和挂掉一样不可用：分数停在 ≥7 天前，站点首页却可能
@@ -825,7 +883,9 @@ export async function refreshAll({
     /** 最旧的评分时间：单看 latest 会被 1 个新鲜候选骗过去。 */
     min_latest: latestInfo.earliest,
     stale_count: latestInfo.staleCount,
-    round_updated_at: roundData?.round?.updated_at ?? null,
+    round_updated_at: statusRoundUpdatedAt,
+    round_progress: roundProgress,
+    round_progress_error: roundProgressError,
     stale_days: knownStale.length ? Math.max(...knownStale) : null,
     /** 只看分数（候选最新评分）的陈旧天数：横幅「分数已超过 7 天未更新」按它判。 */
     score_stale_days: scoreStaleDays,
@@ -946,7 +1006,10 @@ async function main() {
   /** @type {any} */
   let radarError = null;
   try {
-    result = await refreshAll({ force: options.force, timestamp: stamp });
+    result = await refreshAll({
+      force: options.force,
+      timestamp: stamp,
+    });
   } catch (error) {
     radarError = error;
     console.warn("旧雷达链刷新失败：" + (error instanceof Error ? error.message : String(error)));

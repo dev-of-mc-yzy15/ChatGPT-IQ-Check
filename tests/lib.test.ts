@@ -8,6 +8,7 @@ import {
   mergeRadarBench,
   splitRatingId,
   transformFourTask,
+  transformRoundProgress,
   transformRatings,
   validateRadarBench,
   parseHomeOverview,
@@ -24,6 +25,13 @@ describe("transformBinding", () => {
     ]);
     expect(b.benchmark).toBe("radar-bench-final64-20261004");
     expect(b.score_max).toBe(150);
+    expect(b.score_endpoint).toBe("https://api.codexradar.com/api/v1/radar-bench-score");
+  });
+
+  it("rejects unsafe or malformed declared score endpoints", () => {
+    const base = { model_efforts: [{ model: "gpt-6-astra", effort: "high" }] };
+    expect(() => transformBinding({ ...base, transport_origin: "http://api.example.com", endpoint_path: "/score" })).toThrow(/transport_origin/);
+    expect(() => transformBinding({ ...base, transport_origin: "https://api.example.com", endpoint_path: "//evil.example/score" })).toThrow(/endpoint_path/);
   });
 
   it("drops duplicate model/effort pairs, keeping the first occurrence", () => {
@@ -237,6 +245,38 @@ describe("mergeRadarBench + validateRadarBench", () => {
 
 import roundRaw from "./fixtures/round.sample.json";
 import { computeRoundScore, transformRound, validateRound } from "../scripts/lib.mjs";
+
+describe("transformRoundProgress", () => {
+  const snapshot = {
+    schema: 1,
+    round_id: "codex-four-repeat-oauth-20261122",
+    revision: 2,
+    state: "running",
+    total: 232,
+    answered: 120,
+    graded: 118,
+    observed_at: "2026-11-22T06:00:00.000Z",
+    changed_at: "2026-11-22T06:00:00.000Z",
+  };
+
+  it("keeps active execution progress separate from completed round results", () => {
+    expect(transformRoundProgress(snapshot, new Date("2026-11-22T06:01:00.000Z"))).toEqual({
+      round_id: snapshot.round_id,
+      revision: 2,
+      state: "running",
+      total: 232,
+      answered: 120,
+      graded: 118,
+      observed_at: snapshot.observed_at,
+      changed_at: snapshot.changed_at,
+    });
+  });
+
+  it("rejects inconsistent counts and future observations", () => {
+    expect(() => transformRoundProgress({ ...snapshot, graded: 121 }, new Date("2026-11-22T06:01:00.000Z"))).toThrow(/counts/);
+    expect(() => transformRoundProgress({ ...snapshot, observed_at: "2026-11-22T06:02:00.000Z" }, new Date("2026-11-22T06:01:00.000Z"))).toThrow(/timestamps/);
+  });
+});
 
 describe("computeRoundScore", () => {
   const tasks = roundRaw.tasks;
