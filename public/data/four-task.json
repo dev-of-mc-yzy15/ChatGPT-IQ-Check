@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-23T07:56:12.841Z",
-  "checked_at": "2026-11-23T07:56:12.841Z",
+  "generated_at": "2026-11-24T10:10:23.948Z",
+  "checked_at": "2026-11-24T10:10:23.948Z",
   "protocol": "codex-four-weighted-150-v2",
   "score_max": 150,
   "round": {
-    "id": "codex-four-repeat-oauth-20261122-r2",
-    "label": "2026-11-23",
-    "completed_at": "2026-11-23T01:24:28.221075+00:00",
+    "id": "codex-four-repeat-oauth-20261123",
+    "label": "2026-11-24",
+    "completed_at": "2026-11-23T16:55:54.100727+00:00",
     "expected": 232,
     "graded": 232,
-    "asset_prefix": "/assets/codex-four-task-auto-e45e0197b4ad721f98082094--"
+    "asset_prefix": "/assets/codex-four-task-auto-64593fc320bcb05205fe8d4b--"
   },
   "tasks": [
     {
@@ -42,48 +42,48 @@
     {
       "model": "gpt-6.2-sol",
       "effort": "low",
-      "score": 117.42321428571428,
+      "score": 114.75,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:31:49.901955+00:00",
+      "latest_at": "2026-11-23T16:55:09.830666+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 69,
-          "raw_total": 69,
+          "score": 66,
+          "raw_total": 66,
           "capped": true,
-          "seconds": 195.08996189199388,
-          "cost_usd": 0.1887392
+          "seconds": 134.3838762678206,
+          "cost_usd": 0.0970612
         },
         {
           "id": "pompeii",
-          "score": 76.19047619047619,
-          "raw_total": 76.19047619047619,
+          "score": 70,
+          "raw_total": 70,
           "capped": false,
-          "seconds": 185.93621611222625,
-          "cost_usd": 0.1894408,
-          "reward": 0.7619047619047619
+          "seconds": 152.13348818197846,
+          "cost_usd": 0.1954148,
+          "reward": 0.7
         },
         {
           "id": "pelican",
-          "score": 85.5,
-          "raw_total": 85.5,
+          "score": 94,
+          "raw_total": 94,
           "capped": false,
-          "seconds": 97.52717773802578,
-          "cost_usd": 0.0819044
+          "seconds": 107.07934005558491,
+          "cost_usd": 0.0865572
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 19.868538884446025,
-          "cost_usd": 0.031054,
+          "seconds": 21.417536268010736,
+          "cost_usd": 0.030654,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 498.42189462669194,
-        "cost_usd": 0.491138
+        "seconds": 415.0142407733947,
+        "cost_usd": 0.409687
       },
       "history": [
         {
@@ -113,54 +113,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 117.42321428571428
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 114.75
         }
       ]
     },
     {
       "model": "gpt-6.2-sol",
       "effort": "medium",
-      "score": 127.6875,
+      "score": 126.96847826086957,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:31:51.290359+00:00",
+      "latest_at": "2026-11-23T16:55:07.552222+00:00",
       "tasks": [
         {
           "id": "combined",
           "score": 69,
-          "raw_total": 96,
+          "raw_total": 92.5,
           "capped": true,
-          "seconds": 366.2605347670615,
-          "cost_usd": 0.2896448
+          "seconds": 469.7228262294084,
+          "cost_usd": 0.388354
         },
         {
           "id": "pompeii",
-          "score": 100,
-          "raw_total": 100,
+          "score": 95.65217391304348,
+          "raw_total": 95.65217391304348,
           "capped": false,
-          "seconds": 201.39701531268656,
-          "cost_usd": 0.220222,
-          "reward": 1
+          "seconds": 176.13594676367939,
+          "cost_usd": 0.17883,
+          "reward": 0.9565217391304348
         },
         {
           "id": "pelican",
-          "score": 83.5,
-          "raw_total": 83.5,
+          "score": 89,
+          "raw_total": 89,
           "capped": false,
-          "seconds": 296.30242900922894,
-          "cost_usd": 0.3200268
+          "seconds": 390.5173222813755,
+          "cost_usd": 0.3184688
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 19.868634281679988,
-          "cost_usd": 0.030204,
+          "seconds": 25.61858931928873,
+          "cost_usd": 0.032264,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 883.828613370657,
-        "cost_usd": 0.860098
+        "seconds": 1061.994684593752,
+        "cost_usd": 0.917917
       },
       "history": [
         {
@@ -190,6 +194,10 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 127.6875
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 126.96847826086957
         }
       ]
     },
@@ -198,23 +206,23 @@
       "effort": "high",
       "score": 131.175,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:31:53.557127+00:00",
+      "latest_at": "2026-11-23T16:54:39.074366+00:00",
       "tasks": [
         {
           "id": "combined",
           "score": 69,
-          "raw_total": 95.5,
+          "raw_total": 96.5,
           "capped": true,
-          "seconds": 596.3469989020377,
-          "cost_usd": 0.4887264
+          "seconds": 655.4996953085065,
+          "cost_usd": 0.4648752
         },
         {
           "id": "pompeii",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 212.90331276878715,
-          "cost_usd": 0.2467244,
+          "seconds": 252.84463725984097,
+          "cost_usd": 0.30098,
           "reward": 1
         },
         {
@@ -222,22 +230,22 @@
           "score": 99,
           "raw_total": 99,
           "capped": false,
-          "seconds": 533.081628555432,
-          "cost_usd": 0.4094724
+          "seconds": 456.92507846467197,
+          "cost_usd": 0.319522
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 22.117594443261623,
-          "cost_usd": 0.032454,
+          "seconds": 22.217354400083423,
+          "cost_usd": 0.031864,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 1364.4495346695185,
-        "cost_usd": 1.177377
+        "seconds": 1387.4867654331028,
+        "cost_usd": 1.117241
       },
       "history": [
         {
@@ -267,31 +275,35 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 131.175
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 131.175
         }
       ]
     },
     {
       "model": "gpt-6.2-sol",
       "effort": "xhigh",
-      "score": 137.175,
+      "score": 131.175,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:31:29.942205+00:00",
+      "latest_at": "2026-11-23T16:54:08.582762+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 79,
-          "raw_total": 99,
+          "score": 69,
+          "raw_total": 88.5,
           "capped": true,
-          "seconds": 663.4528152383864,
-          "cost_usd": 0.4654476
+          "seconds": 578.7387235295027,
+          "cost_usd": 0.3816936
         },
         {
           "id": "pompeii",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 186.25224390998483,
-          "cost_usd": 0.178224,
+          "seconds": 315.85766395553946,
+          "cost_usd": 0.357862,
           "reward": 1
         },
         {
@@ -299,22 +311,22 @@
           "score": 99,
           "raw_total": 99,
           "capped": false,
-          "seconds": 532.8341640587896,
-          "cost_usd": 0.3972592
+          "seconds": 666.6036224104464,
+          "cost_usd": 0.4709916
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 23.167732067406178,
-          "cost_usd": 0.032674,
+          "seconds": 25.81953907571733,
+          "cost_usd": 0.033554,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 1405.706955274567,
-        "cost_usd": 1.073605
+        "seconds": 1587.019548971206,
+        "cost_usd": 1.244101
       },
       "history": [
         {
@@ -344,54 +356,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 137.175
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 131.175
         }
       ]
     },
     {
       "model": "gpt-6.2-sol",
       "effort": "max",
-      "score": 135.60000000000002,
+      "score": 131.175,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:29:07.172450+00:00",
+      "latest_at": "2026-11-23T16:50:58.138464+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 79,
-          "raw_total": 99.5,
+          "score": 69,
+          "raw_total": 96.5,
           "capped": true,
-          "seconds": 926.433730693534,
-          "cost_usd": 0.6252016
+          "seconds": 927.2830959763378,
+          "cost_usd": 0.5877952
         },
         {
           "id": "pompeii",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 590.5925932172686,
-          "cost_usd": 0.5352492,
+          "seconds": 485.0268490873277,
+          "cost_usd": 0.3934984,
           "reward": 1
         },
         {
           "id": "pelican",
-          "score": 92,
-          "raw_total": 92,
+          "score": 99,
+          "raw_total": 99,
           "capped": false,
-          "seconds": 919.1831253450364,
-          "cost_usd": 0.6228596
+          "seconds": 950.2887101154774,
+          "cost_usd": 0.7470076
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 44.77146324701607,
-          "cost_usd": 0.044114,
+          "seconds": 43.821183770895004,
+          "cost_usd": 0.041224,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 2480.980912502855,
-        "cost_usd": 1.827424
+        "seconds": 2406.419838950038,
+        "cost_usd": 1.769525
       },
       "history": [
         {
@@ -421,6 +437,10 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 135.60000000000002
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 131.175
         }
       ]
     },
@@ -429,23 +449,23 @@
       "effort": "ultra",
       "score": 131.175,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:31:29.917897+00:00",
+      "latest_at": "2026-11-23T16:55:09.856660+00:00",
       "tasks": [
         {
           "id": "combined",
           "score": 69,
           "raw_total": 94,
           "capped": true,
-          "seconds": 573.18960836716,
-          "cost_usd": 0.415594
+          "seconds": 728.7088499348611,
+          "cost_usd": 0.4558508
         },
         {
           "id": "pompeii",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 281.0010001398623,
-          "cost_usd": 0.277154,
+          "seconds": 302.8082590922713,
+          "cost_usd": 0.3019628,
           "reward": 1
         },
         {
@@ -453,22 +473,22 @@
           "score": 99,
           "raw_total": 99,
           "capped": false,
-          "seconds": 572.07567297481,
-          "cost_usd": 0.4856244
+          "seconds": 580.2438465114683,
+          "cost_usd": 0.3801272
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 20.116850059479475,
-          "cost_usd": 0.031788,
+          "seconds": 29.922106923535466,
+          "cost_usd": 0.034288,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 1446.3831315413117,
-        "cost_usd": 1.21016
+        "seconds": 1641.6830624621361,
+        "cost_usd": 1.172229
       },
       "history": [
         {
@@ -498,54 +518,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 131.175
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 131.175
         }
       ]
     },
     {
       "model": "gpt-6.2-astra",
       "effort": "low",
-      "score": 124.61250000000001,
+      "score": 129.15,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:31:03.736150+00:00",
+      "latest_at": "2026-11-23T16:55:24.952894+00:00",
       "tasks": [
         {
           "id": "combined",
           "score": 69,
-          "raw_total": 72,
+          "raw_total": 93,
           "capped": true,
-          "seconds": 104.67895565368235,
-          "cost_usd": 0.3255232
+          "seconds": 150.73504983074963,
+          "cost_usd": 0.3334272
         },
         {
           "id": "pompeii",
-          "score": 91.66666666666666,
-          "raw_total": 91.66666666666666,
+          "score": 100,
+          "raw_total": 100,
           "capped": false,
-          "seconds": 169.15079524181783,
-          "cost_usd": 0.454488,
-          "reward": 0.9166666666666666
+          "seconds": 157.18489716015756,
+          "cost_usd": 0.3512976,
+          "reward": 1
         },
         {
           "id": "pelican",
-          "score": 86.5,
-          "raw_total": 86.5,
+          "score": 90,
+          "raw_total": 90,
           "capped": false,
-          "seconds": 69.0726861692965,
-          "cost_usd": 0.2469744
+          "seconds": 76.12462872453034,
+          "cost_usd": 0.2511424
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 15.617215825244784,
-          "cost_usd": 0.122248,
+          "seconds": 25.267776362597942,
+          "cost_usd": 0.122968,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 358.51965289004147,
-        "cost_usd": 1.149234
+        "seconds": 409.3123520780355,
+        "cost_usd": 1.058835
       },
       "history": [
         {
@@ -575,54 +599,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 124.61250000000001
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 129.15
         }
       ]
     },
     {
       "model": "gpt-6.2-astra",
       "effort": "medium",
-      "score": 127.35000000000001,
+      "score": 129.375,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:30:59.569836+00:00",
+      "latest_at": "2026-11-23T16:54:59.502213+00:00",
       "tasks": [
         {
           "id": "combined",
           "score": 69,
-          "raw_total": 71.5,
+          "raw_total": 74,
           "capped": true,
-          "seconds": 153.1842457484454,
-          "cost_usd": 0.4333472
+          "seconds": 172.9889617599547,
+          "cost_usd": 0.4217232
         },
         {
           "id": "pompeii",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 150.533976694569,
-          "cost_usd": 0.4194288,
+          "seconds": 176.63048598729074,
+          "cost_usd": 0.414856,
           "reward": 1
         },
         {
           "id": "pelican",
-          "score": 82,
-          "raw_total": 82,
+          "score": 91,
+          "raw_total": 91,
           "capped": false,
-          "seconds": 85.27576225064695,
-          "cost_usd": 0.2893696
+          "seconds": 107.02973336726427,
+          "cost_usd": 0.3185264
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 21.067032432183623,
-          "cost_usd": 0.126208,
+          "seconds": 32.71957469172776,
+          "cost_usd": 0.1401888,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 410.06101712584496,
-        "cost_usd": 1.268354
+        "seconds": 489.36875580623746,
+        "cost_usd": 1.295294
       },
       "history": [
         {
@@ -652,54 +680,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 127.35000000000001
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 129.375
         }
       ]
     },
     {
       "model": "gpt-6.2-astra",
       "effort": "high",
-      "score": 130.72500000000002,
+      "score": 128.1375,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:31:09.387559+00:00",
+      "latest_at": "2026-11-23T16:54:48.278128+00:00",
       "tasks": [
         {
           "id": "combined",
           "score": 69,
-          "raw_total": 97,
+          "raw_total": 74.5,
           "capped": true,
-          "seconds": 437.9263335503638,
-          "cost_usd": 1.082816
+          "seconds": 587.1151813454926,
+          "cost_usd": 1.1595008
         },
         {
           "id": "pompeii",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 169.31657230108976,
-          "cost_usd": 0.6936464,
+          "seconds": 203.95449704676867,
+          "cost_usd": 0.728776,
           "reward": 1
         },
         {
           "id": "pelican",
-          "score": 97,
-          "raw_total": 97,
+          "score": 85.5,
+          "raw_total": 85.5,
           "capped": false,
-          "seconds": 281.6020506825298,
-          "cost_usd": 0.7449072
+          "seconds": 192.84164064005017,
+          "cost_usd": 0.5655104
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 22.71805014833808,
-          "cost_usd": 0.128528,
+          "seconds": 31.419700168073177,
+          "cost_usd": 0.130608,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 911.5630066823214,
-        "cost_usd": 2.649898
+        "seconds": 1015.3310192003846,
+        "cost_usd": 2.584395
       },
       "history": [
         {
@@ -729,6 +761,10 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 130.72500000000002
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 128.1375
         }
       ]
     },
@@ -737,23 +773,23 @@
       "effort": "xhigh",
       "score": 137.175,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:31:29.897983+00:00",
+      "latest_at": "2026-11-23T16:53:36.956003+00:00",
       "tasks": [
         {
           "id": "combined",
           "score": 79,
           "raw_total": 99.5,
           "capped": true,
-          "seconds": 853.2216385193169,
-          "cost_usd": 1.7782848
+          "seconds": 750.3602755181491,
+          "cost_usd": 1.5660448
         },
         {
           "id": "pompeii",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 186.84267589077353,
-          "cost_usd": 0.573632,
+          "seconds": 404.7503428030759,
+          "cost_usd": 0.8003408,
           "reward": 1
         },
         {
@@ -761,22 +797,22 @@
           "score": 99,
           "raw_total": 99,
           "capped": false,
-          "seconds": 590.4391858857125,
-          "cost_usd": 1.481208
+          "seconds": 540.6846729200333,
+          "cost_usd": 1.2140272
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 28.91947096027434,
-          "cost_usd": 0.0509344,
+          "seconds": 28.969715174287558,
+          "cost_usd": 0.131408,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 1659.4229712560773,
-        "cost_usd": 3.884059
+        "seconds": 1724.765006415546,
+        "cost_usd": 3.711821
       },
       "history": [
         {
@@ -806,54 +842,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 137.175
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 137.175
         }
       ]
     },
     {
       "model": "gpt-6.2-astra",
       "effort": "max",
-      "score": 131.175,
+      "score": 137.4,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:28:05.954904+00:00",
+      "latest_at": "2026-11-23T16:51:54.324829+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 69,
-          "raw_total": 98.5,
+          "score": 79,
+          "raw_total": 99,
           "capped": true,
-          "seconds": 2086.9351999741048,
-          "cost_usd": 4.6290288
+          "seconds": 1935.0112597923726,
+          "cost_usd": 3.4899408
         },
         {
           "id": "pompeii",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 523.777156682685,
-          "cost_usd": 1.3480416,
+          "seconds": 561.6865740530193,
+          "cost_usd": 1.074688,
           "reward": 1
         },
         {
           "id": "pelican",
-          "score": 99,
-          "raw_total": 99,
+          "score": 100,
+          "raw_total": 100,
           "capped": false,
-          "seconds": 1333.6948633436114,
-          "cost_usd": 3.2454464
+          "seconds": 1447.2178811896592,
+          "cost_usd": 2.819632
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 42.06993640214205,
-          "cost_usd": 0.168528,
+          "seconds": 50.272095520049334,
+          "cost_usd": 0.174408,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 3986.477156402543,
-        "cost_usd": 9.391045
+        "seconds": 3994.1878105551004,
+        "cost_usd": 7.558669
       },
       "history": [
         {
@@ -883,31 +923,35 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 131.175
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 137.4
         }
       ]
     },
     {
       "model": "gpt-6.2-astra",
       "effort": "ultra",
-      "score": 131.175,
+      "score": 137.175,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:30:46.554695+00:00",
+      "latest_at": "2026-11-23T16:54:39.819301+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 69,
-          "raw_total": 96.5,
+          "score": 79,
+          "raw_total": 98.5,
           "capped": true,
-          "seconds": 791.9161031730473,
-          "cost_usd": 1.8256784
+          "seconds": 780.8109128195792,
+          "cost_usd": 1.6234896
         },
         {
           "id": "pompeii",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 255.00273214653134,
-          "cost_usd": 0.783976,
+          "seconds": 343.85825094021857,
+          "cost_usd": 1.077128,
           "reward": 1
         },
         {
@@ -915,22 +959,22 @@
           "score": 99,
           "raw_total": 99,
           "capped": false,
-          "seconds": 608.0932180713862,
-          "cost_usd": 1.6443344
+          "seconds": 470.22776512242854,
+          "cost_usd": 1.0682688
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 25.06756884418428,
-          "cost_usd": 0.132584,
+          "seconds": 28.7190017439425,
+          "cost_usd": 0.0482304,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 1680.0796222351491,
-        "cost_usd": 4.386573
+        "seconds": 1623.6159306261688,
+        "cost_usd": 3.817117
       },
       "history": [
         {
@@ -960,54 +1004,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 131.175
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 137.175
         }
       ]
     },
     {
       "model": "gpt-6.1-terra",
       "effort": "low",
-      "score": 92.75,
+      "score": 92.0375,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:29:34.795579+00:00",
+      "latest_at": "2026-11-23T16:54:10.898229+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 62,
-          "raw_total": 62,
+          "score": 56.5,
+          "raw_total": 56.5,
           "capped": true,
-          "seconds": 104.7790841665119,
-          "cost_usd": 0.0357286
+          "seconds": 110.7295848224312,
+          "cost_usd": 0.0358176
         },
         {
           "id": "pompeii",
           "score": 44.44444444444444,
           "raw_total": 44.44444444444444,
           "capped": false,
-          "seconds": 38.21957366913557,
-          "cost_usd": 0.0242928,
+          "seconds": 39.62044680863619,
+          "cost_usd": 0.0222332,
           "reward": 0.4444444444444444
         },
         {
           "id": "pelican",
-          "score": 58,
-          "raw_total": 58,
+          "score": 69.5,
+          "raw_total": 69.5,
           "capped": false,
-          "seconds": 65.04051893390715,
-          "cost_usd": 0.0284542
+          "seconds": 64.87380459532142,
+          "cost_usd": 0.0279974
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 26.218832332640886,
-          "cost_usd": 0.0074854,
+          "seconds": 33.76964655891061,
+          "cost_usd": 0.009385,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 234.2580091021955,
-        "cost_usd": 0.095961
+        "seconds": 248.99348278529942,
+        "cost_usd": 0.095433
       },
       "history": [
         {
@@ -1137,54 +1185,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 92.75
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 92.0375
         }
       ]
     },
     {
       "model": "gpt-6.1-terra",
       "effort": "medium",
-      "score": 96.4125,
+      "score": 101.5875,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:30:31.712988+00:00",
+      "latest_at": "2026-11-23T16:53:41.349642+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 60,
-          "raw_total": 60,
+          "score": 63,
+          "raw_total": 63,
           "capped": true,
-          "seconds": 94.42732998728752,
-          "cost_usd": 0.0365916
+          "seconds": 103.47975170984864,
+          "cost_usd": 0.0541904
         },
         {
           "id": "pompeii",
           "score": 50,
           "raw_total": 50,
           "capped": false,
-          "seconds": 58.72360749542713,
-          "cost_usd": 0.0295484,
+          "seconds": 77.47511218860745,
+          "cost_usd": 0.0351838,
           "reward": 0.5
         },
         {
           "id": "pelican",
-          "score": 68.5,
-          "raw_total": 68.5,
+          "score": 83.5,
+          "raw_total": 83.5,
           "capped": false,
-          "seconds": 66.0098489113152,
-          "cost_usd": 0.0293246
+          "seconds": 86.01369193568826,
+          "cost_usd": 0.0284776
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 28.00458819232881,
-          "cost_usd": 0.007897,
+          "seconds": 31.004824072122574,
+          "cost_usd": 0.0076508,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 247.16537458635867,
-        "cost_usd": 0.103362
+        "seconds": 297.9733799062669,
+        "cost_usd": 0.125503
       },
       "history": [
         {
@@ -1314,54 +1366,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 96.4125
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 101.5875
         }
       ]
     },
     {
       "model": "gpt-6.1-terra",
       "effort": "high",
-      "score": 98.3,
+      "score": 97.775,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:29:37.482599+00:00",
+      "latest_at": "2026-11-23T16:52:22.652424+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 66,
-          "raw_total": 66,
+          "score": 64,
+          "raw_total": 64,
           "capped": true,
-          "seconds": 117.12906629964709,
-          "cost_usd": 0.0388016
+          "seconds": 107.42991374246776,
+          "cost_usd": 0.0392522
         },
         {
           "id": "pompeii",
           "score": 44.44444444444444,
           "raw_total": 44.44444444444444,
           "capped": false,
-          "seconds": 59.27230332419276,
-          "cost_usd": 0.0267212,
+          "seconds": 212.79216705448925,
+          "cost_usd": 0.1031052,
           "reward": 0.4444444444444444
         },
         {
           "id": "pelican",
-          "score": 72,
-          "raw_total": 72,
+          "score": 75,
+          "raw_total": 75,
           "capped": false,
-          "seconds": 68.72402737289667,
-          "cost_usd": 0.0197362
+          "seconds": 79.4250233285129,
+          "cost_usd": 0.0270808
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 40.16986699961126,
-          "cost_usd": 0.0130302,
+          "seconds": 34.21874766983092,
+          "cost_usd": 0.0078408,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 285.2952639963478,
-        "cost_usd": 0.098289
+        "seconds": 433.86585179530084,
+        "cost_usd": 0.177279
       },
       "history": [
         {
@@ -1491,54 +1547,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 98.3
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 97.775
         }
       ]
     },
     {
       "model": "gpt-6.1-terra",
       "effort": "xhigh",
-      "score": 112.49318181818181,
+      "score": 107.20855263157894,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:30:16.630830+00:00",
+      "latest_at": "2026-11-23T16:52:56.863647+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 62,
-          "raw_total": 62,
+          "score": 65.5,
+          "raw_total": 65.5,
           "capped": true,
-          "seconds": 157.01972573064268,
-          "cost_usd": 0.0586558
+          "seconds": 147.73450197651982,
+          "cost_usd": 0.051961
         },
         {
           "id": "pompeii",
-          "score": 81.81818181818183,
-          "raw_total": 81.81818181818183,
+          "score": 63.1578947368421,
+          "raw_total": 63.1578947368421,
           "capped": false,
-          "seconds": 262.3472610358149,
-          "cost_usd": 0.0996704,
-          "reward": 0.8181818181818182
+          "seconds": 328.61249298788607,
+          "cost_usd": 0.1344758,
+          "reward": 0.631578947368421
         },
         {
           "id": "pelican",
-          "score": 71,
-          "raw_total": 71,
+          "score": 75.5,
+          "raw_total": 75.5,
           "capped": false,
-          "seconds": 80.07434377633035,
-          "cost_usd": 0.0243256
+          "seconds": 102.2279725112021,
+          "cost_usd": 0.037969
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 38.92033370770514,
-          "cost_usd": 0.0125072,
+          "seconds": 37.51936996355653,
+          "cost_usd": 0.0099152,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 538.361664250493,
-        "cost_usd": 0.195159
+        "seconds": 616.0943374391645,
+        "cost_usd": 0.234321
       },
       "history": [
         {
@@ -1668,54 +1728,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 112.49318181818181
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 107.20855263157894
         }
       ]
     },
     {
       "model": "gpt-6.1-terra",
       "effort": "max",
-      "score": 130.95,
+      "score": 130.3875,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:22:54.723328+00:00",
+      "latest_at": "2026-11-23T16:43:34.742920+00:00",
       "tasks": [
         {
           "id": "combined",
           "score": 69,
-          "raw_total": 88.5,
+          "raw_total": 91,
           "capped": true,
-          "seconds": 517.2320143636316,
-          "cost_usd": 0.171997
+          "seconds": 561.4892274122685,
+          "cost_usd": 0.1943152
         },
         {
           "id": "pompeii",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 725.8351497203112,
-          "cost_usd": 0.3193722,
+          "seconds": 854.0232988856733,
+          "cost_usd": 0.3540162,
           "reward": 1
         },
         {
           "id": "pelican",
-          "score": 98,
-          "raw_total": 98,
+          "score": 95.5,
+          "raw_total": 95.5,
           "capped": false,
-          "seconds": 405.16491154395044,
-          "cost_usd": 0.1386872
+          "seconds": 429.8713321685791,
+          "cost_usd": 0.1556872
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 63.37291596084833,
-          "cost_usd": 0.0153216,
+          "seconds": 49.07084169238806,
+          "cost_usd": 0.022329,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 1711.6049915887415,
-        "cost_usd": 0.645378
+        "seconds": 1894.454700158909,
+        "cost_usd": 0.726348
       },
       "history": [
         {
@@ -1845,54 +1909,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 130.95
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 130.3875
         }
       ]
     },
     {
       "model": "gpt-6.1-terra",
       "effort": "ultra",
-      "score": 115.08749999999999,
+      "score": 107.38977272727273,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:30:02.220725+00:00",
+      "latest_at": "2026-11-23T16:54:16.702431+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 69,
-          "raw_total": 85.5,
+          "score": 59,
+          "raw_total": 60.5,
           "capped": true,
-          "seconds": 182.83876288309693,
-          "cost_usd": 0.064472
+          "seconds": 152.68532135896385,
+          "cost_usd": 0.0429994
         },
         {
           "id": "pompeii",
-          "score": 70,
-          "raw_total": 70,
+          "score": 72.72727272727273,
+          "raw_total": 72.72727272727273,
           "capped": false,
-          "seconds": 251.79922202043235,
-          "cost_usd": 0.1100964,
-          "reward": 0.7
+          "seconds": 250.03264761157334,
+          "cost_usd": 0.0842344,
+          "reward": 0.7272727272727273
         },
         {
           "id": "pelican",
-          "score": 87.5,
-          "raw_total": 87.5,
+          "score": 74.5,
+          "raw_total": 74.5,
           "capped": false,
-          "seconds": 92.92818545177579,
-          "cost_usd": 0.027231
+          "seconds": 101.47791735082865,
+          "cost_usd": 0.0277884
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 27.26826611161232,
-          "cost_usd": 0.0086818,
+          "seconds": 46.92221589572728,
+          "cost_usd": 0.0121484,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 554.8344364669174,
-        "cost_usd": 0.210481
+        "seconds": 551.1181022170931,
+        "cost_usd": 0.167171
       },
       "history": [
         {
@@ -2022,54 +2090,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 115.08749999999999
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 107.38977272727273
         }
       ]
     },
     {
       "model": "gpt-6.1-sol",
       "effort": "low",
-      "score": 99.7875,
+      "score": 96.75535714285715,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:28:54.335161+00:00",
+      "latest_at": "2026-11-23T16:53:07.595656+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 59,
-          "raw_total": 62.5,
+          "score": 66.5,
+          "raw_total": 66.5,
           "capped": true,
-          "seconds": 130.93338580988348,
-          "cost_usd": 0.07823
+          "seconds": 161.13456198945642,
+          "cost_usd": 0.1222316
         },
         {
           "id": "pompeii",
-          "score": 58.333333333333336,
-          "raw_total": 58.333333333333336,
+          "score": 38.095238095238095,
+          "raw_total": 38.095238095238095,
           "capped": false,
-          "seconds": 210.6934663206339,
-          "cost_usd": 0.1032484,
-          "reward": 0.5833333333333334
+          "seconds": 157.88520524837077,
+          "cost_usd": 0.1358456,
+          "reward": 0.38095238095238093
         },
         {
           "id": "pelican",
-          "score": 69.5,
-          "raw_total": 69.5,
+          "score": 76.5,
+          "raw_total": 76.5,
           "capped": false,
-          "seconds": 97.87847728468478,
-          "cost_usd": 0.0620204
+          "seconds": 102.87811094708741,
+          "cost_usd": 0.0929
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 36.970571188256145,
-          "cost_usd": 0.0293456,
+          "seconds": 35.76987696439028,
+          "cost_usd": 0.0147092,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 476.4759006034583,
-        "cost_usd": 0.272844
+        "seconds": 457.66775514930487,
+        "cost_usd": 0.365686
       },
       "history": [
         {
@@ -2199,54 +2271,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 99.7875
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 96.75535714285715
         }
       ]
     },
     {
       "model": "gpt-6.1-sol",
       "effort": "medium",
-      "score": 129.60000000000002,
+      "score": 125.6625,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:29:24.064026+00:00",
+      "latest_at": "2026-11-23T16:52:16.522095+00:00",
       "tasks": [
         {
           "id": "combined",
           "score": 69,
-          "raw_total": 82.5,
+          "raw_total": 69,
           "capped": true,
-          "seconds": 335.6599394790828,
-          "cost_usd": 0.2046808
+          "seconds": 307.1038487870246,
+          "cost_usd": 0.2184296
         },
         {
           "id": "pompeii",
-          "score": 100,
-          "raw_total": 100,
+          "score": 96,
+          "raw_total": 96,
           "capped": false,
-          "seconds": 349.0446231737733,
-          "cost_usd": 0.2003872,
-          "reward": 1
+          "seconds": 419.66978694684803,
+          "cost_usd": 0.2360248,
+          "reward": 0.96
         },
         {
           "id": "pelican",
-          "score": 92,
-          "raw_total": 92,
+          "score": 82.5,
+          "raw_total": 82.5,
           "capped": false,
-          "seconds": 123.73114280030131,
-          "cost_usd": 0.0857096
+          "seconds": 129.28162398003042,
+          "cost_usd": 0.1389216
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 41.52072517387569,
-          "cost_usd": 0.0401748,
+          "seconds": 49.27101772651076,
+          "cost_usd": 0.040898,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 849.9564306270331,
-        "cost_usd": 0.530952
+        "seconds": 905.3262774404138,
+        "cost_usd": 0.634274
       },
       "history": [
         {
@@ -2376,54 +2452,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 129.60000000000002
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 125.6625
         }
       ]
     },
     {
       "model": "gpt-6.1-sol",
       "effort": "high",
-      "score": 130.72500000000002,
+      "score": 129.60000000000002,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:28:41.172544+00:00",
+      "latest_at": "2026-11-23T16:51:45.414086+00:00",
       "tasks": [
         {
           "id": "combined",
           "score": 69,
-          "raw_total": 95.5,
+          "raw_total": 82.5,
           "capped": true,
-          "seconds": 709.1026280354708,
-          "cost_usd": 0.4617628
+          "seconds": 467.72318798676133,
+          "cost_usd": 0.301682
         },
         {
           "id": "pompeii",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 397.9686760921031,
-          "cost_usd": 0.2111392,
+          "seconds": 392.44355889968574,
+          "cost_usd": 0.2839816,
           "reward": 1
         },
         {
           "id": "pelican",
-          "score": 97,
-          "raw_total": 97,
+          "score": 92,
+          "raw_total": 92,
           "capped": false,
-          "seconds": 260.9990736171603,
-          "cost_usd": 0.1760648
+          "seconds": 226.79558914713562,
+          "cost_usd": 0.1683764
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 41.62012377567589,
-          "cost_usd": 0.041594,
+          "seconds": 36.419285859912634,
+          "cost_usd": 0.037516,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 1409.6905015204102,
-        "cost_usd": 0.890561
+        "seconds": 1123.3816218934953,
+        "cost_usd": 0.791556
       },
       "history": [
         {
@@ -2553,54 +2633,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 130.72500000000002
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 129.60000000000002
         }
       ]
     },
     {
       "model": "gpt-6.1-sol",
       "effort": "xhigh",
-      "score": 136.95,
+      "score": 130.5,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:27:04.490000+00:00",
+      "latest_at": "2026-11-23T16:49:16.237523+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 79,
-          "raw_total": 90,
+          "score": 69,
+          "raw_total": 84.5,
           "capped": true,
-          "seconds": 747.6080504264683,
-          "cost_usd": 0.4714408
+          "seconds": 593.640968458727,
+          "cost_usd": 0.3912316
         },
         {
           "id": "pompeii",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 437.26978712901473,
-          "cost_usd": 0.3112956,
+          "seconds": 341.50950288027525,
+          "cost_usd": 0.2645084,
           "reward": 1
         },
         {
           "id": "pelican",
-          "score": 98,
-          "raw_total": 98,
+          "score": 96,
+          "raw_total": 96,
           "capped": false,
-          "seconds": 371.36253888346255,
-          "cost_usd": 0.2155124
+          "seconds": 508.28167341835797,
+          "cost_usd": 0.3021796
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 51.47134940139949,
-          "cost_usd": 0.0490536,
+          "seconds": 63.22206301614642,
+          "cost_usd": 0.0497648,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 1607.711725840345,
-        "cost_usd": 1.047302
+        "seconds": 1506.6542077735066,
+        "cost_usd": 1.007684
       },
       "history": [
         {
@@ -2730,54 +2814,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 136.95
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 130.5
         }
       ]
     },
     {
       "model": "gpt-6.1-sol",
       "effort": "max",
-      "score": 129.21847826086957,
+      "score": 136.72500000000002,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:14:19.919004+00:00",
+      "latest_at": "2026-11-23T16:44:19.686074+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 69,
-          "raw_total": 83,
+          "score": 79,
+          "raw_total": 85.5,
           "capped": true,
-          "seconds": 788.662961428985,
-          "cost_usd": 0.41817
+          "seconds": 757.0119726266712,
+          "cost_usd": 0.4434508
         },
         {
           "id": "pompeii",
-          "score": 95.65217391304348,
-          "raw_total": 95.65217391304348,
+          "score": 100,
+          "raw_total": 100,
           "capped": false,
-          "seconds": 417.6676511634141,
-          "cost_usd": 0.2395528,
-          "reward": 0.9565217391304348
+          "seconds": 396.2665221616626,
+          "cost_usd": 0.2676268,
+          "reward": 1
         },
         {
           "id": "pelican",
-          "score": 99,
-          "raw_total": 99,
+          "score": 97,
+          "raw_total": 97,
           "capped": false,
-          "seconds": 643.4982342515141,
-          "cost_usd": 0.392588
+          "seconds": 604.1455895956606,
+          "cost_usd": 0.4288176
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 63.27336085215211,
-          "cost_usd": 0.0354728,
+          "seconds": 61.97370732575655,
+          "cost_usd": 0.026576,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 1913.1022076960653,
-        "cost_usd": 1.085784
+        "seconds": 1819.397791709751,
+        "cost_usd": 1.166471
       },
       "history": [
         {
@@ -2907,54 +2995,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 129.21847826086957
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 136.72500000000002
         }
       ]
     },
     {
       "model": "gpt-6.1-sol",
       "effort": "ultra",
-      "score": 135.14999999999998,
+      "score": 128.02499999999998,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:25:36.314981+00:00",
+      "latest_at": "2026-11-23T16:50:11.217120+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 79,
-          "raw_total": 83.5,
+          "score": 69,
+          "raw_total": 84.5,
           "capped": true,
-          "seconds": 758.8595136553049,
-          "cost_usd": 0.5031944
+          "seconds": 543.5341131929308,
+          "cost_usd": 0.3136024
         },
         {
           "id": "pompeii",
           "score": 96,
           "raw_total": 96,
           "capped": false,
-          "seconds": 564.9399738870561,
-          "cost_usd": 0.3161892,
+          "seconds": 636.5963467098773,
+          "cost_usd": 0.3141516,
           "reward": 0.96
         },
         {
           "id": "pelican",
-          "score": 98,
-          "raw_total": 98,
+          "score": 93,
+          "raw_total": 93,
           "capped": false,
-          "seconds": 489.0704184155911,
-          "cost_usd": 0.3057384
+          "seconds": 574.9400846511126,
+          "cost_usd": 0.307726
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 49.221028197556734,
-          "cost_usd": 0.0279868,
+          "seconds": 54.775137873366475,
+          "cost_usd": 0.045336,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 1862.0909341555089,
-        "cost_usd": 1.153109
+        "seconds": 1809.845682427287,
+        "cost_usd": 0.980816
       },
       "history": [
         {
@@ -3084,54 +3176,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 135.14999999999998
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 128.02499999999998
         }
       ]
     },
     {
       "model": "gpt-6-astra",
       "effort": "low",
-      "score": 106.0125,
+      "score": 103.57826086956521,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:30:38.323951+00:00",
+      "latest_at": "2026-11-23T16:53:29.626326+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 65.5,
-          "raw_total": 65.5,
+          "score": 66,
+          "raw_total": 66,
           "capped": true,
-          "seconds": 189.94000858813524,
-          "cost_usd": 0.490178
+          "seconds": 212.6446044575423,
+          "cost_usd": 0.550804
         },
         {
           "id": "pompeii",
-          "score": 56.00000000000001,
-          "raw_total": 56.00000000000001,
+          "score": 52.17391304347826,
+          "raw_total": 52.17391304347826,
           "capped": false,
-          "seconds": 229.06132548861206,
-          "cost_usd": 0.532844,
-          "reward": 0.56
+          "seconds": 412.5183420162648,
+          "cost_usd": 0.719108,
+          "reward": 0.5217391304347826
         },
         {
           "id": "pelican",
-          "score": 84.5,
-          "raw_total": 84.5,
+          "score": 80,
+          "raw_total": 80,
           "capped": false,
-          "seconds": 105.67882196046412,
-          "cost_usd": 0.327954
+          "seconds": 110.42992604896426,
+          "cost_usd": 0.294226
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 35.92154421657324,
-          "cost_usd": 0.15949,
+          "seconds": 33.03663907945156,
+          "cost_usd": 0.07094,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 560.6017002537847,
-        "cost_usd": 1.510466
+        "seconds": 768.6295116022229,
+        "cost_usd": 1.635078
       },
       "history": [
         {
@@ -3257,54 +3353,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 106.0125
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 103.57826086956521
         }
       ]
     },
     {
       "model": "gpt-6-astra",
       "effort": "medium",
-      "score": 129.825,
+      "score": 111.6173076923077,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:29:41.031288+00:00",
+      "latest_at": "2026-11-23T16:51:25.893499+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 67.5,
-          "raw_total": 67.5,
+          "score": 66,
+          "raw_total": 66,
           "capped": true,
-          "seconds": 213.79137891717255,
-          "cost_usd": 0.61344
+          "seconds": 282.0357659291476,
+          "cost_usd": 0.710228
         },
         {
           "id": "pompeii",
-          "score": 100,
-          "raw_total": 100,
+          "score": 61.53846153846154,
+          "raw_total": 61.53846153846154,
           "capped": false,
-          "seconds": 201.24055720493197,
-          "cost_usd": 0.742956,
-          "reward": 1
+          "seconds": 224.64357256516814,
+          "cost_usd": 0.838518,
+          "reward": 0.6153846153846154
         },
         {
           "id": "pelican",
           "score": 97,
           "raw_total": 97,
           "capped": false,
-          "seconds": 103.97942934930325,
-          "cost_usd": 0.33637
+          "seconds": 135.5825032144785,
+          "cost_usd": 0.593922
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 43.720608016476035,
-          "cost_usd": 0.12542,
+          "seconds": 42.470853270962834,
+          "cost_usd": 0.16119,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 562.7319734878838,
-        "cost_usd": 1.818186
+        "seconds": 684.7326949797571,
+        "cost_usd": 2.303858
       },
       "history": [
         {
@@ -3430,54 +3530,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 129.825
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 111.6173076923077
         }
       ]
     },
     {
       "model": "gpt-6-astra",
       "effort": "high",
-      "score": 130.95,
+      "score": 129.9375,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:28:21.014841+00:00",
+      "latest_at": "2026-11-23T16:52:53.530282+00:00",
       "tasks": [
         {
           "id": "combined",
           "score": 69,
-          "raw_total": 82,
+          "raw_total": 97.5,
           "capped": true,
-          "seconds": 439.7716873176396,
-          "cost_usd": 1.50542
+          "seconds": 447.3205792475492,
+          "cost_usd": 1.215208
         },
         {
           "id": "pompeii",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 490.54625787585974,
-          "cost_usd": 1.03056,
+          "seconds": 425.6703172288835,
+          "cost_usd": 1.00379,
           "reward": 1
         },
         {
           "id": "pelican",
-          "score": 98,
-          "raw_total": 98,
+          "score": 93.5,
+          "raw_total": 93.5,
           "capped": false,
-          "seconds": 167.836599746719,
-          "cost_usd": 0.542744
+          "seconds": 154.73397894762456,
+          "cost_usd": 0.521784
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 38.92086759954691,
-          "cost_usd": 0.16559,
+          "seconds": 45.07106722332537,
+          "cost_usd": 0.190086,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 1137.0754125397652,
-        "cost_usd": 3.244314
+        "seconds": 1072.7959426473826,
+        "cost_usd": 2.930868
       },
       "history": [
         {
@@ -3603,54 +3707,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 130.95
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 129.9375
         }
       ]
     },
     {
       "model": "gpt-6-astra",
       "effort": "xhigh",
-      "score": 130.72500000000002,
+      "score": 137.175,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:24:57.660256+00:00",
+      "latest_at": "2026-11-23T16:46:31.380773+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 69,
-          "raw_total": 84.5,
+          "score": 79,
+          "raw_total": 88,
           "capped": true,
-          "seconds": 619.2953012418002,
-          "cost_usd": 1.825456
+          "seconds": 653.8481227699667,
+          "cost_usd": 1.61311
         },
         {
           "id": "pompeii",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 603.0758142434061,
-          "cost_usd": 1.210012,
+          "seconds": 457.17475038953125,
+          "cost_usd": 1.125974,
           "reward": 1
         },
         {
           "id": "pelican",
-          "score": 97,
-          "raw_total": 97,
+          "score": 99,
+          "raw_total": 99,
           "capped": false,
-          "seconds": 376.2153991125524,
-          "cost_usd": 1.266618
+          "seconds": 363.1587751749903,
+          "cost_usd": 0.977598
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 60.12201432324946,
-          "cost_usd": 0.31369,
+          "seconds": 67.52345414273441,
+          "cost_usd": 0.14828,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 1658.708528921008,
-        "cost_usd": 4.615776
+        "seconds": 1541.7051024772227,
+        "cost_usd": 3.864962
       },
       "history": [
         {
@@ -3776,54 +3884,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 130.72500000000002
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 137.175
         }
       ]
     },
     {
       "model": "gpt-6-astra",
       "effort": "max",
-      "score": 135.21847826086957,
+      "score": 136.72500000000002,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:12:20.492560+00:00",
+      "latest_at": "2026-11-23T16:39:08.076513+00:00",
       "tasks": [
         {
           "id": "combined",
           "score": 79,
-          "raw_total": 92.5,
+          "raw_total": 93,
           "capped": true,
-          "seconds": 987.9406881798059,
-          "cost_usd": 3.26484
+          "seconds": 1136.6131461150944,
+          "cost_usd": 2.646776
         },
         {
           "id": "pompeii",
-          "score": 95.65217391304348,
-          "raw_total": 95.65217391304348,
+          "score": 100,
+          "raw_total": 100,
           "capped": false,
-          "seconds": 712.7557443510741,
-          "cost_usd": 1.625616,
-          "reward": 0.9565217391304348
+          "seconds": 619.4926059283316,
+          "cost_usd": 1.643942,
+          "reward": 1
         },
         {
           "id": "pelican",
-          "score": 99,
-          "raw_total": 99,
+          "score": 97,
+          "raw_total": 97,
           "capped": false,
-          "seconds": 769.6667998377234,
-          "cost_usd": 2.126046
+          "seconds": 753.8134709708393,
+          "cost_usd": 2.03589
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 69.97516488097608,
-          "cost_usd": 0.227504,
+          "seconds": 79.17375696636736,
+          "cost_usd": 0.279828,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 2540.3383972495794,
-        "cost_usd": 7.244006
+        "seconds": 2589.0929799806327,
+        "cost_usd": 6.606436
       },
       "history": [
         {
@@ -3949,54 +4061,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 135.21847826086957
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 136.72500000000002
         }
       ]
     },
     {
       "model": "gpt-6-astra",
       "effort": "ultra",
-      "score": 131.175,
+      "score": 130.3875,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:24:46.968976+00:00",
+      "latest_at": "2026-11-23T16:45:53.574609+00:00",
       "tasks": [
         {
           "id": "combined",
           "score": 69,
-          "raw_total": 91.5,
+          "raw_total": 73.5,
           "capped": true,
-          "seconds": 746.8114907629788,
-          "cost_usd": 1.858434
+          "seconds": 888.4399570059031,
+          "cost_usd": 2.614104
         },
         {
           "id": "pompeii",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 401.11680431850255,
-          "cost_usd": 1.001862,
+          "seconds": 455.0592465233058,
+          "cost_usd": 1.367572,
           "reward": 1
         },
         {
           "id": "pelican",
-          "score": 99,
-          "raw_total": 99,
+          "score": 95.5,
+          "raw_total": 95.5,
           "capped": false,
-          "seconds": 406.4154785666615,
-          "cost_usd": 1.12568
+          "seconds": 364.31100748851895,
+          "cost_usd": 1.113874
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 61.42262125574052,
-          "cost_usd": 0.223702,
+          "seconds": 67.62331026047468,
+          "cost_usd": 0.359534,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 1615.7663949038833,
-        "cost_usd": 4.209678
+        "seconds": 1775.4335212782025,
+        "cost_usd": 5.455084
       },
       "history": [
         {
@@ -4122,54 +4238,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 131.175
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 130.3875
         }
       ]
     },
     {
       "model": "gpt-6-sol",
       "effort": "low",
-      "score": 86.1,
+      "score": 90.98486842105262,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:27:58.130282+00:00",
+      "latest_at": "2026-11-23T16:50:59.774995+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 55.5,
-          "raw_total": 55.5,
+          "score": 56.5,
+          "raw_total": 56.5,
           "capped": true,
-          "seconds": 127.93180686794221,
-          "cost_usd": 0.088698
+          "seconds": 126.73119814693928,
+          "cost_usd": 0.1098444
         },
         {
           "id": "pompeii",
-          "score": 33.33333333333333,
-          "raw_total": 33.33333333333333,
+          "score": 42.10526315789473,
+          "raw_total": 42.10526315789473,
           "capped": false,
-          "seconds": 46.37483436241746,
-          "cost_usd": 0.042634,
-          "reward": 0.3333333333333333
+          "seconds": 55.57238034531474,
+          "cost_usd": 0.0446816,
+          "reward": 0.42105263157894735
         },
         {
           "id": "pelican",
-          "score": 68,
-          "raw_total": 68,
+          "score": 69.5,
+          "raw_total": 69.5,
           "capped": false,
-          "seconds": 60.87338655628264,
-          "cost_usd": 0.06724
+          "seconds": 73.52456792257726,
+          "cost_usd": 0.0630288
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 50.67216774635017,
-          "cost_usd": 0.0508648,
+          "seconds": 29.920151038095355,
+          "cost_usd": 0.03444,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 285.8521955329925,
-        "cost_usd": 0.249437
+        "seconds": 285.74829745292664,
+        "cost_usd": 0.251995
       },
       "history": [
         {
@@ -4295,54 +4415,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 86.1
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 90.98486842105262
         }
       ]
     },
     {
       "model": "gpt-6-sol",
       "effort": "medium",
-      "score": 111.25568181818181,
+      "score": 107.7,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:23:27.518079+00:00",
+      "latest_at": "2026-11-23T16:51:06.786238+00:00",
       "tasks": [
         {
           "id": "combined",
           "score": 59,
-          "raw_total": 59.5,
+          "raw_total": 64.5,
           "capped": true,
-          "seconds": 245.19744987413287,
-          "cost_usd": 0.1825052
+          "seconds": 242.64620441384614,
+          "cost_usd": 0.1811516
         },
         {
           "id": "pompeii",
-          "score": 81.81818181818183,
-          "raw_total": 81.81818181818183,
+          "score": 66.66666666666666,
+          "raw_total": 66.66666666666666,
           "capped": false,
-          "seconds": 473.6656337622553,
-          "cost_usd": 0.5475664,
-          "reward": 0.8181818181818182
+          "seconds": 469.1485731806606,
+          "cost_usd": 0.4112976,
+          "reward": 0.6666666666666666
         },
         {
           "id": "pelican",
-          "score": 73.5,
-          "raw_total": 73.5,
+          "score": 88,
+          "raw_total": 88,
           "capped": false,
-          "seconds": 119.03079089149833,
-          "cost_usd": 0.0962784
+          "seconds": 134.48192202672362,
+          "cost_usd": 0.098562
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 45.77140604518354,
-          "cost_usd": 0.03254,
+          "seconds": 55.42350014485419,
+          "cost_usd": 0.0479056,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 883.66528057307,
-        "cost_usd": 0.85889
+        "seconds": 901.7001997660846,
+        "cost_usd": 0.738917
       },
       "history": [
         {
@@ -4468,54 +4592,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 111.25568181818181
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 107.7
         }
       ]
     },
     {
       "model": "gpt-6-sol",
       "effort": "high",
-      "score": 115.3125,
+      "score": 93,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:27:40.586180+00:00",
+      "latest_at": "2026-11-23T16:49:47.359672+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 63.5,
-          "raw_total": 63.5,
+          "score": 59,
+          "raw_total": 62.5,
           "capped": true,
-          "seconds": 272.7993020620197,
-          "cost_usd": 0.2000012
+          "seconds": 301.5530026219785,
+          "cost_usd": 0.3042344
         },
         {
           "id": "pompeii",
-          "score": 83.33333333333334,
-          "raw_total": 83.33333333333334,
+          "score": 30,
+          "raw_total": 30,
           "capped": false,
-          "seconds": 530.6501419357955,
-          "cost_usd": 0.6078112,
-          "reward": 0.8333333333333334
+          "seconds": 412.05897995084524,
+          "cost_usd": 0.3500252,
+          "reward": 0.3
         },
         {
           "id": "pelican",
-          "score": 76.5,
-          "raw_total": 76.5,
+          "score": 96,
+          "raw_total": 96,
           "capped": false,
-          "seconds": 174.43648267537355,
-          "cost_usd": 0.1238004
+          "seconds": 210.49438755214214,
+          "cost_usd": 0.1351792
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 50.571795584633946,
-          "cost_usd": 0.049922,
+          "seconds": 54.12092065997422,
+          "cost_usd": 0.0284652,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 1028.4577222578228,
-        "cost_usd": 0.981535
+        "seconds": 978.2272907849401,
+        "cost_usd": 0.817904
       },
       "history": [
         {
@@ -4641,54 +4769,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 115.3125
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 93
         }
       ]
     },
     {
       "model": "gpt-6-sol",
       "effort": "xhigh",
-      "score": 100.50535714285715,
+      "score": 104.10986842105262,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:26:39.516465+00:00",
+      "latest_at": "2026-11-23T16:44:37.452895+00:00",
       "tasks": [
         {
           "id": "combined",
           "score": 69,
-          "raw_total": 86,
+          "raw_total": 75.5,
           "capped": true,
-          "seconds": 423.0202830992639,
-          "cost_usd": 0.3500984
+          "seconds": 485.5300094541162,
+          "cost_usd": 0.3994204
         },
         {
           "id": "pompeii",
-          "score": 38.095238095238095,
-          "raw_total": 38.095238095238095,
+          "score": 42.10526315789473,
+          "raw_total": 42.10526315789473,
           "capped": false,
-          "seconds": 665.3870273828506,
-          "cost_usd": 0.7037952,
-          "reward": 0.38095238095238093
+          "seconds": 408.1340621635318,
+          "cost_usd": 0.5090012,
+          "reward": 0.42105263157894735
         },
         {
           "id": "pelican",
-          "score": 86.5,
-          "raw_total": 86.5,
+          "score": 94.5,
+          "raw_total": 94.5,
           "capped": false,
-          "seconds": 293.20232554897666,
-          "cost_usd": 0.2167692
+          "seconds": 315.0068171322346,
+          "cost_usd": 0.231158
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 63.04101764969528,
-          "cost_usd": 0.0563828,
+          "seconds": 59.67260522581637,
+          "cost_usd": 0.0524104,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 1444.6506536807865,
-        "cost_usd": 1.327046
+        "seconds": 1268.343493975699,
+        "cost_usd": 1.19199
       },
       "history": [
         {
@@ -4814,54 +4946,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 100.50535714285715
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 104.10986842105262
         }
       ]
     },
     {
       "model": "gpt-6-sol",
       "effort": "max",
-      "score": 104.0625,
+      "score": 115.5,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:26:10.707511+00:00",
+      "latest_at": "2026-11-23T16:41:41.179070+00:00",
       "tasks": [
         {
           "id": "combined",
           "score": 69,
-          "raw_total": 85.5,
+          "raw_total": 83.5,
           "capped": true,
-          "seconds": 490.12600505165756,
-          "cost_usd": 0.359142
+          "seconds": 540.2865007705986,
+          "cost_usd": 0.4623668
         },
         {
           "id": "pompeii",
-          "score": 50,
-          "raw_total": 50,
+          "score": 66.66666666666666,
+          "raw_total": 66.66666666666666,
           "capped": false,
-          "seconds": 433.6778074670583,
-          "cost_usd": 0.353728,
-          "reward": 0.5
+          "seconds": 800.8908128812909,
+          "cost_usd": 0.834386,
+          "reward": 0.6666666666666666
         },
         {
           "id": "pelican",
-          "score": 78.5,
-          "raw_total": 78.5,
+          "score": 96,
+          "raw_total": 96,
           "capped": false,
-          "seconds": 408.3673768937588,
-          "cost_usd": 0.3536252
+          "seconds": 458.5749460682273,
+          "cost_usd": 0.3771924
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 64.0718087144196,
-          "cost_usd": 0.0564304,
+          "seconds": 50.32108930312097,
+          "cost_usd": 0.04505,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 1396.2429981268942,
-        "cost_usd": 1.122926
+        "seconds": 1850.0733490232378,
+        "cost_usd": 1.718995
       },
       "history": [
         {
@@ -4987,54 +5123,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 104.0625
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 115.5
         }
       ]
     },
     {
       "model": "gpt-6-sol",
       "effort": "ultra",
-      "score": 108.58295454545454,
+      "score": 111.55178571428571,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:15:18.163122+00:00",
+      "latest_at": "2026-11-23T16:46:54.091901+00:00",
       "tasks": [
         {
           "id": "combined",
           "score": 69,
-          "raw_total": 91.5,
+          "raw_total": 84.5,
           "capped": true,
-          "seconds": 489.38843181729317,
-          "cost_usd": 0.3947756
+          "seconds": 555.2457651291043,
+          "cost_usd": 0.4943116
         },
         {
           "id": "pompeii",
-          "score": 54.54545454545454,
-          "raw_total": 54.54545454545454,
+          "score": 57.14285714285714,
+          "raw_total": 57.14285714285714,
           "capped": false,
-          "seconds": 872.0010296348482,
-          "cost_usd": 1.2871164,
-          "reward": 0.5454545454545454
+          "seconds": 932.0273232255131,
+          "cost_usd": 0.9825844,
+          "reward": 0.5714285714285714
         },
         {
           "id": "pelican",
-          "score": 89.5,
-          "raw_total": 89.5,
+          "score": 97.5,
+          "raw_total": 97.5,
           "capped": false,
-          "seconds": 442.9226902965456,
-          "cost_usd": 0.3758324
+          "seconds": 324.6580694075674,
+          "cost_usd": 0.2296484
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 59.37403780594468,
-          "cost_usd": 0.0535096,
+          "seconds": 60.372319502756,
+          "cost_usd": 0.0521152,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 1863.6861895546317,
-        "cost_usd": 2.111234
+        "seconds": 1872.3034772649407,
+        "cost_usd": 1.75866
       },
       "history": [
         {
@@ -5160,54 +5300,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 108.58295454545454
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 111.55178571428571
         }
       ]
     },
     {
       "model": "gpt-6-luna",
       "effort": "low",
-      "score": 54.11052631578948,
+      "score": 38.6625,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:31:44.744520+00:00",
+      "latest_at": "2026-11-23T16:55:25.304100+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 45.5,
-          "raw_total": 45.5,
+          "score": 44,
+          "raw_total": 44,
           "capped": true,
-          "seconds": 107.52968425862491,
-          "cost_usd": 0.00462494
+          "seconds": 131.8318214211613,
+          "cost_usd": 0.00629678
         },
         {
           "id": "pompeii",
-          "score": 31.57894736842105,
-          "raw_total": 31.57894736842105,
+          "score": 0,
+          "raw_total": 0,
           "capped": false,
-          "seconds": 35.66941883601248,
-          "cost_usd": 0.00440918,
-          "reward": 0.3157894736842105
+          "seconds": 20.26733574271202,
+          "cost_usd": 0.002906,
+          "reward": 0
         },
         {
           "id": "pelican",
-          "score": 56,
-          "raw_total": 56,
+          "score": 54.5,
+          "raw_total": 54.5,
           "capped": false,
-          "seconds": 82.47509737126529,
-          "cost_usd": 0.00390118
+          "seconds": 94.01260509341955,
+          "cost_usd": 0.00359018
         },
         {
           "id": "candy",
           "score": 0,
           "raw_total": 0,
           "capped": false,
-          "seconds": 13.166477385908365,
-          "cost_usd": 0.0012566,
+          "seconds": 15.216712823137641,
+          "cost_usd": 0.0012371,
           "correct": false
         }
       ],
       "totals": {
-        "seconds": 238.84067785181105,
-        "cost_usd": 0.014192
+        "seconds": 261.3284750804305,
+        "cost_usd": 0.01403
       },
       "history": [
         {
@@ -5333,54 +5477,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 54.11052631578948
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 38.6625
         }
       ]
     },
     {
       "model": "gpt-6-luna",
       "effort": "medium",
-      "score": 56.96249999999999,
+      "score": 56.8875,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:32:00.243069+00:00",
+      "latest_at": "2026-11-23T16:55:49.854692+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 51,
-          "raw_total": 51,
+          "score": 56,
+          "raw_total": 56,
           "capped": true,
-          "seconds": 119.58058965951204,
-          "cost_usd": 0.00470236
+          "seconds": 129.43099561333656,
+          "cost_usd": 0.00473916
         },
         {
           "id": "pompeii",
-          "score": 33.33333333333333,
-          "raw_total": 33.33333333333333,
+          "score": 20,
+          "raw_total": 20,
           "capped": false,
-          "seconds": 53.622368490323424,
-          "cost_usd": 0.00323434,
-          "reward": 0.3333333333333333
+          "seconds": 45.72117916494608,
+          "cost_usd": 0.00468436,
+          "reward": 0.2
         },
         {
           "id": "pelican",
-          "score": 50.5,
-          "raw_total": 50.5,
+          "score": 63.5,
+          "raw_total": 63.5,
           "capped": false,
-          "seconds": 76.82476928271353,
-          "cost_usd": 0.00310624
+          "seconds": 80.82598605379462,
+          "cost_usd": 0.00410196
         },
         {
           "id": "candy",
           "score": 0,
           "raw_total": 0,
           "capped": false,
-          "seconds": 14.066170908510685,
-          "cost_usd": 0.0013151,
+          "seconds": 42.12034413777292,
+          "cost_usd": 0.0020076,
           "correct": false
         }
       ],
       "totals": {
-        "seconds": 264.0938983410597,
-        "cost_usd": 0.012358
+        "seconds": 298.0985049698502,
+        "cost_usd": 0.015533
       },
       "history": [
         {
@@ -5506,54 +5654,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 56.96249999999999
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 56.8875
         }
       ]
     },
     {
       "model": "gpt-6-luna",
       "effort": "high",
-      "score": 85.47857142857143,
+      "score": 83.8125,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:14:24.344982+00:00",
+      "latest_at": "2026-11-23T16:45:17.449509+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 44.5,
-          "raw_total": 44.5,
+          "score": 55.5,
+          "raw_total": 55.5,
           "capped": true,
-          "seconds": 124.98144393227994,
-          "cost_usd": 0.0057486
+          "seconds": 163.48613012209535,
+          "cost_usd": 0.00828484
         },
         {
           "id": "pompeii",
-          "score": 47.61904761904761,
-          "raw_total": 47.61904761904761,
+          "score": 30,
+          "raw_total": 30,
           "capped": false,
-          "seconds": 112.88033276237547,
-          "cost_usd": 0.00554436,
-          "reward": 0.47619047619047616
+          "seconds": 99.12697735242546,
+          "cost_usd": 0.0060205,
+          "reward": 0.3
         },
         {
           "id": "pelican",
-          "score": 66,
-          "raw_total": 66,
+          "score": 64.5,
+          "raw_total": 64.5,
           "capped": false,
-          "seconds": 113.12901679985225,
-          "cost_usd": 0.00485576
+          "seconds": 90.62651790305972,
+          "cost_usd": 0.00481708
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 62.1732477825135,
-          "cost_usd": 0.0026741,
+          "seconds": 58.97360299155116,
+          "cost_usd": 0.0024881,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 413.16404127702117,
-        "cost_usd": 0.018823
+        "seconds": 412.2132283691317,
+        "cost_usd": 0.021611
       },
       "history": [
         {
@@ -5679,54 +5831,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 85.47857142857143
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 83.8125
         }
       ]
     },
     {
       "model": "gpt-6-luna",
       "effort": "xhigh",
-      "score": 83.99802631578947,
+      "score": 84.4875,
       "score_status": "complete",
-      "latest_at": "2026-11-22T21:12:47.815848+00:00",
+      "latest_at": "2026-11-23T16:26:59.302814+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 55,
-          "raw_total": 55,
+          "score": 57.5,
+          "raw_total": 57.5,
           "capped": true,
-          "seconds": 347.6585728432983,
-          "cost_usd": 0.01563022
+          "seconds": 265.40396207012236,
+          "cost_usd": 0.00994708
         },
         {
           "id": "pompeii",
-          "score": 31.57894736842105,
-          "raw_total": 31.57894736842105,
+          "score": 33.33333333333333,
+          "raw_total": 33.33333333333333,
           "capped": false,
-          "seconds": 817.7710943315178,
-          "cost_usd": 0.03496084,
-          "reward": 0.3157894736842105
+          "seconds": 1424.6254425477237,
+          "cost_usd": 0.06176234,
+          "reward": 0.3333333333333333
         },
         {
           "id": "pelican",
-          "score": 63.5,
-          "raw_total": 63.5,
+          "score": 55.5,
+          "raw_total": 55.5,
           "capped": false,
-          "seconds": 111.17829910852015,
-          "cost_usd": 0.00503222
+          "seconds": 132.7825361005962,
+          "cost_usd": 0.00635522
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 90.04366215877235,
-          "cost_usd": 0.0033861,
+          "seconds": 53.120863953605294,
+          "cost_usd": 0.0022916,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 1366.6516284421086,
-        "cost_usd": 0.059009
+        "seconds": 1875.9328046720475,
+        "cost_usd": 0.080356
       },
       "history": [
         {
@@ -5852,54 +6008,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 83.99802631578947
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 84.4875
         }
       ]
     },
     {
       "model": "gpt-6-luna",
       "effort": "max",
-      "score": 89.025,
+      "score": 98.2125,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:15:57.699545+00:00",
+      "latest_at": "2026-11-23T16:23:33.631097+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 58.5,
-          "raw_total": 58.5,
+          "score": 61.5,
+          "raw_total": 61.5,
           "capped": true,
-          "seconds": 235.89530463516712,
-          "cost_usd": 0.0089069
+          "seconds": 401.5672240126878,
+          "cost_usd": 0.01828986
         },
         {
           "id": "pompeii",
-          "score": 33.33333333333333,
-          "raw_total": 33.33333333333333,
+          "score": 50,
+          "raw_total": 50,
           "capped": false,
-          "seconds": 1021.201347431168,
-          "cost_usd": 0.03866444,
-          "reward": 0.3333333333333333
+          "seconds": 1636.369432143867,
+          "cost_usd": 0.07528872,
+          "reward": 0.5
         },
         {
           "id": "pelican",
-          "score": 73,
-          "raw_total": 73,
+          "score": 72.5,
+          "raw_total": 72.5,
           "capped": false,
-          "seconds": 107.48076901212335,
-          "cost_usd": 0.00438112
+          "seconds": 160.28509163670242,
+          "cost_usd": 0.00639698
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 96.42722316272557,
-          "cost_usd": 0.0035151,
+          "seconds": 92.52673050388694,
+          "cost_usd": 0.0033936,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 1461.004644241184,
-        "cost_usd": 0.055468
+        "seconds": 2290.748478297144,
+        "cost_usd": 0.103369
       },
       "history": [
         {
@@ -6025,54 +6185,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 89.025
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 98.2125
         }
       ]
     },
     {
       "model": "gpt-5.6-sol",
       "effort": "low",
-      "score": 87.33214285714286,
+      "score": 84.37302631578947,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:27:18.527609+00:00",
+      "latest_at": "2026-11-23T16:52:07.010025+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 63,
-          "raw_total": 63,
+          "score": 53,
+          "raw_total": 53,
           "capped": true,
-          "seconds": 112.27907570078969,
-          "cost_usd": 0.1744848
+          "seconds": 136.18155006319284,
+          "cost_usd": 0.2154816
         },
         {
           "id": "pompeii",
-          "score": 28.57142857142857,
-          "raw_total": 28.57142857142857,
+          "score": 31.57894736842105,
+          "raw_total": 31.57894736842105,
           "capped": false,
-          "seconds": 101.62605674378574,
-          "cost_usd": 0.2068176,
-          "reward": 0.2857142857142857
+          "seconds": 103.32811423391104,
+          "cost_usd": 0.1917904,
+          "reward": 0.3157894736842105
         },
         {
           "id": "pelican",
-          "score": 63,
-          "raw_total": 63,
+          "score": 70.5,
+          "raw_total": 70.5,
           "capped": false,
-          "seconds": 116.68079825863242,
-          "cost_usd": 0.1771544
+          "seconds": 103.82848019711673,
+          "cost_usd": 0.156244
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 42.92105991765857,
-          "cost_usd": 0.0913768,
+          "seconds": 67.37383165583014,
+          "cost_usd": 0.117692,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 373.5069906208664,
-        "cost_usd": 0.649834
+        "seconds": 410.71197615005076,
+        "cost_usd": 0.681208
       },
       "history": [
         {
@@ -6198,54 +6362,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 87.33214285714286
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 84.37302631578947
         }
       ]
     },
     {
       "model": "gpt-5.6-sol",
       "effort": "medium",
-      "score": 93.65,
+      "score": 99.49076086956521,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:17:20.463865+00:00",
+      "latest_at": "2026-11-23T16:32:23.399089+00:00",
       "tasks": [
         {
           "id": "combined",
           "score": 59,
-          "raw_total": 77.5,
+          "raw_total": 71,
           "capped": true,
-          "seconds": 203.33981795981526,
-          "cost_usd": 0.3145248
+          "seconds": 215.02876350469887,
+          "cost_usd": 0.3089816
         },
         {
           "id": "pompeii",
-          "score": 44.44444444444444,
-          "raw_total": 44.44444444444444,
+          "score": 52.17391304347826,
+          "raw_total": 52.17391304347826,
           "capped": false,
-          "seconds": 376.8344509154558,
-          "cost_usd": 0.800616,
-          "reward": 0.4444444444444444
+          "seconds": 715.2028483636677,
+          "cost_usd": 1.12362,
+          "reward": 0.5217391304347826
         },
         {
           "id": "pelican",
-          "score": 70,
-          "raw_total": 70,
+          "score": 80.5,
+          "raw_total": 80.5,
           "capped": false,
-          "seconds": 172.23770535364747,
-          "cost_usd": 0.3285072
+          "seconds": 170.33693546801805,
+          "cost_usd": 0.2160512
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 80.17465253174305,
-          "cost_usd": 0.172572,
+          "seconds": 79.01810701936483,
+          "cost_usd": 0.1265112,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 832.5866267606616,
-        "cost_usd": 1.61622
+        "seconds": 1179.5866543557495,
+        "cost_usd": 1.775164
       },
       "history": [
         {
@@ -6371,54 +6539,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 93.65
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 99.49076086956521
         }
       ]
     },
     {
       "model": "gpt-5.6-sol",
       "effort": "high",
-      "score": 104.08295454545454,
+      "score": 90.00535714285715,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:15:28.692675+00:00",
+      "latest_at": "2026-11-23T16:45:23.669552+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 69,
-          "raw_total": 79,
+          "score": 59,
+          "raw_total": 75.5,
           "capped": true,
-          "seconds": 258.09593235328794,
-          "cost_usd": 0.3918456
+          "seconds": 307.26127489097416,
+          "cost_usd": 0.5623568
         },
         {
           "id": "pompeii",
-          "score": 54.54545454545454,
-          "raw_total": 54.54545454545454,
+          "score": 38.095238095238095,
+          "raw_total": 38.095238095238095,
           "capped": false,
-          "seconds": 634.1360721271485,
-          "cost_usd": 1.131464,
-          "reward": 0.5454545454545454
+          "seconds": 503.12950105033815,
+          "cost_usd": 1.0986168,
+          "reward": 0.38095238095238093
         },
         {
           "id": "pelican",
-          "score": 69.5,
-          "raw_total": 69.5,
+          "score": 66.5,
+          "raw_total": 66.5,
           "capped": false,
-          "seconds": 189.99106819555163,
-          "cost_usd": 0.2950824
+          "seconds": 156.18410314433277,
+          "cost_usd": 0.2875096
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 61.67373433150351,
-          "cost_usd": 0.1128192,
+          "seconds": 62.473389303311706,
+          "cost_usd": 0.1022208,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 1143.8968070074916,
-        "cost_usd": 1.931211
+        "seconds": 1029.0482683889568,
+        "cost_usd": 2.050704
       },
       "history": [
         {
@@ -6544,54 +6716,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 104.08295454545454
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 90.00535714285715
         }
       ]
     },
     {
       "model": "gpt-5.6-sol",
       "effort": "xhigh",
-      "score": 94.53552631578947,
+      "score": 98.7923076923077,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:08:23.961946+00:00",
+      "latest_at": "2026-11-23T16:38:31.914134+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 69,
-          "raw_total": 77,
+          "score": 58.5,
+          "raw_total": 58.5,
           "capped": true,
-          "seconds": 283.25006402283907,
-          "cost_usd": 0.4602176
+          "seconds": 312.3033716753125,
+          "cost_usd": 0.6564376
         },
         {
           "id": "pompeii",
-          "score": 31.57894736842105,
-          "raw_total": 31.57894736842105,
+          "score": 61.53846153846154,
+          "raw_total": 61.53846153846154,
           "capped": false,
-          "seconds": 781.1547191198915,
-          "cost_usd": 1.8870528,
-          "reward": 0.3157894736842105
+          "seconds": 791.2672605514526,
+          "cost_usd": 1.4205504,
+          "reward": 0.6153846153846154
         },
         {
           "id": "pelican",
-          "score": 73,
-          "raw_total": 73,
+          "score": 60,
+          "raw_total": 60,
           "capped": false,
-          "seconds": 165.98644525185227,
-          "cost_usd": 0.2391928
+          "seconds": 204.4391851015389,
+          "cost_usd": 0.3745856
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 74.57466555573046,
-          "cost_usd": 0.093868,
+          "seconds": 74.87514227814972,
+          "cost_usd": 0.1183488,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 1304.9658939503133,
-        "cost_usd": 2.680331
+        "seconds": 1382.8849596064538,
+        "cost_usd": 2.569922
       },
       "history": [
         {
@@ -6717,54 +6893,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 94.53552631578947
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 98.7923076923077
         }
       ]
     },
     {
       "model": "gpt-5.6-sol",
       "effort": "max",
-      "score": 108.73977272727272,
+      "score": 118.49318181818182,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:11:40.776719+00:00",
+      "latest_at": "2026-11-23T16:37:45.632613+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 59,
-          "raw_total": 73.5,
+          "score": 69,
+          "raw_total": 83,
           "capped": true,
-          "seconds": 504.16037368029356,
-          "cost_usd": 0.8537224
+          "seconds": 1010.4835714008659,
+          "cost_usd": 0.7867256
         },
         {
           "id": "pompeii",
-          "score": 72.72727272727273,
-          "raw_total": 72.72727272727273,
+          "score": 81.81818181818183,
+          "raw_total": 81.81818181818183,
           "capped": false,
-          "seconds": 1164.2090243399143,
-          "cost_usd": 2.4843208,
-          "reward": 0.7272727272727273
+          "seconds": 1227.5012845341116,
+          "cost_usd": 2.5472408,
+          "reward": 0.8181818181818182
         },
         {
           "id": "pelican",
-          "score": 80.5,
-          "raw_total": 80.5,
+          "score": 79,
+          "raw_total": 79,
           "capped": false,
-          "seconds": 388.7642938438803,
-          "cost_usd": 0.6972624
+          "seconds": 245.19581774249673,
+          "cost_usd": 0.3226984
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 74.92503638751805,
-          "cost_usd": 0.0947416,
+          "seconds": 85.37537031061947,
+          "cost_usd": 0.1286072,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 2132.058728251606,
-        "cost_usd": 4.130047
+        "seconds": 2568.5560439880937,
+        "cost_usd": 3.785272
       },
       "history": [
         {
@@ -6890,54 +7070,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 108.73977272727272
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 118.49318181818182
         }
       ]
     },
     {
       "model": "gpt-5.6-sol",
       "effort": "ultra",
-      "score": 99.075,
+      "score": 105.24671052631578,
       "score_status": "complete",
-      "latest_at": "2026-11-22T21:57:15.879133+00:00",
+      "latest_at": "2026-11-23T16:28:43.250135+00:00",
       "tasks": [
         {
           "id": "combined",
           "score": 69,
-          "raw_total": 82,
+          "raw_total": 76.5,
           "capped": true,
-          "seconds": 700.2530954405665,
-          "cost_usd": 1.6339264
+          "seconds": 644.4501780215651,
+          "cost_usd": 1.0930944
         },
         {
           "id": "pompeii",
-          "score": 41.66666666666667,
-          "raw_total": 41.66666666666667,
+          "score": 52.63157894736842,
+          "raw_total": 52.63157894736842,
           "capped": false,
-          "seconds": 1377.699120702222,
-          "cost_usd": 3.6415384,
-          "reward": 0.4166666666666667
+          "seconds": 681.5670797917992,
+          "cost_usd": 1.2721432,
+          "reward": 0.5263157894736842
         },
         {
           "id": "pelican",
-          "score": 73,
-          "raw_total": 73,
+          "score": 78.5,
+          "raw_total": 78.5,
           "capped": false,
-          "seconds": 361.36144709959626,
-          "cost_usd": 0.6420664
+          "seconds": 570.6421230118722,
+          "cost_usd": 0.988996
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 89.97737630456686,
-          "cost_usd": 0.1053096,
+          "seconds": 108.38056090287864,
+          "cost_usd": 0.163052,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 2529.2910395469517,
-        "cost_usd": 6.022841
+        "seconds": 2005.039941728115,
+        "cost_usd": 3.517286
       },
       "history": [
         {
@@ -7063,54 +7247,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 99.075
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 105.24671052631578
         }
       ]
     },
     {
       "model": "gpt-5.6-terra",
       "effort": "low",
-      "score": 72.625,
+      "score": 75.1,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:10:22.491593+00:00",
+      "latest_at": "2026-11-23T16:48:09.907348+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 42.5,
-          "raw_total": 42.5,
+          "score": 44,
+          "raw_total": 44,
           "capped": true,
-          "seconds": 106.4788371026516,
-          "cost_usd": 0.0867688
+          "seconds": 111.6317420694977,
+          "cost_usd": 0.0906872
         },
         {
           "id": "pompeii",
           "score": 22.22222222222222,
           "raw_total": 22.22222222222222,
           "capped": false,
-          "seconds": 227.3434974681586,
-          "cost_usd": 0.1899336,
+          "seconds": 175.68736241199076,
+          "cost_usd": 0.1623664,
           "reward": 0.2222222222222222
         },
         {
           "id": "pelican",
-          "score": 65,
-          "raw_total": 65,
+          "score": 72,
+          "raw_total": 72,
           "capped": false,
-          "seconds": 84.67547376453876,
-          "cost_usd": 0.0731872
+          "seconds": 83.77655470743775,
+          "cost_usd": 0.05497
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 55.82565016672015,
-          "cost_usd": 0.046932,
+          "seconds": 72.77556719072163,
+          "cost_usd": 0.05295,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 474.3234585020691,
-        "cost_usd": 0.396822
+        "seconds": 443.87122637964785,
+        "cost_usd": 0.360974
       },
       "history": [
         {
@@ -7236,54 +7424,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 72.625
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 75.1
         }
       ]
     },
     {
       "model": "gpt-5.6-terra",
       "effort": "medium",
-      "score": 80.11323529411764,
+      "score": 93.925,
       "score_status": "complete",
-      "latest_at": "2026-11-22T21:49:38.577939+00:00",
+      "latest_at": "2026-11-23T16:54:26.610021+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 57,
-          "raw_total": 57,
+          "score": 54.5,
+          "raw_total": 54.5,
           "capped": true,
-          "seconds": 151.68752163276076,
-          "cost_usd": 0.121972
+          "seconds": 162.98625772446394,
+          "cost_usd": 0.1184552
         },
         {
           "id": "pompeii",
-          "score": 23.52941176470588,
-          "raw_total": 23.52941176470588,
+          "score": 55.55555555555556,
+          "raw_total": 55.55555555555556,
           "capped": false,
-          "seconds": 228.0312522072345,
-          "cost_usd": 0.1882156,
-          "reward": 0.23529411764705882
+          "seconds": 230.49315690621734,
+          "cost_usd": 0.1974264,
+          "reward": 0.5555555555555556
         },
         {
           "id": "pelican",
-          "score": 57,
-          "raw_total": 57,
+          "score": 61,
+          "raw_total": 61,
           "capped": false,
-          "seconds": 99.92795746959746,
-          "cost_usd": 0.0761472
+          "seconds": 99.1279107350856,
+          "cost_usd": 0.078442
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 40.37022819183767,
-          "cost_usd": 0.030978,
+          "seconds": 161.5854411572218,
+          "cost_usd": 0.0970224,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 520.0169595014304,
-        "cost_usd": 0.417313
+        "seconds": 654.1927665229887,
+        "cost_usd": 0.491346
       },
       "history": [
         {
@@ -7409,54 +7601,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 80.11323529411764
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 93.925
         }
       ]
     },
     {
       "model": "gpt-5.6-terra",
       "effort": "high",
-      "score": 90.0125,
+      "score": 86.1125,
       "score_status": "complete",
-      "latest_at": "2026-11-22T21:59:37.487318+00:00",
+      "latest_at": "2026-11-23T15:44:15.395154+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 58,
-          "raw_total": 58,
+          "score": 54.5,
+          "raw_total": 54.5,
           "capped": true,
-          "seconds": 174.38632667437196,
-          "cost_usd": 0.1447728
+          "seconds": 174.83799341507256,
+          "cost_usd": 0.1414228
         },
         {
           "id": "pompeii",
           "score": 44.44444444444444,
           "raw_total": 44.44444444444444,
           "capped": false,
-          "seconds": 409.41704292036593,
-          "cost_usd": 0.3736352,
+          "seconds": 550.1273956801742,
+          "cost_usd": 0.405788,
           "reward": 0.4444444444444444
         },
         {
           "id": "pelican",
-          "score": 56.5,
-          "raw_total": 56.5,
+          "score": 48.5,
+          "raw_total": 48.5,
           "capped": false,
-          "seconds": 142.4839792046696,
-          "cost_usd": 0.1055048
+          "seconds": 97.52720984071493,
+          "cost_usd": 0.0731292
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 149.93382462114096,
-          "cost_usd": 0.102582,
+          "seconds": 113.43117591552436,
+          "cost_usd": 0.0745484,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 876.2211734205484,
-        "cost_usd": 0.726495
+        "seconds": 935.9237748514861,
+        "cost_usd": 0.694888
       },
       "history": [
         {
@@ -7582,54 +7778,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 90.0125
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 86.1125
         }
       ]
     },
     {
       "model": "gpt-5.6-terra",
       "effort": "xhigh",
-      "score": 90.0625,
+      "score": 84.6,
       "score_status": "complete",
-      "latest_at": "2026-11-22T21:29:52.315190+00:00",
+      "latest_at": "2026-11-23T15:45:37.945826+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 49,
-          "raw_total": 49,
+          "score": 48,
+          "raw_total": 48,
           "capped": true,
-          "seconds": 257.7989420052618,
-          "cost_usd": 0.1997504
+          "seconds": 278.4008322674781,
+          "cost_usd": 0.1958728
         },
         {
           "id": "pompeii",
-          "score": 55.55555555555556,
-          "raw_total": 55.55555555555556,
+          "score": 37.5,
+          "raw_total": 37.5,
           "capped": false,
-          "seconds": 1065.896051114425,
-          "cost_usd": 1.1583276,
-          "reward": 0.5555555555555556
+          "seconds": 983.7104007806629,
+          "cost_usd": 0.9917972,
+          "reward": 0.375
         },
         {
           "id": "pelican",
-          "score": 58.5,
-          "raw_total": 58.5,
+          "score": 73,
+          "raw_total": 73,
           "capped": false,
-          "seconds": 142.48346796259284,
-          "cost_usd": 0.0980376
+          "seconds": 153.58477966301143,
+          "cost_usd": 0.1094096
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 161.48608783446252,
-          "cost_usd": 0.1101272,
+          "seconds": 244.49531099386513,
+          "cost_usd": 0.1303288,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 1627.6645489167422,
-        "cost_usd": 1.566243
+        "seconds": 1660.1913237050176,
+        "cost_usd": 1.427408
       },
       "history": [
         {
@@ -7755,54 +7955,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 90.0625
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 84.6
         }
       ]
     },
     {
       "model": "gpt-5.6-terra",
       "effort": "max",
-      "score": 88.53552631578947,
+      "score": 87.68486842105263,
       "score_status": "complete",
-      "latest_at": "2026-11-22T21:11:16.331014+00:00",
+      "latest_at": "2026-11-23T14:59:24.411229+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 60.5,
-          "raw_total": 60.5,
+          "score": 52.5,
+          "raw_total": 52.5,
           "capped": true,
-          "seconds": 437.8712590113282,
-          "cost_usd": 0.347812
+          "seconds": 412.0169622525573,
+          "cost_usd": 0.3272388
         },
         {
           "id": "pompeii",
-          "score": 31.57894736842105,
-          "raw_total": 31.57894736842105,
+          "score": 42.10526315789473,
+          "raw_total": 42.10526315789473,
           "capped": false,
-          "seconds": 2003.5065867304802,
-          "cost_usd": 2.801606,
-          "reward": 0.3157894736842105
+          "seconds": 2322.318541256711,
+          "cost_usd": 2.847226,
+          "reward": 0.42105263157894735
         },
         {
           "id": "pelican",
-          "score": 69,
-          "raw_total": 69,
+          "score": 65.5,
+          "raw_total": 65.5,
           "capped": false,
-          "seconds": 299.00320326164365,
-          "cost_usd": 0.2235788
+          "seconds": 281.2006596326828,
+          "cost_usd": 0.2300268
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 234.44468433596194,
-          "cost_usd": 0.1472028,
+          "seconds": 177.13664724491537,
+          "cost_usd": 0.1198256,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 2974.825733339414,
-        "cost_usd": 3.5202
+        "seconds": 3192.6728103868663,
+        "cost_usd": 3.524317
       },
       "history": [
         {
@@ -7928,54 +8132,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 88.53552631578947
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 87.68486842105263
         }
       ]
     },
     {
       "model": "gpt-5.6-terra",
       "effort": "ultra",
-      "score": 95.6625,
+      "score": 102.63308823529412,
       "score_status": "complete",
-      "latest_at": "2026-11-22T21:01:02.305833+00:00",
+      "latest_at": "2026-11-23T15:29:36.998973+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 58,
-          "raw_total": 58,
+          "score": 69,
+          "raw_total": 70,
           "capped": true,
-          "seconds": 368.46181980520487,
-          "cost_usd": 0.2814588
+          "seconds": 610.945096520707,
+          "cost_usd": 0.4392776
         },
         {
           "id": "pompeii",
-          "score": 50,
-          "raw_total": 50,
+          "score": 58.82352941176471,
+          "raw_total": 58.82352941176471,
           "capped": false,
-          "seconds": 2061.9718172065914,
-          "cost_usd": 3.2721332,
-          "reward": 0.5
+          "seconds": 1139.2161319553852,
+          "cost_usd": 1.2068968,
+          "reward": 0.5882352941176471
         },
         {
           "id": "pelican",
-          "score": 70.5,
-          "raw_total": 70.5,
+          "score": 54.5,
+          "raw_total": 54.5,
           "capped": false,
-          "seconds": 258.29759305529296,
-          "cost_usd": 0.193336
+          "seconds": 263.6573967691511,
+          "cost_usd": 0.1908252
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 182.74035363644361,
-          "cost_usd": 0.1161328,
+          "seconds": 207.9434465803206,
+          "cost_usd": 0.114938,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 2871.471583703533,
-        "cost_usd": 3.863061
+        "seconds": 2221.762071825564,
+        "cost_usd": 1.951938
       },
       "history": [
         {
@@ -8101,54 +8309,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 95.6625
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 102.63308823529412
         }
       ]
     },
     {
       "model": "gpt-5.6-luna",
       "effort": "low",
-      "score": 70.21323529411765,
+      "score": 59.4375,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:30:21.324784+00:00",
+      "latest_at": "2026-11-23T16:52:28.636753+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 39,
-          "raw_total": 39,
+          "score": 37,
+          "raw_total": 37,
           "capped": true,
-          "seconds": 77.47518472000957,
-          "cost_usd": 0.00649736
+          "seconds": 80.04259559884667,
+          "cost_usd": 0.00625496
         },
         {
           "id": "pompeii",
-          "score": 23.52941176470588,
-          "raw_total": 23.52941176470588,
+          "score": 12.5,
+          "raw_total": 12.5,
           "capped": false,
-          "seconds": 55.17126695998013,
-          "cost_usd": 0.00852764,
-          "reward": 0.23529411764705882
+          "seconds": 73.57616042718291,
+          "cost_usd": 0.00750916,
+          "reward": 0.125
         },
         {
           "id": "pelican",
-          "score": 61,
-          "raw_total": 61,
+          "score": 40.5,
+          "raw_total": 40.5,
           "capped": false,
-          "seconds": 63.673235543072224,
-          "cost_usd": 0.0052874
+          "seconds": 69.42376471497118,
+          "cost_usd": 0.00507084
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 40.11938557587564,
-          "cost_usd": 0.0026616,
+          "seconds": 31.819271206855774,
+          "cost_usd": 0.0019668,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 236.43907279893756,
-        "cost_usd": 0.022974
+        "seconds": 254.86179194785655,
+        "cost_usd": 0.020802
       },
       "history": [
         {
@@ -8274,54 +8486,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 70.21323529411765
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 59.4375
         }
       ]
     },
     {
       "model": "gpt-5.6-luna",
       "effort": "medium",
-      "score": 68.2375,
+      "score": 65.625,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:28:54.682360+00:00",
+      "latest_at": "2026-11-23T16:50:41.974503+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 41,
-          "raw_total": 41,
+          "score": 30,
+          "raw_total": 30,
           "capped": true,
-          "seconds": 125.33021925203502,
-          "cost_usd": 0.01047772
+          "seconds": 99.2283559050411,
+          "cost_usd": 0.00926752
         },
         {
           "id": "pompeii",
-          "score": 22.22222222222222,
-          "raw_total": 22.22222222222222,
+          "score": 33.33333333333333,
+          "raw_total": 33.33333333333333,
           "capped": false,
-          "seconds": 307.9610220361501,
-          "cost_usd": 0.02516648,
-          "reward": 0.2222222222222222
+          "seconds": 165.8872513193637,
+          "cost_usd": 0.01999364,
+          "reward": 0.3333333333333333
         },
         {
           "id": "pelican",
-          "score": 49.5,
-          "raw_total": 49.5,
+          "score": 45,
+          "raw_total": 45,
           "capped": false,
-          "seconds": 85.04379954002798,
-          "cost_usd": 0.00681612
+          "seconds": 76.87570501863956,
+          "cost_usd": 0.00758464
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 46.52128089778125,
-          "cost_usd": 0.0044352,
+          "seconds": 54.4717303737998,
+          "cost_usd": 0.0034332,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 564.8563217259943,
-        "cost_usd": 0.046896
+        "seconds": 396.4630426168442,
+        "cost_usd": 0.040279
       },
       "history": [
         {
@@ -8447,54 +8663,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 68.2375
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 65.625
         }
       ]
     },
     {
       "model": "gpt-5.6-luna",
       "effort": "high",
-      "score": 81.23486842105262,
+      "score": 85.3389705882353,
       "score_status": "complete",
-      "latest_at": "2026-11-23T01:24:22.794936+00:00",
+      "latest_at": "2026-11-23T16:36:15.536153+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 42.5,
-          "raw_total": 42.5,
+          "score": 47.5,
+          "raw_total": 47.5,
           "capped": true,
-          "seconds": 187.7917248364538,
-          "cost_usd": 0.01720392
+          "seconds": 228.743168881163,
+          "cost_usd": 0.02317172
         },
         {
           "id": "pompeii",
-          "score": 42.10526315789473,
-          "raw_total": 42.10526315789473,
+          "score": 47.05882352941176,
+          "raw_total": 47.05882352941176,
           "capped": false,
-          "seconds": 978.8027734104544,
-          "cost_usd": 0.1267664,
-          "reward": 0.42105263157894735
+          "seconds": 791.8023344762623,
+          "cost_usd": 0.16820208,
+          "reward": 0.47058823529411764
         },
         {
           "id": "pelican",
-          "score": 63.5,
-          "raw_total": 63.5,
+          "score": 58.5,
+          "raw_total": 58.5,
           "capped": false,
-          "seconds": 119.78075687587261,
-          "cost_usd": 0.01134168
+          "seconds": 105.72876641899347,
+          "cost_usd": 0.0082724
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 75.32503295876086,
-          "cost_usd": 0.0059172,
+          "seconds": 62.32295591197908,
+          "cost_usd": 0.0039516,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 1361.7002880815417,
-        "cost_usd": 0.161229
+        "seconds": 1188.5972256883979,
+        "cost_usd": 0.203598
       },
       "history": [
         {
@@ -8620,54 +8840,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 81.23486842105262
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 85.3389705882353
         }
       ]
     },
     {
       "model": "gpt-5.6-luna",
       "effort": "xhigh",
-      "score": 72.76323529411765,
+      "score": 85.0717105263158,
       "score_status": "complete",
-      "latest_at": "2026-11-22T22:22:39.113191+00:00",
+      "latest_at": "2026-11-23T16:07:33.305494+00:00",
       "tasks": [
         {
           "id": "combined",
           "score": 41,
           "raw_total": 41,
           "capped": true,
-          "seconds": 260.79868130385876,
-          "cost_usd": 0.02428496
+          "seconds": 238.6453800238669,
+          "cost_usd": 0.02359296
         },
         {
           "id": "pompeii",
-          "score": 23.52941176470588,
-          "raw_total": 23.52941176470588,
+          "score": 52.63157894736842,
+          "raw_total": 52.63157894736842,
           "capped": false,
-          "seconds": 1326.510880175978,
-          "cost_usd": 0.23259796,
-          "reward": 0.23529411764705882
+          "seconds": 1332.2812608312815,
+          "cost_usd": 0.18619872,
+          "reward": 0.5263157894736842
         },
         {
           "id": "pelican",
-          "score": 67,
-          "raw_total": 67,
+          "score": 63.5,
+          "raw_total": 63.5,
           "capped": false,
-          "seconds": 141.18256336823106,
-          "cost_usd": 0.01280412
+          "seconds": 122.13147065974772,
+          "cost_usd": 0.01023092
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 108.0169682316482,
-          "cost_usd": 0.00323152,
+          "seconds": 88.82621067017317,
+          "cost_usd": 0.0070932,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 1836.509093079716,
-        "cost_usd": 0.272919
+        "seconds": 1781.8843221850693,
+        "cost_usd": 0.227116
       },
       "history": [
         {
@@ -8793,54 +9017,58 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 72.76323529411765
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 85.0717105263158
         }
       ]
     },
     {
       "model": "gpt-5.6-luna",
       "effort": "max",
-      "score": 78.26052631578946,
+      "score": 81.4361842105263,
       "score_status": "complete",
-      "latest_at": "2026-11-22T20:48:06.349066+00:00",
+      "latest_at": "2026-11-23T15:19:16.852378+00:00",
       "tasks": [
         {
           "id": "combined",
-          "score": 58,
-          "raw_total": 58,
+          "score": 54.5,
+          "raw_total": 54.5,
           "capped": true,
-          "seconds": 318.50702816806734,
-          "cost_usd": 0.03185424
+          "seconds": 415.36650739610195,
+          "cost_usd": 0.0360516
         },
         {
           "id": "pompeii",
-          "score": 31.57894736842105,
-          "raw_total": 31.57894736842105,
+          "score": 21.052631578947366,
+          "raw_total": 21.052631578947366,
           "capped": false,
-          "seconds": 2980.449377954006,
-          "cost_usd": 0.67491268,
-          "reward": 0.3157894736842105
+          "seconds": 3017.9575890004635,
+          "cost_usd": 0.69559068,
+          "reward": 0.21052631578947367
         },
         {
           "id": "pelican",
-          "score": 30,
-          "raw_total": 56,
-          "capped": true,
-          "seconds": 187.58978028781712,
-          "cost_usd": 0.0166324
+          "score": 74.5,
+          "raw_total": 74.5,
+          "capped": false,
+          "seconds": 246.39521852880716,
+          "cost_usd": 0.02126496
         },
         {
           "id": "candy",
           "score": 100,
           "raw_total": 100,
           "capped": false,
-          "seconds": 189.05435339733958,
-          "cost_usd": 0.0140604,
+          "seconds": 71.22319926694036,
+          "cost_usd": 0.0058512,
           "correct": true
         }
       ],
       "totals": {
-        "seconds": 3675.6005398072302,
-        "cost_usd": 0.73746
+        "seconds": 3750.942514192313,
+        "cost_usd": 0.758758
       },
       "history": [
         {
@@ -8966,6 +9194,10 @@
         {
           "at": "2026-11-23T01:24:22.794936+00:00",
           "score": 78.26052631578946
+        },
+        {
+          "at": "2026-11-23T16:55:49.854692+00:00",
+          "score": 81.4361842105263
         }
       ]
     }
@@ -9161,6 +9393,12 @@
       "id": "codex-four-repeat-oauth-20261122-r2",
       "label": "2026-11-23",
       "completed_at": "2026-11-23T01:24:22.794936+00:00",
+      "points": 58
+    },
+    {
+      "id": "codex-four-repeat-oauth-20261123",
+      "label": "2026-11-24",
+      "completed_at": "2026-11-23T16:55:49.854692+00:00",
       "points": 58
     }
   ]
