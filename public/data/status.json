@@ -1,32 +1,33 @@
 {
-  "checked_at": "2026-11-25T08:55:00.108Z",
-  "ok": true,
-  "benchmark": "codex-four-weighted-150-v2",
-  "score_source": "four-task",
-  "candidates_ok": 58,
+  "checked_at": "2026-11-26T08:40:16.092Z",
+  "ok": false,
+  "benchmark": "site-overview-codex-four",
+  "score_source": "site-overview",
+  "candidates_ok": 0,
   "candidates_total": 58,
   "binding_total": 58,
   "reused_count": 0,
   "missing_count": 0,
   "round_ok": true,
-  "latest_graded_at": "2026-11-24T09:20:07.457090+00:00",
-  "min_latest": "2026-11-24T07:13:40.355166+00:00",
+  "latest_graded_at": "2026-11-26T06:17:20.766380+00:00",
+  "min_latest": "2026-11-26T06:17:20.766380+00:00",
   "stale_count": 0,
-  "round_updated_at": "2026-11-24T10:25:24.868561+00:00",
+  "round_updated_at": "2026-10-24T14:30:39.822736+00:00",
   "round_progress": {
-    "round_id": "codex-four-repeat-oauth-20261125",
-    "revision": 12636,
-    "state": "running",
+    "round_id": "codex-four-repeat-oauth-20261125-r2",
+    "revision": 14473,
+    "state": "published",
     "total": 232,
-    "answered": 153,
-    "graded": 147,
-    "observed_at": "2026-11-25T08:54:49.816Z",
-    "changed_at": "2026-11-25T08:54:01.292Z"
+    "answered": 232,
+    "graded": 232,
+    "observed_at": "2026-11-26T08:36:05.951Z",
+    "changed_at": "2026-11-26T08:36:05.951Z"
   },
   "round_progress_error": null,
-  "stale_days": 0,
+  "stale_days": 32,
   "score_stale_days": 0,
-  "round_stale_days": 0,
-  "errors": [],
-  "legacy_error": "overview: 主摘要端点失败（only 0/34 summaries succeeded (minimum 30); reused: gpt-6.1-sol|low: HTTP 404 for https://api.codexradar.com/api/v1/radar-bench-score?model=gpt-6.1-sol&effort=low&view=summary&selection=user-selected-v1 (not_found: RadarBench is not installed.); reused: gpt-6.1-sol|medium: HTTP 404 for https://api.codexradar.com/api/v1/radar-bench-score?model=gpt-6.1-sol&effort=medium&view=summary&selection=user-selected-v1 (not_found: RadarBench is not installed.); reused: gpt-6.1-sol|high: HTTP 404 for https://api.codexradar.com/api/v1/radar-bench-score?model=gpt-6.1-sol&effort=high&view=summary&selection=user-selected-v1 (not_found: RadarBench is not installed.)），已回落到站点概览 58 条"
+  "round_stale_days": 32,
+  "errors": [
+    "overview: 主摘要端点失败（only 0/34 summaries succeeded (minimum 30); reused: gpt-6.1-sol|low: HTTP 404 for https://api.codexradar.com/api/v1/radar-bench-score?model=gpt-6.1-sol&effort=low&view=summary&selection=user-selected-v1 (not_found: RadarBench is not installed.); reused: gpt-6.1-sol|medium: HTTP 404 for https://api.codexradar.com/api/v1/radar-bench-score?model=gpt-6.1-sol&effort=medium&view=summary&selection=user-selected-v1 (not_found: RadarBench is not installed.); reused: gpt-6.1-sol|high: HTTP 404 for https://api.codexradar.com/api/v1/radar-bench-score?model=gpt-6.1-sol&effort=high&view=summary&selection=user-selected-v1 (not_found: RadarBench is not installed.)），已回落到站点概览 58 条"
+  ]
 }
