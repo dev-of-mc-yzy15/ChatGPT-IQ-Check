@@ -1,76 +1,20 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-27T08:51:35.409Z",
-  "checked_at": "2026-11-27T08:51:35.409Z",
+  "generated_at": "2026-11-28T08:11:40.892Z",
+  "checked_at": "2026-11-28T08:11:40.892Z",
   "window": "rolling_24h",
   "window_hours": 24,
-  "source_updated_at": "2026-11-27T08:47:27.949Z",
+  "source_updated_at": "2026-11-28T08:06:48.304Z",
   "timezone": "Asia/Shanghai",
   "total_slots": 68,
   "ratings": [
-    {
-      "id": "gpt-5.6-luna-max",
-      "model": "gpt-5.6-luna",
-      "effort": "max",
-      "label": "GPT-5.6 Luna max",
-      "average": 10,
-      "count": 2
-    },
-    {
-      "id": "gpt-6.2-sol-medium",
-      "model": "gpt-6.2-sol",
-      "effort": "medium",
-      "label": "GPT-6.2 Sol medium",
-      "average": 10,
-      "count": 2
-    },
-    {
-      "id": "gpt-6.1-sol-medium",
-      "model": "gpt-6.1-sol",
-      "effort": "medium",
-      "label": "GPT-6.1 Sol medium",
-      "average": 10,
-      "count": 1
-    },
-    {
-      "id": "gpt-6.1-sol-high",
-      "model": "gpt-6.1-sol",
-      "effort": "high",
-      "label": "GPT-6.1 Sol high",
-      "average": 9.8,
-      "count": 9
-    },
-    {
-      "id": "gpt-6.1-sol-max",
-      "model": "gpt-6.1-sol",
-      "effort": "max",
-      "label": "GPT-6.1 Sol max",
-      "average": 9.6,
-      "count": 9
-    },
-    {
-      "id": "gpt-6-astra-high",
-      "model": "gpt-6-astra",
-      "effort": "high",
-      "label": "GPT-6 Astra high",
-      "average": 9.5,
-      "count": 4
-    },
     {
       "id": "gpt-6.1-sol-ultra",
       "model": "gpt-6.1-sol",
       "effort": "ultra",
       "label": "GPT-6.1 Sol ultra",
-      "average": 9,
-      "count": 2
-    },
-    {
-      "id": "gpt-6-astra-max",
-      "model": "gpt-6-astra",
-      "effort": "max",
-      "label": "GPT-6 Astra max",
-      "average": 8.3,
-      "count": 14
+      "average": 10,
+      "count": 1
     },
     {
       "id": "gpt-6.1-terra-max",
@@ -78,6 +22,102 @@
       "effort": "max",
       "label": "GPT-6.1 Terra max",
       "average": 8,
+      "count": 2
+    },
+    {
+      "id": "gpt-6.2-astra-ultra",
+      "model": "gpt-6.2-astra",
+      "effort": "ultra",
+      "label": "GPT-6.2 Astra ultra",
+      "average": 7.5,
+      "count": 4
+    },
+    {
+      "id": "gpt-6.1-sol-max",
+      "model": "gpt-6.1-sol",
+      "effort": "max",
+      "label": "GPT-6.1 Sol max",
+      "average": 6,
+      "count": 4
+    },
+    {
+      "id": "gpt-6.2-sol-ultra",
+      "model": "gpt-6.2-sol",
+      "effort": "ultra",
+      "label": "GPT-6.2 Sol ultra",
+      "average": 6,
+      "count": 4
+    },
+    {
+      "id": "gpt-6.2-astra-low",
+      "model": "gpt-6.2-astra",
+      "effort": "low",
+      "label": "GPT-6.2 Astra low",
+      "average": 6,
+      "count": 1
+    },
+    {
+      "id": "gpt-6-astra-max",
+      "model": "gpt-6-astra",
+      "effort": "max",
+      "label": "GPT-6 Astra max",
+      "average": 5.7,
+      "count": 6
+    },
+    {
+      "id": "gpt-6.2-astra-medium",
+      "model": "gpt-6.2-astra",
+      "effort": "medium",
+      "label": "GPT-6.2 Astra medium",
+      "average": 5,
+      "count": 2
+    },
+    {
+      "id": "gpt-6.2-sol-max",
+      "model": "gpt-6.2-sol",
+      "effort": "max",
+      "label": "GPT-6.2 Sol max",
+      "average": 4.9,
+      "count": 14
+    },
+    {
+      "id": "gpt-6.2-astra-max",
+      "model": "gpt-6.2-astra",
+      "effort": "max",
+      "label": "GPT-6.2 Astra max",
+      "average": 4.3,
+      "count": 7
+    },
+    {
+      "id": "gpt-6.2-astra-xhigh",
+      "model": "gpt-6.2-astra",
+      "effort": "xhigh",
+      "label": "GPT-6.2 Astra xhigh",
+      "average": 4.3,
+      "count": 6
+    },
+    {
+      "id": "gpt-6-sol-xhigh",
+      "model": "gpt-6-sol",
+      "effort": "xhigh",
+      "label": "GPT-6 Sol xhigh",
+      "average": 4,
+      "count": 1
+    },
+    {
+      "id": "gpt-6.2-sol-high",
+      "model": "gpt-6.2-sol",
+      "effort": "high",
+      "label": "GPT-6.2 Sol high",
+      "average": 3.7,
+      "count": 7
+    },
+    {
+      "id": "gpt-6.2-astra-high",
+      "model": "gpt-6.2-astra",
+      "effort": "high",
+      "label": "GPT-6.2 Astra high",
+      "average": 3.5,
       "count": 4
     },
     {
@@ -85,126 +125,38 @@
       "model": "gpt-6.2-sol",
       "effort": "xhigh",
       "label": "GPT-6.2 Sol xhigh",
-      "average": 6.6,
-      "count": 10
+      "average": 2.9,
+      "count": 7
     },
     {
-      "id": "gpt-6.2-sol-high",
+      "id": "gpt-6.2-sol-medium",
       "model": "gpt-6.2-sol",
-      "effort": "high",
-      "label": "GPT-6.2 Sol high",
-      "average": 6.5,
-      "count": 11
-    },
-    {
-      "id": "gpt-6.1-sol-xhigh",
-      "model": "gpt-6.1-sol",
-      "effort": "xhigh",
-      "label": "GPT-6.1 Sol xhigh",
-      "average": 6,
-      "count": 3
-    },
-    {
-      "id": "gpt-6-luna-max",
-      "model": "gpt-6-luna",
-      "effort": "max",
-      "label": "GPT-6 Luna max",
-      "average": 6,
-      "count": 1
-    },
-    {
-      "id": "gpt-6.2-sol-max",
-      "model": "gpt-6.2-sol",
-      "effort": "max",
-      "label": "GPT-6.2 Sol max",
-      "average": 5.8,
-      "count": 22
+      "effort": "medium",
+      "label": "GPT-6.2 Sol medium",
+      "average": 2,
+      "count": 2
     },
     {
       "id": "gpt-6-astra-xhigh",
       "model": "gpt-6-astra",
       "effort": "xhigh",
       "label": "GPT-6 Astra xhigh",
-      "average": 5.2,
-      "count": 5
-    },
-    {
-      "id": "gpt-6.2-astra-xhigh",
-      "model": "gpt-6.2-astra",
-      "effort": "xhigh",
-      "label": "GPT-6.2 Astra xhigh",
-      "average": 5.2,
-      "count": 5
-    },
-    {
-      "id": "gpt-6.2-astra-ultra",
-      "model": "gpt-6.2-astra",
-      "effort": "ultra",
-      "label": "GPT-6.2 Astra ultra",
-      "average": 5,
-      "count": 6
-    },
-    {
-      "id": "gpt-6.2-astra-high",
-      "model": "gpt-6.2-astra",
-      "effort": "high",
-      "label": "GPT-6.2 Astra high",
-      "average": 5,
-      "count": 4
-    },
-    {
-      "id": "gpt-6.2-astra-max",
-      "model": "gpt-6.2-astra",
-      "effort": "max",
-      "label": "GPT-6.2 Astra max",
-      "average": 4.9,
-      "count": 7
-    },
-    {
-      "id": "gpt-6-luna-medium",
-      "model": "gpt-6-luna",
-      "effort": "medium",
-      "label": "GPT-6 Luna medium",
-      "average": 4,
+      "average": 2,
       "count": 1
     },
     {
-      "id": "gpt-6.1-terra-ultra",
-      "model": "gpt-6.1-terra",
-      "effort": "ultra",
-      "label": "GPT-6.1 Terra ultra",
-      "average": 4,
-      "count": 1
-    },
-    {
-      "id": "gpt-6-astra-ultra",
+      "id": "gpt-6-astra-high",
       "model": "gpt-6-astra",
-      "effort": "ultra",
-      "label": "GPT-6 Astra ultra",
-      "average": 3,
-      "count": 2
-    },
-    {
-      "id": "gpt-6.2-sol-ultra",
-      "model": "gpt-6.2-sol",
-      "effort": "ultra",
-      "label": "GPT-6.2 Sol ultra",
-      "average": 2,
-      "count": 6
-    },
-    {
-      "id": "gpt-5.6-sol-xhigh",
-      "model": "gpt-5.6-sol",
-      "effort": "xhigh",
-      "label": "GPT-5.6 Sol xhigh",
-      "average": 2,
-      "count": 2
-    },
-    {
-      "id": "gpt-5.6-sol-high",
-      "model": "gpt-5.6-sol",
       "effort": "high",
-      "label": "GPT-5.6 Sol high",
+      "label": "GPT-6 Astra high",
+      "average": 2,
+      "count": 1
+    },
+    {
+      "id": "gpt-6-sol-medium",
+      "model": "gpt-6-sol",
+      "effort": "medium",
+      "label": "GPT-6 Sol medium",
       "average": 2,
       "count": 1
     },
@@ -225,10 +177,26 @@
       "count": 1
     },
     {
-      "id": "gpt-6.2-astra-low",
-      "model": "gpt-6.2-astra",
-      "effort": "low",
-      "label": "GPT-6.2 Astra low",
+      "id": "gpt-6-luna-medium",
+      "model": "gpt-6-luna",
+      "effort": "medium",
+      "label": "GPT-6 Luna medium",
+      "average": 2,
+      "count": 1
+    },
+    {
+      "id": "gpt-6.1-sol-xhigh",
+      "model": "gpt-6.1-sol",
+      "effort": "xhigh",
+      "label": "GPT-6.1 Sol xhigh",
+      "average": 2,
+      "count": 1
+    },
+    {
+      "id": "gpt-6.1-sol-high",
+      "model": "gpt-6.1-sol",
+      "effort": "high",
+      "label": "GPT-6.1 Sol high",
       "average": 2,
       "count": 1
     }

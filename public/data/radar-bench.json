@@ -1,18 +1,18 @@
 {
   "schema_version": 1,
-  "fetch_id": "093d5846-0736-4715-b8d8-e46ea6f703c2",
-  "generated_at": "2026-11-27T08:51:35.409Z",
-  "checked_at": "2026-11-27T08:51:35.409Z",
+  "fetch_id": "8adc8c8d-9e4d-4a3a-ab81-50761e3a9a14",
+  "generated_at": "2026-11-28T08:11:40.892Z",
+  "checked_at": "2026-11-28T08:11:40.892Z",
   "benchmark": "codex-four-weighted-150-v2",
   "score_version": "codex-four-weighted-150-v2",
   "score_max": 150,
-  "catalog_version": "codex-four-repeat-oauth-20261126",
-  "task_set_sha256": "codex-four-repeat-oauth-20261126",
+  "catalog_version": "codex-four-repeat-oauth-20261127",
+  "task_set_sha256": "codex-four-repeat-oauth-20261127",
   "candidates": [
     {
       "model": "gpt-6.2-sol",
       "effort": "low",
-      "score": 116.17500000000001,
+      "score": 119.16818181818182,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -20,10 +20,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 388006,
-        "api_equivalent_usd_mean": 0.364834
+        "elapsed_ms_mean": 470427,
+        "api_equivalent_usd_mean": 0.473952
       },
-      "latest_graded_at": "2026-11-26T18:22:30.246651+00:00",
+      "latest_graded_at": "2026-11-27T09:28:23.538698+00:00",
       "history": [
         {
           "at": "2026-11-17T22:21:37.351972+00:00",
@@ -108,13 +108,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 119.16818181818182,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6.2-sol",
       "effort": "medium",
-      "score": 129.4875,
+      "score": 130.875,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -122,10 +129,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 810708,
-        "api_equivalent_usd_mean": 0.804489
+        "elapsed_ms_mean": 806317,
+        "api_equivalent_usd_mean": 0.788403
       },
-      "latest_graded_at": "2026-11-26T18:22:29.003423+00:00",
+      "latest_graded_at": "2026-11-27T09:28:21.769601+00:00",
       "history": [
         {
           "at": "2026-11-17T22:21:37.351972+00:00",
@@ -210,13 +217,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 130.875,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6.2-sol",
       "effort": "high",
-      "score": 137.175,
+      "score": 130.72500000000002,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -224,10 +238,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 1444996,
-        "api_equivalent_usd_mean": 1.158766
+        "elapsed_ms_mean": 2256386,
+        "api_equivalent_usd_mean": 1.147458
       },
-      "latest_graded_at": "2026-11-26T18:22:27.328309+00:00",
+      "latest_graded_at": "2026-11-27T09:21:38.387160+00:00",
       "history": [
         {
           "at": "2026-11-17T22:21:37.351972+00:00",
@@ -312,13 +326,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 130.72500000000002,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6.2-sol",
       "effort": "xhigh",
-      "score": 137.175,
+      "score": 129.03750000000002,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -326,10 +347,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 1649206,
-        "api_equivalent_usd_mean": 1.233335
+        "elapsed_ms_mean": 1386036,
+        "api_equivalent_usd_mean": 1.064363
       },
-      "latest_graded_at": "2026-11-26T18:22:10.151221+00:00",
+      "latest_graded_at": "2026-11-27T09:28:23.954073+00:00",
       "history": [
         {
           "at": "2026-11-17T22:21:37.351972+00:00",
@@ -414,13 +435,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 129.03750000000002,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6.2-sol",
       "effort": "max",
-      "score": 131.175,
+      "score": 130.95,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -428,10 +456,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 2189310,
-        "api_equivalent_usd_mean": 1.543119
+        "elapsed_ms_mean": 2566483,
+        "api_equivalent_usd_mean": 1.819115
       },
-      "latest_graded_at": "2026-11-26T18:20:54.576462+00:00",
+      "latest_graded_at": "2026-11-27T09:20:03.549800+00:00",
       "history": [
         {
           "at": "2026-11-17T22:21:37.351972+00:00",
@@ -516,13 +544,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 130.95,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6.2-sol",
       "effort": "ultra",
-      "score": 128.99318181818182,
+      "score": 136.16250000000002,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -530,10 +565,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 1733347,
-        "api_equivalent_usd_mean": 1.275876
+        "elapsed_ms_mean": 1639311,
+        "api_equivalent_usd_mean": 1.399069
       },
-      "latest_graded_at": "2026-11-26T18:22:14.429053+00:00",
+      "latest_graded_at": "2026-11-27T09:21:31.037022+00:00",
       "history": [
         {
           "at": "2026-11-17T22:21:37.351972+00:00",
@@ -618,13 +653,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 136.16250000000002,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6.2-astra",
       "effort": "low",
-      "score": 120.97500000000001,
+      "score": 128.8125,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -632,10 +674,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 451302,
-        "api_equivalent_usd_mean": 0.995106
+        "elapsed_ms_mean": 738500,
+        "api_equivalent_usd_mean": 1.060365
       },
-      "latest_graded_at": "2026-11-26T18:22:40.919250+00:00",
+      "latest_graded_at": "2026-11-27T09:28:03.516103+00:00",
       "history": [
         {
           "at": "2026-11-17T22:21:37.351972+00:00",
@@ -720,13 +762,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 128.8125,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6.2-astra",
       "effort": "medium",
-      "score": 130.5,
+      "score": 128.3625,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -734,10 +783,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 478170,
-        "api_equivalent_usd_mean": 1.39879
+        "elapsed_ms_mean": 1010482,
+        "api_equivalent_usd_mean": 1.333869
       },
-      "latest_graded_at": "2026-11-26T18:22:27.328367+00:00",
+      "latest_graded_at": "2026-11-27T09:28:02.076257+00:00",
       "history": [
         {
           "at": "2026-11-17T22:21:37.351972+00:00",
@@ -822,13 +871,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 128.3625,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6.2-astra",
       "effort": "high",
-      "score": 130.72500000000002,
+      "score": 137.175,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -836,10 +892,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 1030526,
-        "api_equivalent_usd_mean": 1.976731
+        "elapsed_ms_mean": 1178537,
+        "api_equivalent_usd_mean": 2.587258
       },
-      "latest_graded_at": "2026-11-26T18:21:48.200756+00:00",
+      "latest_graded_at": "2026-11-27T09:21:14.906406+00:00",
       "history": [
         {
           "at": "2026-11-17T22:21:37.351972+00:00",
@@ -924,13 +980,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 137.175,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6.2-astra",
       "effort": "xhigh",
-      "score": 136.16250000000002,
+      "score": 135.675,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -938,10 +1001,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 1953592,
-        "api_equivalent_usd_mean": 3.798325
+        "elapsed_ms_mean": 2157249,
+        "api_equivalent_usd_mean": 3.694283
       },
-      "latest_graded_at": "2026-11-26T18:21:46.186608+00:00",
+      "latest_graded_at": "2026-11-27T09:28:14.114088+00:00",
       "history": [
         {
           "at": "2026-11-17T22:21:37.351972+00:00",
@@ -1026,6 +1089,13 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 135.675,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
@@ -1040,10 +1110,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 3688162,
-        "api_equivalent_usd_mean": 6.644222
+        "elapsed_ms_mean": 3407558,
+        "api_equivalent_usd_mean": 6.95016
       },
-      "latest_graded_at": "2026-11-26T18:19:14.083769+00:00",
+      "latest_graded_at": "2026-11-27T09:19:22.659603+00:00",
       "history": [
         {
           "at": "2026-11-17T22:21:37.351972+00:00",
@@ -1128,13 +1198,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 137.175,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6.2-astra",
       "effort": "ultra",
-      "score": 135.9,
+      "score": 135.675,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -1142,10 +1219,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 2598672,
-        "api_equivalent_usd_mean": 3.362107
+        "elapsed_ms_mean": 2036105,
+        "api_equivalent_usd_mean": 3.44715
       },
-      "latest_graded_at": "2026-11-26T18:22:02.969099+00:00",
+      "latest_graded_at": "2026-11-27T09:28:06.113635+00:00",
       "history": [
         {
           "at": "2026-11-17T22:21:37.351972+00:00",
@@ -1230,13 +1307,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 135.675,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6.1-terra",
       "effort": "low",
-      "score": 92.7264705882353,
+      "score": 94.85,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -1244,10 +1328,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 259642,
-        "api_equivalent_usd_mean": 0.091268
+        "elapsed_ms_mean": 252790,
+        "api_equivalent_usd_mean": 0.099563
       },
-      "latest_graded_at": "2026-11-26T18:21:48.739890+00:00",
+      "latest_graded_at": "2026-11-27T09:20:37.090141+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -1507,13 +1591,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 94.85,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6.1-terra",
       "effort": "medium",
-      "score": 106.11250000000001,
+      "score": 91.8375,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -1521,10 +1612,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 288895,
-        "api_equivalent_usd_mean": 0.101286
+        "elapsed_ms_mean": 283944,
+        "api_equivalent_usd_mean": 0.109856
       },
-      "latest_graded_at": "2026-11-26T18:19:45.952668+00:00",
+      "latest_graded_at": "2026-11-27T09:21:11.467747+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -1784,13 +1875,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 91.8375,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6.1-terra",
       "effort": "high",
-      "score": 98.72171052631579,
+      "score": 112.67142857142856,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -1798,10 +1896,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 291798,
-        "api_equivalent_usd_mean": 0.116257
+        "elapsed_ms_mean": 372757,
+        "api_equivalent_usd_mean": 0.170909
       },
-      "latest_graded_at": "2026-11-26T18:20:39.751739+00:00",
+      "latest_graded_at": "2026-11-27T09:21:06.950161+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -2061,13 +2159,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 112.67142857142856,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6.1-terra",
       "effort": "xhigh",
-      "score": 106.04605263157895,
+      "score": 106.5828947368421,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -2075,10 +2180,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 522115,
-        "api_equivalent_usd_mean": 0.208512
+        "elapsed_ms_mean": 571830,
+        "api_equivalent_usd_mean": 0.281096
       },
-      "latest_graded_at": "2026-11-26T18:21:20.124401+00:00",
+      "latest_graded_at": "2026-11-27T09:20:03.766171+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -2338,13 +2443,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 106.5828947368421,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6.1-terra",
       "effort": "max",
-      "score": 130.16250000000002,
+      "score": 129.375,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -2352,10 +2464,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 1719069,
-        "api_equivalent_usd_mean": 0.612305
+        "elapsed_ms_mean": 1826558,
+        "api_equivalent_usd_mean": 0.690682
       },
-      "latest_graded_at": "2026-11-26T18:18:13.739955+00:00",
+      "latest_graded_at": "2026-11-27T09:13:00.228169+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -2615,13 +2727,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 129.375,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6.1-terra",
       "effort": "ultra",
-      "score": 124.38097826086957,
+      "score": 102.925,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -2629,10 +2748,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 514023,
-        "api_equivalent_usd_mean": 0.20436
+        "elapsed_ms_mean": 549284,
+        "api_equivalent_usd_mean": 0.214265
       },
-      "latest_graded_at": "2026-11-26T18:20:14.028414+00:00",
+      "latest_graded_at": "2026-11-27T09:20:37.412034+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -2892,13 +3011,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 102.925,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6.1-sol",
       "effort": "low",
-      "score": 106.30434782608697,
+      "score": 118.01739130434783,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -2906,10 +3032,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 631636,
-        "api_equivalent_usd_mean": 0.400768
+        "elapsed_ms_mean": 533093,
+        "api_equivalent_usd_mean": 0.347028
       },
-      "latest_graded_at": "2026-11-26T18:21:13.475876+00:00",
+      "latest_graded_at": "2026-11-27T09:21:16.078149+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -3169,13 +3295,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 118.01739130434783,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6.1-sol",
       "effort": "medium",
-      "score": 128.475,
+      "score": 114.02386363636363,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -3183,10 +3316,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 747913,
-        "api_equivalent_usd_mean": 0.548825
+        "elapsed_ms_mean": 476571,
+        "api_equivalent_usd_mean": 2.185609
       },
-      "latest_graded_at": "2026-11-26T18:21:38.806562+00:00",
+      "latest_graded_at": "2026-11-27T10:05:32.079399+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -3446,13 +3579,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 114.02386363636363,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6.1-sol",
       "effort": "high",
-      "score": 136.5,
+      "score": 128.475,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -3460,10 +3600,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 1267162,
-        "api_equivalent_usd_mean": 0.803266
+        "elapsed_ms_mean": 1041171,
+        "api_equivalent_usd_mean": 0.762584
       },
-      "latest_graded_at": "2026-11-26T18:20:59.100347+00:00",
+      "latest_graded_at": "2026-11-27T09:19:16.255796+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -3723,6 +3863,13 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 128.475,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
@@ -3737,10 +3884,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 1672457,
-        "api_equivalent_usd_mean": 1.029346
+        "elapsed_ms_mean": 2580078,
+        "api_equivalent_usd_mean": 1.130429
       },
-      "latest_graded_at": "2026-11-26T18:17:06.041897+00:00",
+      "latest_graded_at": "2026-11-27T09:18:25.299224+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -4000,13 +4147,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 128.925,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6.1-sol",
       "effort": "max",
-      "score": 129.375,
+      "score": 136.6125,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -4014,10 +4168,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 2046323,
-        "api_equivalent_usd_mean": 1.263715
+        "elapsed_ms_mean": 2598261,
+        "api_equivalent_usd_mean": 1.258298
       },
-      "latest_graded_at": "2026-11-26T18:17:50.653427+00:00",
+      "latest_graded_at": "2026-11-27T09:17:34.396089+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -4277,13 +4431,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 136.6125,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6.1-sol",
       "effort": "ultra",
-      "score": 130.72500000000002,
+      "score": 128.925,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -4291,10 +4452,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 1479793,
-        "api_equivalent_usd_mean": 0.979726
+        "elapsed_ms_mean": 1517446,
+        "api_equivalent_usd_mean": 1.036226
       },
-      "latest_graded_at": "2026-11-26T18:18:44.168198+00:00",
+      "latest_graded_at": "2026-11-27T09:17:31.582096+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -4554,13 +4715,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 128.925,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6-astra",
       "effort": "low",
-      "score": 110.475,
+      "score": 113.54184782608696,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -4568,10 +4736,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 534724,
-        "api_equivalent_usd_mean": 1.861934
+        "elapsed_ms_mean": 514915,
+        "api_equivalent_usd_mean": 1.459866
       },
-      "latest_graded_at": "2026-11-26T18:21:36.688993+00:00",
+      "latest_graded_at": "2026-11-27T09:20:41.926544+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -4824,13 +4992,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 113.54184782608696,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6-astra",
       "effort": "medium",
-      "score": 123.1875,
+      "score": 116.87727272727273,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -4838,10 +5013,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 599219,
-        "api_equivalent_usd_mean": 1.806274
+        "elapsed_ms_mean": 782006,
+        "api_equivalent_usd_mean": 1.864154
       },
-      "latest_graded_at": "2026-11-26T18:20:40.302921+00:00",
+      "latest_graded_at": "2026-11-27T09:19:28.421472+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -5094,13 +5269,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 116.87727272727273,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6-astra",
       "effort": "high",
-      "score": 128.20597826086959,
+      "score": 130.8375,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -5108,10 +5290,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 869366,
-        "api_equivalent_usd_mean": 2.637232
+        "elapsed_ms_mean": 1045436,
+        "api_equivalent_usd_mean": 2.687424
       },
-      "latest_graded_at": "2026-11-26T18:19:31.434748+00:00",
+      "latest_graded_at": "2026-11-27T09:18:26.790350+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -5364,13 +5546,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 130.8375,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6-astra",
       "effort": "xhigh",
-      "score": 131.4,
+      "score": 134.625,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -5378,10 +5567,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 1960844,
-        "api_equivalent_usd_mean": 5.51285
+        "elapsed_ms_mean": 1733668,
+        "api_equivalent_usd_mean": 4.591204
       },
-      "latest_graded_at": "2026-11-26T18:19:57.412108+00:00",
+      "latest_graded_at": "2026-11-27T09:05:57.231703+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -5634,13 +5823,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 134.625,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6-astra",
       "effort": "max",
-      "score": 130.72500000000002,
+      "score": 130.3875,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -5648,10 +5844,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 2415854,
-        "api_equivalent_usd_mean": 6.325238
+        "elapsed_ms_mean": 2401207,
+        "api_equivalent_usd_mean": 6.515514
       },
-      "latest_graded_at": "2026-11-26T18:03:29.003982+00:00",
+      "latest_graded_at": "2026-11-27T09:12:07.628865+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -5904,13 +6100,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 130.3875,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6-astra",
       "effort": "ultra",
-      "score": 130.16250000000002,
+      "score": 136.95,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -5918,10 +6121,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 1568348,
-        "api_equivalent_usd_mean": 4.427778
+        "elapsed_ms_mean": 1484364,
+        "api_equivalent_usd_mean": 3.675722
       },
-      "latest_graded_at": "2026-11-26T18:12:44.683278+00:00",
+      "latest_graded_at": "2026-11-27T09:05:25.929573+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -6174,13 +6377,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 136.95,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6-sol",
       "effort": "low",
-      "score": 75.375,
+      "score": 91.7,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -6188,10 +6398,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 275843,
-        "api_equivalent_usd_mean": 0.24447
+        "elapsed_ms_mean": 265795,
+        "api_equivalent_usd_mean": 0.259573
       },
-      "latest_graded_at": "2026-11-26T18:21:19.735152+00:00",
+      "latest_graded_at": "2026-11-27T09:17:49.346840+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -6444,13 +6654,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 91.7,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6-sol",
       "effort": "medium",
-      "score": 107.83977272727273,
+      "score": 95.52236842105263,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -6458,10 +6675,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 911527,
-        "api_equivalent_usd_mean": 0.851019
+        "elapsed_ms_mean": 792239,
+        "api_equivalent_usd_mean": 0.74746
       },
-      "latest_graded_at": "2026-11-26T18:17:24.009409+00:00",
+      "latest_graded_at": "2026-11-27T09:16:41.205507+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -6714,13 +6931,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 95.52236842105263,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6-sol",
       "effort": "high",
-      "score": 120.4679347826087,
+      "score": 121.3840909090909,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -6728,10 +6952,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 1143562,
-        "api_equivalent_usd_mean": 1.14259
+        "elapsed_ms_mean": 1115710,
+        "api_equivalent_usd_mean": 1.110448
       },
-      "latest_graded_at": "2026-11-26T18:19:00.202897+00:00",
+      "latest_graded_at": "2026-11-27T09:18:39.174579+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -6984,13 +7208,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 121.3840909090909,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6-sol",
       "effort": "xhigh",
-      "score": 109.52678571428572,
+      "score": 120.04239130434782,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -6998,10 +7229,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 1455066,
-        "api_equivalent_usd_mean": 1.351047
+        "elapsed_ms_mean": 1608997,
+        "api_equivalent_usd_mean": 1.310774
       },
-      "latest_graded_at": "2026-11-26T18:16:24.796192+00:00",
+      "latest_graded_at": "2026-11-27T09:16:00.813519+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -7254,13 +7485,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 120.04239130434782,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6-sol",
       "effort": "max",
-      "score": 89.8875,
+      "score": 104.175,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -7268,10 +7506,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 1703715,
-        "api_equivalent_usd_mean": 1.549408
+        "elapsed_ms_mean": 1646419,
+        "api_equivalent_usd_mean": 1.385698
       },
-      "latest_graded_at": "2026-11-26T18:16:12.144544+00:00",
+      "latest_graded_at": "2026-11-27T09:16:30.071529+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -7524,13 +7762,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 104.175,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6-sol",
       "effort": "ultra",
-      "score": 105.8375,
+      "score": 109.54736842105264,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -7538,10 +7783,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 1623262,
-        "api_equivalent_usd_mean": 1.463662
+        "elapsed_ms_mean": 2493734,
+        "api_equivalent_usd_mean": 1.636979
       },
-      "latest_graded_at": "2026-11-26T18:14:06.897653+00:00",
+      "latest_graded_at": "2026-11-27T09:03:31.276111+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -7794,13 +8039,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 109.54736842105264,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6-luna",
       "effort": "low",
-      "score": 54.163636363636364,
+      "score": 35.1375,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -7808,10 +8060,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 227790,
-        "api_equivalent_usd_mean": 0.014719
+        "elapsed_ms_mean": 225236,
+        "api_equivalent_usd_mean": 0.013207
       },
-      "latest_graded_at": "2026-11-26T18:22:46.749679+00:00",
+      "latest_graded_at": "2026-11-27T09:28:18.411892+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -8064,13 +8316,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 35.1375,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6-luna",
       "effort": "medium",
-      "score": 59.13552631578947,
+      "score": 57.848684210526315,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -8078,10 +8337,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 241475,
-        "api_equivalent_usd_mean": 0.012181
+        "elapsed_ms_mean": 269942,
+        "api_equivalent_usd_mean": 0.013911
       },
-      "latest_graded_at": "2026-11-26T18:22:42.034965+00:00",
+      "latest_graded_at": "2026-11-27T09:28:29.032105+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -8334,13 +8593,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 57.848684210526315,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6-luna",
       "effort": "high",
-      "score": 83.8125,
+      "score": 65.8125,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -8348,10 +8614,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 420266,
-        "api_equivalent_usd_mean": 0.019636
+        "elapsed_ms_mean": 369506,
+        "api_equivalent_usd_mean": 0.019677
       },
-      "latest_graded_at": "2026-11-26T18:19:12.867958+00:00",
+      "latest_graded_at": "2026-11-27T09:18:46.618919+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -8604,13 +8870,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 65.8125,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6-luna",
       "effort": "xhigh",
-      "score": 84.1125,
+      "score": 85.9875,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -8618,10 +8891,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 1592514,
-        "api_equivalent_usd_mean": 0.066965
+        "elapsed_ms_mean": 1410184,
+        "api_equivalent_usd_mean": 0.057503
       },
-      "latest_graded_at": "2026-11-26T17:34:47.673752+00:00",
+      "latest_graded_at": "2026-11-27T09:07:24.177950+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -8874,13 +9147,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 85.9875,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-6-luna",
       "effort": "max",
-      "score": 91.02236842105262,
+      "score": 92.625,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -8888,10 +9168,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 2132064,
-        "api_equivalent_usd_mean": 0.099643
+        "elapsed_ms_mean": 1385475,
+        "api_equivalent_usd_mean": 0.054758
       },
-      "latest_graded_at": "2026-11-26T17:40:57.513142+00:00",
+      "latest_graded_at": "2026-11-27T09:04:47.283938+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -9144,13 +9424,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 92.625,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-5.6-sol",
       "effort": "low",
-      "score": 85.9875,
+      "score": 78.5875,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -9158,10 +9445,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 363805,
-        "api_equivalent_usd_mean": 0.616976
+        "elapsed_ms_mean": 363475,
+        "api_equivalent_usd_mean": 0.61737
       },
-      "latest_graded_at": "2026-11-26T18:18:21.327559+00:00",
+      "latest_graded_at": "2026-11-27T09:16:09.093961+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -9414,13 +9701,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 78.5875,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-5.6-sol",
       "effort": "medium",
-      "score": 98.9625,
+      "score": 85.91785714285714,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -9428,10 +9722,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 660306,
-        "api_equivalent_usd_mean": 1.070782
+        "elapsed_ms_mean": 806850,
+        "api_equivalent_usd_mean": 1.295697
       },
-      "latest_graded_at": "2026-11-26T18:15:24.934145+00:00",
+      "latest_graded_at": "2026-11-27T09:02:26.023144+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -9684,13 +9978,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 85.91785714285714,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-5.6-sol",
       "effort": "high",
-      "score": 107.42727272727272,
+      "score": 96.62045454545454,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -9698,10 +9999,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 1251969,
-        "api_equivalent_usd_mean": 2.561744
+        "elapsed_ms_mean": 1322091,
+        "api_equivalent_usd_mean": 2.80134
       },
-      "latest_graded_at": "2026-11-26T18:08:37.950654+00:00",
+      "latest_graded_at": "2026-11-27T09:08:41.336091+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -9954,13 +10255,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 96.62045454545454,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-5.6-sol",
       "effort": "xhigh",
-      "score": 86.1375,
+      "score": 105.67500000000001,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -9968,10 +10276,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 1283390,
-        "api_equivalent_usd_mean": 2.386527
+        "elapsed_ms_mean": 1661846,
+        "api_equivalent_usd_mean": 3.499028
       },
-      "latest_graded_at": "2026-11-26T17:52:30.472330+00:00",
+      "latest_graded_at": "2026-11-27T09:11:04.033567+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -10224,13 +10532,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 105.67500000000001,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-5.6-sol",
       "effort": "max",
-      "score": 112.26818181818182,
+      "score": 100.51607142857142,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -10238,10 +10553,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 2204999,
-        "api_equivalent_usd_mean": 5.074952
+        "elapsed_ms_mean": 2163917,
+        "api_equivalent_usd_mean": 4.379299
       },
-      "latest_graded_at": "2026-11-26T18:06:26.958671+00:00",
+      "latest_graded_at": "2026-11-27T09:02:02.378779+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -10494,13 +10809,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 100.51607142857142,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-5.6-sol",
       "effort": "ultra",
-      "score": 98.57171052631578,
+      "score": 106.44886363636363,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -10508,10 +10830,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 2494096,
-        "api_equivalent_usd_mean": 5.669046
+        "elapsed_ms_mean": 2170104,
+        "api_equivalent_usd_mean": 4.651895
       },
-      "latest_graded_at": "2026-11-26T17:44:12.059801+00:00",
+      "latest_graded_at": "2026-11-27T09:01:13.662695+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -10764,13 +11086,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 106.44886363636363,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-5.6-terra",
       "effort": "low",
-      "score": 87.075,
+      "score": 70.13823529411765,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -10778,10 +11107,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 473368,
-        "api_equivalent_usd_mean": 0.381214
+        "elapsed_ms_mean": 410360,
+        "api_equivalent_usd_mean": 0.346293
       },
-      "latest_graded_at": "2026-11-26T17:58:10.620374+00:00",
+      "latest_graded_at": "2026-11-27T09:15:00.616722+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -11034,13 +11363,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 70.13823529411765,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-5.6-terra",
       "effort": "medium",
-      "score": 75.33214285714286,
+      "score": 80.75735294117646,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -11048,10 +11384,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 673294,
-        "api_equivalent_usd_mean": 0.449559
+        "elapsed_ms_mean": 554611,
+        "api_equivalent_usd_mean": 0.401656
       },
-      "latest_graded_at": "2026-11-26T17:45:54.165825+00:00",
+      "latest_graded_at": "2026-11-27T08:42:35.807128+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -11304,13 +11640,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 80.75735294117646,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-5.6-terra",
       "effort": "high",
-      "score": 78.43235294117648,
+      "score": 77.75735294117646,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -11318,10 +11661,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 1109042,
-        "api_equivalent_usd_mean": 0.999226
+        "elapsed_ms_mean": 1019234,
+        "api_equivalent_usd_mean": 0.865972
       },
-      "latest_graded_at": "2026-11-26T17:35:09.549426+00:00",
+      "latest_graded_at": "2026-11-27T08:36:27.106213+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -11574,13 +11917,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 77.75735294117646,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-5.6-terra",
       "effort": "xhigh",
-      "score": 94.95,
+      "score": 89.98421052631579,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -11588,10 +11938,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 1888941,
-        "api_equivalent_usd_mean": 1.765471
+        "elapsed_ms_mean": 1671277,
+        "api_equivalent_usd_mean": 1.374577
       },
-      "latest_graded_at": "2026-11-26T17:15:15.382172+00:00",
+      "latest_graded_at": "2026-11-27T07:52:55.312826+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -11844,13 +12194,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 89.98421052631579,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-5.6-terra",
       "effort": "max",
-      "score": 95.6875,
+      "score": 87.57236842105263,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -11858,10 +12215,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 3250507,
-        "api_equivalent_usd_mean": 4.260732
+        "elapsed_ms_mean": 2583562,
+        "api_equivalent_usd_mean": 3.454265
       },
-      "latest_graded_at": "2026-11-26T16:41:23.564718+00:00",
+      "latest_graded_at": "2026-11-27T07:39:43.055508+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -12114,13 +12471,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 87.57236842105263,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-5.6-terra",
       "effort": "ultra",
-      "score": 92.94107142857142,
+      "score": 94.9875,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -12128,10 +12492,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 2424135,
-        "api_equivalent_usd_mean": 2.1499
+        "elapsed_ms_mean": 2246189,
+        "api_equivalent_usd_mean": 2.24476
       },
-      "latest_graded_at": "2026-11-26T16:57:18.440982+00:00",
+      "latest_graded_at": "2026-11-27T07:46:21.060708+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -12384,13 +12748,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 94.9875,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-5.6-luna",
       "effort": "low",
-      "score": 61.3375,
+      "score": 62.5125,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -12398,10 +12769,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 245927,
-        "api_equivalent_usd_mean": 0.020938
+        "elapsed_ms_mean": 215286,
+        "api_equivalent_usd_mean": 0.018761
       },
-      "latest_graded_at": "2026-11-26T18:20:25.968037+00:00",
+      "latest_graded_at": "2026-11-27T09:19:58.802084+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -12654,13 +13025,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 62.5125,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-5.6-luna",
       "effort": "medium",
-      "score": 72.6,
+      "score": 67.05,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -12668,10 +13046,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 495306,
-        "api_equivalent_usd_mean": 0.042582
+        "elapsed_ms_mean": 388860,
+        "api_equivalent_usd_mean": 0.03964
       },
-      "latest_graded_at": "2026-11-26T17:59:10.094104+00:00",
+      "latest_graded_at": "2026-11-27T09:19:58.717373+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -12924,13 +13302,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 67.05,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-5.6-luna",
       "effort": "high",
-      "score": 77.85,
+      "score": 72.975,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -12938,10 +13323,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 1189824,
-        "api_equivalent_usd_mean": 0.12126
+        "elapsed_ms_mean": 1388424,
+        "api_equivalent_usd_mean": 0.155816
       },
-      "latest_graded_at": "2026-11-26T17:55:34.946643+00:00",
+      "latest_graded_at": "2026-11-27T09:14:00.870540+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -13194,13 +13579,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 72.975,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-5.6-luna",
       "effort": "xhigh",
-      "score": 86.29736842105262,
+      "score": 89.22500000000001,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -13208,10 +13600,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 2351426,
-        "api_equivalent_usd_mean": 0.376894
+        "elapsed_ms_mean": 1702001,
+        "api_equivalent_usd_mean": 0.239442
       },
-      "latest_graded_at": "2026-11-26T17:57:06.283650+00:00",
+      "latest_graded_at": "2026-11-27T08:54:37.154812+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -13464,13 +13856,20 @@
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 89.22500000000001,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
         }
       ]
     },
     {
       "model": "gpt-5.6-luna",
       "effort": "max",
-      "score": 87.2625,
+      "score": 83.29736842105262,
       "coverage": 4,
       "required_tasks": 4,
       "score_status": "complete",
@@ -13478,10 +13877,10 @@
       "source_scores": {},
       "statistics": {
         "sample_count": 1,
-        "elapsed_ms_mean": 2974676,
-        "api_equivalent_usd_mean": 0.650202
+        "elapsed_ms_mean": 3718231,
+        "api_equivalent_usd_mean": 0.633438
       },
-      "latest_graded_at": "2026-11-26T17:33:33.662892+00:00",
+      "latest_graded_at": "2026-11-27T08:36:05.545781+00:00",
       "history": [
         {
           "at": "2026-10-27T09:09:42.511199+00:00",
@@ -13731,6 +14130,13 @@
         {
           "at": "2026-11-26T18:22:46.749679+00:00",
           "score": 87.2625,
+          "coverage": 4,
+          "required_tasks": 4,
+          "score_status": "complete"
+        },
+        {
+          "at": "2026-11-27T10:11:02.657085+00:00",
+          "score": 83.29736842105262,
           "coverage": 4,
           "required_tasks": 4,
           "score_status": "complete"
